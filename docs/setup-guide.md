@@ -34,7 +34,12 @@ corepack enable
 corepack prepare pnpm@latest --activate
 pnpm -v
 ```
-> `corepack`이 없으면 `npm install -g pnpm` 으로 설치한다.
+> `corepack`이 권한 문제로 실패하면, Windows에서는 사용자 로컬 경로에 설치할 수 있다.
+```powershell
+npm install --global pnpm --prefix "$env:LOCALAPPDATA\pnpm"
+& "$env:LOCALAPPDATA\pnpm\pnpm.cmd" -v
+```
+> 이 경우 현재 PowerShell 세션에서는 `pnpm` 대신 `"$env:LOCALAPPDATA\pnpm\pnpm.cmd"` 경로로 실행하거나, 이후 PATH에 사용자 로컬 경로를 추가한다.
 
 ### 1.4 Cursor 에디터 확장 (권장)
 - ESLint / Prettier / Prisma / Tailwind CSS IntelliSense
@@ -216,7 +221,7 @@ vercel
 
 ## 문제 해결 팁
 
-- `pnpm` 인식 안 됨 → PowerShell 재시작 또는 `corepack enable`
+- `pnpm` 인식 안 됨 → PowerShell 재시작 또는 `corepack enable`, 권한 이슈면 사용자 로컬 경로(`$env:LOCALAPPDATA\pnpm\pnpm.cmd`)로 실행
 - `winget` 없음 → Microsoft Store에서 "앱 설치 관리자" 설치
 - Prisma 연결 실패 → Supabase Connection String의 `?sslmode=require`·비밀번호 확인
 - Kakao 지도 안 뜸 → 도메인(localhost) 등록 및 JS 키 확인
@@ -228,3 +233,4 @@ vercel
 | 일자 | 내용 |
 |------|------|
 | 2026-07-06 | 단계별 설치 가이드 초안 작성 (Windows/PowerShell 기준) |
+| 2026-07-06 | Phase 0 실행 결과 반영 — Windows 권한 이슈 시 pnpm 사용자 로컬 설치 경로 추가 |

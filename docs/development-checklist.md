@@ -11,12 +11,20 @@
 
 > 설치: [setup-guide.md](./setup-guide.md) §1~§2
 
-- [ ] Git 저장소 초기화 및 `.gitignore` 정리
-- [ ] Node.js LTS 설치 확인 (`node -v`)
-- [ ] pnpm 설치 확인 (`pnpm -v`)
+- [x] Git 저장소 초기화 및 `.gitignore` 정리
+- [x] Node.js LTS 설치 확인 (`node -v`)
+- [x] pnpm 설치 확인 (`pnpm -v` 또는 사용자 로컬 `pnpm.cmd`)
 - [ ] Cursor(에디터) + 확장(ESLint, Prettier, Prisma, Tailwind) 준비
-- [ ] `docs/` 문서를 AI 컨텍스트로 활용할 준비 완료
-- [ ] 브랜치 전략 확정 (`main` + `feature/*`)
+- [x] `docs/` 문서를 AI 컨텍스트로 활용할 준비 완료
+- [x] 브랜치 전략 확정 (`main` + `feature/*`)
+
+### Phase 0 실행 메모
+- 저장소는 이미 Git 저장소였으며 현재 기본 브랜치는 `main`이다.
+- `.gitignore`에 Node/Next.js/환경변수/테스트 산출물 관련 기본 항목을 추가했다.
+- Node.js 버전 확인: `v22.22.0`
+- Git 버전 확인: `2.50.0.windows.2`
+- `corepack enable`은 Windows 권한 이슈로 실패하여, `pnpm`은 사용자 로컬 경로(`$env:LOCALAPPDATA\\pnpm\\pnpm.cmd`)에 설치했다.
+- Cursor 확장 설치 여부는 에디터 UI에서 직접 확인이 필요하므로 체크는 남겨둔다.
 
 ---
 
@@ -161,3 +169,4 @@
 | 일자 | 내용 |
 |------|------|
 | 2026-07-06 | 요구사항·기술스택 기반 개발 체크리스트 초안 작성 |
+| 2026-07-06 | Phase 0 실행 반영 — Git/Node/pnpm/브랜치 전략 점검, `.gitignore` 정리, 실행 메모 추가 |
