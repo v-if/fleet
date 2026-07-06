@@ -66,18 +66,17 @@ node_modules/
 
 ## §3. 프로젝트 기반 구축 (Phase 1)
 
+> **실행 완료 (2026-07-06)** — 로컬 DB는 SQLite(`prisma/dev.db`). Supabase PostgreSQL은 Phase 4에서 전환.
+
 ### 3.1 Next.js + TypeScript + Tailwind 생성
+
+루트에 `docs/`, `benchmarking/` 등이 있으면 빈 폴더가 아니므로, 임시 폴더에 생성 후 루트로 이동한다.
+
 ```powershell
-pnpm create next-app@latest .
+$env:Path = "$env:LOCALAPPDATA\pnpm;$env:Path"
+pnpm dlx create-next-app@latest web-temp --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --turbopack --yes
+# web-temp 내용을 프로젝트 루트로 이동 후 web-temp 삭제
 ```
-프롬프트 선택 권장값:
-- TypeScript: **Yes**
-- ESLint: **Yes**
-- Tailwind CSS: **Yes**
-- `src/` directory: 취향 (가이드는 사용 가정)
-- App Router: **Yes**
-- Turbopack: **Yes**
-- import alias(`@/*`): **Yes**
 
 실행 확인:
 ```powershell
@@ -88,41 +87,57 @@ pnpm dev
 ```powershell
 pnpm add -D prettier eslint-config-prettier
 ```
-`.prettierrc` 생성 후 팀 규칙 정의.
 
 ### 3.3 shadcn/ui
 ```powershell
-pnpm dlx shadcn@latest init
-pnpm dlx shadcn@latest add button card table badge input
+pnpm dlx shadcn@latest init -y -d
+pnpm dlx shadcn@latest add button card table badge -y
 ```
 
-### 3.4 Prisma + Supabase 연결
+### 3.4 Prisma + 로컬 DB (SQLite)
+
+Phase 1은 Supabase 없이 **SQLite**로 빠르게 시작한다. (Supabase는 Phase 4)
+
 ```powershell
-pnpm add -D prisma
-pnpm add @prisma/client
-pnpm prisma init
+pnpm add @prisma/client@6 dotenv
+pnpm add -D prisma@6 tsx
+pnpm approve-builds @prisma/client @prisma/engines prisma
 ```
-- Supabase 대시보드에서 프로젝트 생성 → `Settings > Database`의 Connection String을 `.env`의 `DATABASE_URL`에 설정
-- `schema.prisma`에 `vehicles`, `vehicle_snapshots`, `vehicle_events`, `users` 모델 정의 후:
+
+`.env` (Prisma CLI용, git 제외):
+```
+DATABASE_URL="file:./dev.db"
+VEHICLE_DATA_PROVIDER=mock
+```
+
+> `file:./dev.db` 경로는 `prisma/schema.prisma` 기준 상대경로 → 실제 파일은 `prisma/dev.db`
+
+마이그레이션·시드:
 ```powershell
-pnpm prisma migrate dev --name init
-pnpm prisma generate
+pnpm exec prisma migrate dev --name init
+pnpm db:seed
 ```
 
 ### 3.5 환경 변수
-`.env.local` (git 제외) 및 `.env.example` (git 포함, 값은 비움) 작성:
-```
-DATABASE_URL=
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-VEHICLE_DATA_PROVIDER=mock
-NEXT_PUBLIC_KAKAO_MAP_KEY=
-```
 
-### 3.6 Supabase 클라이언트 (선택)
+`.env.example` (git 포함) — Supabase·Tesla·Kakao 키는 이후 Phase에서 채운다.
+
+### 3.6 Supabase 클라이언트 (스텁)
+
 ```powershell
 pnpm add @supabase/supabase-js
+```
+
+`src/lib/supabase/client.ts` — URL·키 미설정 시 `null` 반환 (Phase 4에서 연결).
+
+### 3.7 Phase 1 검증
+
+```powershell
+pnpm lint
+pnpm build
+pnpm dev
+# 다른 터미널에서
+Invoke-RestMethod http://localhost:3000/api/vehicles
 ```
 
 **Phase 1 완료 후 다음 Phase 전까지 추가 설치 불필요.**
@@ -234,3 +249,4 @@ vercel
 |------|------|
 | 2026-07-06 | 단계별 설치 가이드 초안 작성 (Windows/PowerShell 기준) |
 | 2026-07-06 | Phase 0 실행 결과 반영 — Windows 권한 이슈 시 pnpm 사용자 로컬 설치 경로 추가 |
+| 2026-07-06 | Phase 1 실행 결과 반영 — 임시 폴더 스캐폴딩, Prisma 6 + SQLite, 검증 명령 추가 |

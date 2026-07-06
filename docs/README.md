@@ -20,6 +20,7 @@
 | 타깃 차종 | 테슬라(Tesla) 1종 — 공식 Fleet API + OAuth |
 | 데이터 수집 | 테슬라 Fleet API + Mock 폴백 (Deviceless) |
 | 기술 스택 | TypeScript · Next.js · Supabase(PostgreSQL) · Prisma · Vercel |
+| 로컬 DB (현재) | SQLite (`prisma/dev.db`) — Phase 1 완료, Supabase는 Phase 4 |
 | 지도 | Kakao Maps API |
 | 방법론 | AI-assisted Lean MVP (Agile Lite) |
 | 1차 목표 | 데모데이 시연 → 이후 투자 시 확장 |
@@ -34,3 +35,4 @@
 |------|------|
 | 2026-07-06 | 문서 인덱스 생성 |
 | 2026-07-06 | 개발 체크리스트·설치 가이드 문서 추가 |
+| 2026-07-06 | Phase 1 완료 — 앱 스캐폴딩, Prisma+SQLite, Mock API 반영 |

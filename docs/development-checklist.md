@@ -33,29 +33,37 @@
 > 설치: [setup-guide.md](./setup-guide.md) §3
 
 ### 스캐폴딩
-- [ ] Next.js(App Router) + TypeScript 프로젝트 생성
-- [ ] Tailwind CSS 적용 확인
-- [ ] ESLint + Prettier 설정 및 포맷 통일
-- [ ] shadcn/ui 초기화 및 기본 컴포넌트 추가(Button, Card, Table, Badge)
-- [ ] 폴더 구조 정의 (`app/`, `components/`, `lib/`, `lib/vehicle-providers/`)
+- [x] Next.js(App Router) + TypeScript 프로젝트 생성
+- [x] Tailwind CSS 적용 확인
+- [x] ESLint + Prettier 설정 및 포맷 통일
+- [x] shadcn/ui 초기화 및 기본 컴포넌트 추가(Button, Card, Table, Badge)
+- [x] 폴더 구조 정의 (`app/`, `components/`, `lib/`, `lib/vehicle-providers/`)
 
 ### 데이터 계층
-- [ ] Supabase 프로젝트 생성 (dev)
-- [ ] 환경 변수 파일 구성 (`.env.local`, `.env.example`)
-- [ ] Prisma 설치 및 `schema.prisma` 작성
-  - [ ] `vehicles` (차량 기본정보)
-  - [ ] `vehicle_snapshots` (최신 위치·배터리·상태)
-  - [ ] `vehicle_events` (이상·경고·미운행 이벤트)
-  - [ ] `users` (관리자)
-- [ ] 최초 마이그레이션 실행 및 DB 반영 확인
+- [ ] Supabase 프로젝트 생성 (dev) — **Phase 1은 로컬 SQLite로 대체, Supabase는 Phase 4 인증·배포 시 연결**
+- [x] 환경 변수 파일 구성 (`.env`, `.env.example`)
+- [x] Prisma 설치 및 `schema.prisma` 작성
+  - [x] `vehicles` (차량 기본정보)
+  - [x] `vehicle_snapshots` (최신 위치·배터리·상태)
+  - [x] `vehicle_events` (이상·경고·미운행 이벤트)
+  - [x] `users` (관리자)
+- [x] 최초 마이그레이션 실행 및 DB 반영 확인
 
 ### Mock 데이터 (데모 안전장치, P0)
-- [ ] `VehicleDataProvider` 인터페이스 정의
-- [ ] `MockVehicleProvider` 구현 (차량 10대 이상 시뮬레이션)
-- [ ] 시드 스크립트로 샘플 데이터 주입
-- [ ] `VEHICLE_DATA_PROVIDER` 환경변수로 provider 선택 구조
+- [x] `VehicleDataProvider` 인터페이스 정의
+- [x] `MockVehicleProvider` 구현 (차량 10대 이상 시뮬레이션)
+- [x] 시드 스크립트로 샘플 데이터 주입
+- [x] `VEHICLE_DATA_PROVIDER` 환경변수로 provider 선택 구조
 
-**완료 기준**: 로컬에서 앱 실행 + DB에 Mock 차량 데이터 조회 가능
+**완료 기준**: 로컬에서 앱 실행 + DB에 Mock 차량 데이터 조회 가능 ✅
+
+### Phase 1 실행 메모
+- Next.js 16 + React 19 + TypeScript + Tailwind v4 스캐폴딩 완료
+- Prisma **6.19** + **SQLite** (`prisma/dev.db`) 로컬 개발 DB 구성 (Supabase PostgreSQL은 이후 전환)
+- Mock 차량 **12대** 시드 완료 (`pnpm db:seed`)
+- API `GET /api/vehicles` — 12대 조회 확인
+- 홈(`/`) 대시보드 프로토타입: KPI 카드 + 차량 목록 테이블 (Phase 2 본격 UI 전 단계)
+- 검증: `pnpm lint`, `pnpm build`, `pnpm dev` + API 호출 성공
 
 ---
 
@@ -170,3 +178,4 @@
 |------|------|
 | 2026-07-06 | 요구사항·기술스택 기반 개발 체크리스트 초안 작성 |
 | 2026-07-06 | Phase 0 실행 반영 — Git/Node/pnpm/브랜치 전략 점검, `.gitignore` 정리, 실행 메모 추가 |
+| 2026-07-06 | Phase 1 완료 — Next.js 스캐폴딩, Prisma+SQLite, Mock 12대, API `/api/vehicles` |
