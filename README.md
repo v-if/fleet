@@ -12,6 +12,8 @@ pnpm dev
 ```
 
 - 대시보드: http://localhost:3000
+- 차량 목록: http://localhost:3000/vehicles
+- 지도: http://localhost:3000/map
 - API: http://localhost:3000/api/vehicles
 
 ## 주요 스크립트

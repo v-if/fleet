@@ -146,18 +146,34 @@ Invoke-RestMethod http://localhost:3000/api/vehicles
 
 ## §4. 핵심 화면 (Phase 2)
 
+> **실행 완료 (2026-07-06)** — 대시보드·목록·지도·상세 화면 구현
+
 ### 4.1 TanStack Query
 ```powershell
 pnpm add @tanstack/react-query
 ```
+- `src/components/providers/query-provider.tsx` — 60초 폴링
+- `src/hooks/use-vehicles.ts` — `/api/vehicles`, `/api/vehicles/[id]`
 
 ### 4.2 Kakao Maps
-- 별도 npm 설치 없음. [Kakao Developers](https://developers.kakao.com)에서 앱 생성 → JavaScript 키 발급 → `NEXT_PUBLIC_KAKAO_MAP_KEY`에 설정
-- 지도 SDK는 스크립트 로드 방식으로 사용 (동적 `<script>` 로딩)
+- [Kakao Developers](https://developers.kakao.com)에서 앱 생성 → JavaScript 키 발급
+- `.env`에 `NEXT_PUBLIC_KAKAO_MAP_KEY` 설정
+- **키가 없으면** `SimpleMapFallback` 간이 지도로 자동 전환 (데모 가능)
 
-### 4.3 차트 (대시보드 KPI, 선택)
+### 4.3 주요 페이지
+| 경로 | 설명 |
+|------|------|
+| `/` | 대시보드 (KPI, 알림 패널, 지도, 목록) |
+| `/vehicles` | 차량 목록 (검색·필터) |
+| `/map` | 전체 지도 (마커 클릭 → 요약) |
+| `/vehicles/[id]` | 차량 상세 (상태 + 지도 + 이벤트) |
+
+### 4.4 Phase 2 검증
 ```powershell
-pnpm add recharts
+pnpm lint
+pnpm build
+pnpm dev
+Invoke-RestMethod http://localhost:3000/api/vehicles
 ```
 
 ---
@@ -250,3 +266,4 @@ vercel
 | 2026-07-06 | 단계별 설치 가이드 초안 작성 (Windows/PowerShell 기준) |
 | 2026-07-06 | Phase 0 실행 결과 반영 — Windows 권한 이슈 시 pnpm 사용자 로컬 설치 경로 추가 |
 | 2026-07-06 | Phase 1 실행 결과 반영 — 임시 폴더 스캐폴딩, Prisma 6 + SQLite, 검증 명령 추가 |
+| 2026-07-06 | Phase 2 실행 결과 반영 — TanStack Query, 페이지 경로, Kakao Maps 폴백 |
