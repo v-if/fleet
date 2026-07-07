@@ -25,7 +25,12 @@ export type TeslaFleetStatusResponse = {
   response: {
     key_paired_vins?: string[];
     unpaired_vins?: string[];
-    vehicle_info?: TeslaFleetStatusItem[];
+    vehicle_info?:
+      | TeslaFleetStatusItem[]
+      | Record<string, TeslaFleetStatusItem>
+      | {
+          vehicle_info?: TeslaFleetStatusItem[];
+        };
   };
 };
 

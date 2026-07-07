@@ -117,7 +117,9 @@ export async function syncVehiclesFromProvider(): Promise<SyncVehiclesResult> {
     }
   }
 
-  await prisma.vehicleSnapshot.deleteMany();
+  // Replace the current fleet snapshot set entirely so stale mock/Tesla vehicles
+  // do not remain visible after switching providers or completing a real sync.
+  await prisma.vehicle.deleteMany();
 
   for (const snapshot of snapshots) {
     await upsertSnapshot(snapshot);

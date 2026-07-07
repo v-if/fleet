@@ -379,6 +379,9 @@ Invoke-RestMethod `
 3. 설정 화면: `usedFallback` 없음, 412 오류 없음
 4. 대시보드에 본인 차량 실데이터 표시
 
+> 진행 상태 (2026-07-07): 로컬 기준 `POST /api/sync/vehicles` 성공, `usedFallback=false`, `provider=tesla` 확인.  
+> 추가 수정: Tesla `fleet_status` 응답이 배열이 아닐 때도 파싱되도록 보강했고, `/api/vehicles`, `/api/auth/tesla/status`는 동적 응답으로 전환해 stale mock 응답을 방지했다.
+
 **트러블슈팅 요약**
 
 | 오류 | 원인 | 해결 |
@@ -590,3 +593,4 @@ vercel
 | 2026-07-07 | Phase 3.5 추가 — Partner Register(412) 절차, PowerShell 예시 |
 | 2026-07-07 | Phase 3.6 추가 — Supabase PostgreSQL 전환 절차(§5.7), Vercel SQLite 트러블슈팅 |
 | 2026-07-07 | Phase 3.6 로컬 완료 반영 — Session pooler DIRECT_URL, P1001·setup-db.ps1 수정 |
+| 2026-07-07 | Tesla 연동 검증 반영 — `fleet_status` 파싱 오류·API 캐시 수정, `usedFallback=false` 확인 |

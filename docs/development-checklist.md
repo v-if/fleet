@@ -283,9 +283,9 @@
 
 ### 연동 검증
 - [ ] `/settings`에서 Tesla 재연결 (배포 URL 기준 OAuth)
-- [ ] `POST /api/sync/vehicles` 성공, `SyncMetadata.usedFallback=false`
-- [ ] `/settings` **최근 오류**에 412 메시지 없음
-- [ ] 대시보드에 **본인 Tesla 차량** 실데이터 표시 (Mock 12대 아님)
+- [x] `POST /api/sync/vehicles` 성공, `SyncMetadata.usedFallback=false`
+- [x] `/settings` **최근 오류**에 412 메시지 없음
+- [x] 대시보드/API에 **본인 Tesla 차량** 실데이터 표시 (Mock 12대 아님, 2026-07-07)
 - [ ] `provider: tesla` + 실제 VIN/배터리/위치 확인
 
 ### 트러블슈팅 체크
@@ -302,6 +302,8 @@
 - Phase 3 Mock 폴백으로 데모데이 일정은 보호 가능 → Register는 배포 직전 스프린트로 분리
 - **선행 조건**: Phase 3.6 **로컬 DB 완료** (2026-07-07) — Vercel API 200·Register 검증은 Vercel env·재배포 후 진행
 - **진행 상태 (2026-07-07)**: EC 키 쌍 생성, 공개키 URL 접근 확인, Partner 토큰 발급, `fleet-tau.vercel.app` 도메인 Register 및 public key 조회 확인 완료.
+- **연동 상태 (2026-07-07)**: Tesla OAuth 연결 + `POST /api/sync/vehicles` 성공, `usedFallback=false`, `provider=tesla` 확인. `fleet_status` 응답 파싱 오류(`map is not a function`)와 API 캐시 이슈 수정 완료.
+- **잔여 확인**: 현재 실차량 1대와 실제 VIN은 확인되었으나, 배터리/위치는 차량 상태에 따라 `null`/`0`으로 올 수 있어 추가 확인 필요.
 - 참고: [Partner Endpoints — register](https://developer.tesla.com/docs/fleet-api/endpoints/partner-endpoints#register)
 
 ---
@@ -442,6 +444,7 @@
 | 2026-07-07 | Phase 3.5 추가 — Tesla Partner Register(412) 체크리스트·setup/requirements 보강 |
 | 2026-07-07 | Phase 3.5 일부 진행 — EC 키 생성, `.well-known` 공개키 파일 배치 |
 | 2026-07-07 | Phase 3.5 Register 완료 — 공개키 URL 확인, Partner 토큰 발급, `partner_accounts` 등록·조회 성공 |
+| 2026-07-07 | Phase 3.5 연동 검증 진행 — Tesla sync 성공, `usedFallback=false`, `provider=tesla` 확인 |
 | 2026-07-07 | Phase 3.6 추가 — Vercel SQLite 500 분석, Supabase PostgreSQL 전환 체크리스트·requirements-db.md |
 | 2026-07-07 | Phase 3.6 코드 반영 — Prisma postgresql, 마이그레이션, build/deploy 스크립트 (Supabase 연결·배포 검증 대기) |
 | 2026-07-07 | Phase 3.6 로컬 완료 — Supabase 연결, migrate·시드, API 200 / Vercel env·재배포 대기 |

@@ -5,6 +5,8 @@ import { isTeslaConfigured } from "@/lib/tesla/config";
 import { getSyncMetadata } from "@/lib/vehicle-sync";
 import { getVehicleProviderName } from "@/lib/vehicle-providers";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const [connected, token, syncMetadata] = await Promise.all([
     isTeslaConnected(),

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { getVehicleDetail } from "@/lib/vehicles";
 
+export const dynamic = "force-dynamic";
+
 type RouteContext = {
   params: Promise<{ id: string }>;
 };

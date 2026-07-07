@@ -192,7 +192,29 @@ export class TeslaFleetClient {
       body: JSON.stringify({ vins }),
     });
 
-    return data.response?.vehicle_info ?? [];
+    const vehicleInfo = data.response?.vehicle_info;
+
+    if (Array.isArray(vehicleInfo)) {
+      return vehicleInfo;
+    }
+
+    if (
+      vehicleInfo &&
+      typeof vehicleInfo === "object" &&
+      "vehicle_info" in vehicleInfo &&
+      Array.isArray(vehicleInfo.vehicle_info)
+    ) {
+      return vehicleInfo.vehicle_info;
+    }
+
+    if (vehicleInfo && typeof vehicleInfo === "object") {
+      return Object.values(vehicleInfo).filter(
+        (item): item is TeslaFleetStatusItem =>
+          Boolean(item && typeof item === "object" && "vin" in item),
+      );
+    }
+
+    return [];
   }
 
   async getVehicleData(vin: string) {
