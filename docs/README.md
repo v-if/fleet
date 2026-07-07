@@ -47,3 +47,5 @@
 | 2026-07-07 | Phase 2.1 완료 — §5.2 Mock 데이터 화면 매핑(충전·odometer·TPMS·센트리 등) |
 | 2026-07-07 | 프론트 디자인 요구사항 문서·Phase 2.2 체크리스트 추가 (Pleos UI 벤치마킹) |
 | 2026-07-07 | Phase 2.2 완료 — 지도 Hero·커스텀 마커·Tesla EV 테마·탭/위젯 UI |
+| 2026-07-07 | Phase 3 완료 — Tesla OAuth, Fleet API Provider, 동기화 API, Mock 폴백 |
+| 2026-07-07 | Tesla 리전 정정 — 한국 계정 `na` (Invalid audience 해결) |

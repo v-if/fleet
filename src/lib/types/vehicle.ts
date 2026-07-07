@@ -57,8 +57,14 @@ export type VehicleListItemDto = {
 
 export type VehiclesResponse = {
   provider: string;
+  requestedProvider?: string;
   count: number;
   lastUpdatedAt: string | null;
+  sync?: {
+    lastSyncedAt: string | null;
+    usedFallback: boolean;
+    lastError: string | null;
+  } | null;
   summary: {
     total: number;
     online: number;

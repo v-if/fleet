@@ -2,6 +2,8 @@ import type { VehicleSnapshot } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { isIdleVehicle } from "@/lib/vehicle-status";
+import { getSyncMetadata } from "@/lib/vehicle-sync";
+import { getVehicleProviderName } from "@/lib/vehicle-providers";
 import type { NearbyChargingSiteDto } from "@/lib/types/vehicle";
 import type {
   VehicleDetailDto,
@@ -108,10 +110,24 @@ export async function getVehiclesResponse(): Promise<VehiclesResponse> {
           .at(-1) ?? null
       : null;
 
+  const syncMetadata = await getSyncMetadata();
+  const requestedProvider = getVehicleProviderName();
+  const effectiveProvider = syncMetadata?.usedFallback
+    ? "mock"
+    : (syncMetadata?.provider ?? requestedProvider);
+
   return {
-    provider: process.env.VEHICLE_DATA_PROVIDER ?? "mock",
+    provider: effectiveProvider,
+    requestedProvider,
     count: items.length,
     lastUpdatedAt,
+    sync: syncMetadata
+      ? {
+          lastSyncedAt: syncMetadata.lastSyncedAt?.toISOString() ?? null,
+          usedFallback: syncMetadata.usedFallback,
+          lastError: syncMetadata.lastError,
+        }
+      : null,
     summary: {
       total: items.length,
       online: snapshots.filter((snapshot) => snapshot.status === "ONLINE").length,

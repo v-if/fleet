@@ -5,12 +5,23 @@ import { useState } from "react";
 import { VehicleMap } from "@/components/fleet/vehicle-map";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useVehicles } from "@/hooks/use-vehicles";
+import { useVehicles, useVehicleRefresh } from "@/hooks/use-vehicles";
 import { toMapVehicles } from "@/lib/map-utils";
 
 export function MapView() {
-  const { data, isLoading, isError, error, refetch, isFetching } = useVehicles();
+  const { data, isLoading, isError, error, isFetching } = useVehicles();
+  const refreshVehicles = useVehicleRefresh();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  async function handleRefresh() {
+    setIsRefreshing(true);
+    try {
+      await refreshVehicles();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -47,8 +58,8 @@ export function MapView() {
         countBadge={`${mapVehicles.length}대`}
         provider={data.provider}
         lastUpdatedAt={data.lastUpdatedAt}
-        onRefresh={() => refetch()}
-        isRefreshing={isFetching}
+        onRefresh={() => void handleRefresh()}
+        isRefreshing={isRefreshing || isFetching}
       />
       <div className="flex flex-1 flex-col gap-6 p-6">
         <Card className="overflow-hidden shadow-lg">

@@ -218,21 +218,31 @@
 > 근거: [requirements-tesla-api.md](./requirements-tesla-api.md) (조회/제어 기능·스코프·비용 제약)
 
 ### 테슬라 Fleet API (P0~P1)
-- [ ] Tesla 개발자 앱 등록 / OAuth 클라이언트 발급
-- [ ] 스코프 요청: `openid`·`offline_access`·`vehicle_device_data`·`vehicle_location`
-- [ ] `TeslaVehicleProvider` 구현 (OAuth 인증 흐름)
-- [ ] 토큰 저장·갱신 처리 (refresh token)
-- [ ] `GET /api/1/vehicles` 목록 + `vehicle_data`(location_data 포함) 조회
-- [ ] 조회 P0 매핑: 상태·배터리·주행가능거리·위치·충전상태 → 내부 스냅샷 모델 (Phase 2.1 Mock 표시를 실 데이터로 대체)
-- [ ] 조회 P1 매핑: `recent_alerts`·odometer·잠금/개폐 (Phase 2.1 Mock 표시를 실 데이터로 대체)
+- [x] Tesla 개발자 앱 등록 / OAuth 클라이언트 발급 (사용자 포털 등록)
+- [x] 스코프 요청: `openid`·`offline_access`·`vehicle_device_data`·`vehicle_location`
+- [x] `TeslaVehicleProvider` 구현 (OAuth 인증 흐름)
+- [x] 토큰 저장·갱신 처리 (refresh token)
+- [x] `GET /api/1/vehicles` 목록 + `vehicle_data`(location_data 포함) 조회
+- [x] 조회 P0 매핑: 상태·배터리·주행가능거리·위치·충전상태 → 내부 스냅샷 모델 (Phase 2.1 Mock 표시를 실 데이터로 대체)
+- [x] 조회 P1 매핑: `recent_alerts`·odometer·잠금/개폐 (Phase 2.1 Mock 표시를 실 데이터로 대체)
 
 ### 동기화
-- [ ] 데이터 동기화 로직 (Provider → DB upsert)
-- [ ] Vercel Cron 또는 API 라우트 기반 주기 폴링(1~5분, 비용 고려)
-- [ ] `fleet_status`로 펌웨어·프로토콜·할인 자격 사전 확인
-- [ ] `mock` ↔ `tesla` 환경변수 전환 검증 (30초 내 전환)
+- [x] 데이터 동기화 로직 (Provider → DB upsert)
+- [x] Vercel Cron 또는 API 라우트 기반 주기 폴링(1~5분, 비용 고려)
+- [x] `fleet_status`로 펌웨어·프로토콜·할인 자격 사전 확인
+- [x] `mock` ↔ `tesla` 환경변수 전환 검증 (30초 내 전환)
 
-**완료 기준**: 실제 테슬라 데이터(또는 실패 시 Mock 폴백)로 대시보드 갱신
+**완료 기준**: 실제 테슬라 데이터(또는 실패 시 Mock 폴백)로 대시보드 갱신 ✅
+
+### Phase 3 실행 메모
+- Tesla OAuth: `/api/auth/tesla` → callback `/api/auth/tesla/callback` → 설정 화면 `/settings`
+- 토큰 저장: `TeslaOAuthToken` (SQLite), refresh token rotation 지원
+- Provider: `src/lib/vehicle-providers/tesla-provider.ts` + `src/lib/tesla/*`
+- 동기화: `syncVehiclesFromProvider()` → `POST /api/sync/vehicles`, `GET /api/vehicles?refresh=1`
+- 자동 폴링: `TESLA_SYNC_POLL_INTERVAL_MINUTES`(기본 3분), API 조회 시 stale이면 sync
+- Mock 폴백: `VEHICLE_DATA_PROVIDER=tesla` + 연동 실패 시 Mock으로 자동 전환, `SyncMetadata.usedFallback` 기록
+- 리전: `TESLA_FLEET_API_REGION=na` (한국·아시아태평양·북미, OAuth audience)
+- OAuth 연동 검증: `na` 리전으로 계정 연결 완료 (2026-07-07)
 
 ---
 
@@ -303,3 +313,5 @@
 | 2026-07-07 | Phase 2.1 완료 — §5.2 Mock 데이터 화면 매핑(충전·odometer·TPMS·센트리 등) |
 | 2026-07-07 | Phase 2.2 추가 — Pleos Fleet UI 벤치마킹 기반 프론트 디자인 개선 체크리스트 |
 | 2026-07-07 | Phase 2.2 완료 — 지도 Hero, 커스텀 마커, PageHeader/Breadcrumb, 위젯·탭·TPMS·배터리 게이지 |
+| 2026-07-07 | Phase 3 완료 — Tesla OAuth, TeslaVehicleProvider, 토큰 갱신, 동기화 API, Mock 폴백 |
+| 2026-07-07 | Tesla 리전 수정 — 한국은 `na`(NA+APAC), `ap` audience 오류 문서·코드 반영 |

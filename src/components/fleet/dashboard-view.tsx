@@ -9,12 +9,23 @@ import { KpiCards } from "@/components/fleet/kpi-cards";
 import { VehicleMap } from "@/components/fleet/vehicle-map";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useVehicles } from "@/hooks/use-vehicles";
+import { useVehicles, useVehicleRefresh } from "@/hooks/use-vehicles";
 import { toMapVehicles } from "@/lib/map-utils";
 
 export function DashboardView() {
-  const { data, isLoading, isError, error, refetch, isFetching } = useVehicles();
+  const { data, isLoading, isError, error, isFetching } = useVehicles();
+  const refreshVehicles = useVehicleRefresh();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  async function handleRefresh() {
+    setIsRefreshing(true);
+    try {
+      await refreshVehicles();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
 
   if (isLoading) {
     return <LoadingState />;
@@ -34,8 +45,8 @@ export function DashboardView() {
         description="전체 차량 현황을 지도 중심으로 한눈에 확인합니다."
         provider={data.provider}
         lastUpdatedAt={data.lastUpdatedAt}
-        onRefresh={() => refetch()}
-        isRefreshing={isFetching}
+        onRefresh={() => void handleRefresh()}
+        isRefreshing={isRefreshing || isFetching}
       />
       <div className="flex flex-1 flex-col gap-5 p-6">
         <KpiCards summary={data.summary} />

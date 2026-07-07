@@ -233,21 +233,70 @@ pnpm dev
 
 ## §5. 데이터 연동 (Phase 3)
 
-이 단계에서는 **새 패키지보다 외부 서비스 설정**이 핵심이다.
+이 단계에서는 **Tesla Fleet API OAuth**와 **Provider 동기화**가 핵심이다.
 
-### 5.1 테슬라 Fleet API
-- Tesla 개발자 포털에서 애플리케이션 등록 → OAuth 클라이언트 발급
-- 등록 절차·과금 조건 확인 (지연 대비 Mock 유지)
-- `.env.local`에 인증 정보 추가:
+### 5.1 테슬라 Fleet API 앱 등록
+1. [Tesla Developer](https://developer.tesla.com)에서 애플리케이션 등록
+2. 스코프: `openid`, `offline_access`, `vehicle_device_data`, `vehicle_location`
+3. URL 등록 (로컬 개발):
+   - 출처: `http://localhost:3000`
+   - 리디렉션 URI: `http://localhost:3000/api/auth/tesla/callback`
+   - 반환 URL: `http://localhost:3000/settings`
+4. `.env`에 인증 정보 추가:
+
 ```
+VEHICLE_DATA_PROVIDER=tesla
 TESLA_FLEET_API_CLIENT_ID=
 TESLA_FLEET_API_CLIENT_SECRET=
-TESLA_FLEET_API_REDIRECT_URI=
+TESLA_FLEET_API_REDIRECT_URI=http://localhost:3000/api/auth/tesla/callback
+TESLA_FLEET_API_REGION=na
+TESLA_SYNC_POLL_INTERVAL_MINUTES=3
+TESLA_SYNC_CRON_SECRET=
 ```
 
-### 5.2 HTTP/스케줄 (필요 시)
-- fetch는 기본 내장. 스케줄은 배포 후 Vercel Cron 사용 (§7)
-- 로컬 주기 실행이 필요하면 API 라우트를 수동 호출하거나 간단한 스크립트로 대체
+> **리전(`TESLA_FLEET_API_REGION`)** — OAuth `audience`와 Fleet API base URL에 사용된다.
+>
+> | 값 | 대상 | audience URL |
+> |----|------|--------------|
+> | `na` | **한국(KR)·일본·호주 등 아시아태평양(중국 제외)**, 북미 | `https://fleet-api.prd.na.vn.cloud.tesla.com` |
+> | `eu` | 유럽·중동·아프리카 | `https://fleet-api.prd.eu.vn.cloud.tesla.com` |
+> | `cn` | 중국(별도 developer.tesla.cn 앱) | `https://fleet-api.prd.cn.vn.cloud.tesla.cn` |
+>
+> 한국 계정은 **`na`** 를 사용한다. `ap` 등 비공식 URL은 `Invalid audience` 오류가 난다.
+
+### 5.2 OAuth 연결
+1. `pnpm dev` 실행 후 http://localhost:3000/settings 접속
+2. **Tesla 계정 연결** 클릭 → Tesla 로그인·동의
+3. 콜백 성공 시 자동 동기화 후 대시보드에서 실데이터 확인
+
+**트러블슈팅 — `Invalid audience`**
+- 원인: `TESLA_FLEET_API_REGION`이 Tesla 공식 리전과 불일치 (예: 잘못된 `ap`)
+- 해결: 한국 계정은 `TESLA_FLEET_API_REGION=na` 로 설정 후 dev 서버 재시작
+
+수동 동기화:
+```powershell
+Invoke-RestMethod -Method POST http://localhost:3000/api/sync/vehicles
+```
+
+### 5.3 Provider 전환·폴백
+| `VEHICLE_DATA_PROVIDER` | 동작 |
+|-------------------------|------|
+| `mock` | Mock 12대 데이터 |
+| `tesla` | OAuth 연결 후 Fleet API 조회, 실패 시 Mock 자동 폴백 |
+
+전환 후 서버 재시작 → `pnpm db:seed` 또는 설정 화면에서 **지금 동기화**.
+
+### 5.4 주기 폴링
+- 로컬: `GET /api/vehicles` 호출 시 `TESLA_SYNC_POLL_INTERVAL_MINUTES`(기본 3분) 경과하면 자동 sync
+- 배포(Vercel Cron 예시): `POST /api/sync/vehicles` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET`
+
+### 5.5 Phase 3 검증
+```powershell
+pnpm lint
+pnpm build
+pnpm dev
+# /settings → Tesla 연결 → 대시보드 새로고침
+```
 
 ---
 
@@ -324,3 +373,5 @@ vercel
 | 2026-07-06 | Phase 2 실행 결과 반영 — TanStack Query, 페이지 경로, Kakao Maps 폴백 |
 | 2026-07-07 | Phase 2.1 실행 결과 반영 — §5.2 Mock 데이터 화면 매핑, 스키마 확장 |
 | 2026-07-07 | Phase 2.2 실행 결과 반영 — 지도 Hero, 커스텀 마커, PageHeader, 탭·위젯 |
+| 2026-07-07 | Phase 3 실행 결과 반영 — Tesla OAuth, 동기화 API, 설정 화면 |
+| 2026-07-07 | Tesla 리전 정정 — 한국 `na`, `Invalid audience` 트러블슈팅 추가 |

@@ -42,6 +42,26 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+model TeslaOAuthToken {
+  id           String   @id @default(cuid())
+  accountKey   String   @unique @default("default")
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  scope        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SyncMetadata {
+  id           String   @id @default("default")
+  lastSyncedAt DateTime?
+  provider     String?
+  usedFallback Boolean  @default(false)
+  lastError    String?
+  updatedAt    DateTime @updatedAt
+}
+
 model Vehicle {
   id           String   @id @default(cuid())
   plateNumber  String   @unique

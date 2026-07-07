@@ -1,12 +1,25 @@
 "use client";
 
+import { useState } from "react";
+
 import { VehicleTable } from "@/components/fleet/vehicle-table";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { useVehicles } from "@/hooks/use-vehicles";
+import { useVehicles, useVehicleRefresh } from "@/hooks/use-vehicles";
 
 export function VehiclesListView() {
-  const { data, isLoading, isError, error, refetch, isFetching } = useVehicles();
+  const { data, isLoading, isError, error, isFetching } = useVehicles();
+  const refreshVehicles = useVehicleRefresh();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  async function handleRefresh() {
+    setIsRefreshing(true);
+    try {
+      await refreshVehicles();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -53,8 +66,8 @@ export function VehiclesListView() {
         countBadge={`총 ${data.count}건`}
         provider={data.provider}
         lastUpdatedAt={data.lastUpdatedAt}
-        onRefresh={() => refetch()}
-        isRefreshing={isFetching}
+        onRefresh={() => void handleRefresh()}
+        isRefreshing={isRefreshing || isFetching}
       />
       <div className="flex flex-1 flex-col gap-6 p-6">
         <Card className="transition-shadow hover:shadow-md">

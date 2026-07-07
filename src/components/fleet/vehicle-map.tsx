@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SimpleMapFallback } from "@/components/fleet/simple-map-fallback";
 import { STATUS_LABEL } from "@/lib/vehicle-status";
@@ -51,6 +51,8 @@ declare global {
   }
 }
 
+const KAKAO_LOAD_TIMEOUT_MS = 10_000;
+
 let kakaoLoader: Promise<KakaoMaps> | null = null;
 
 function loadKakaoMaps(appKey: string) {
@@ -59,25 +61,42 @@ function loadKakaoMaps(appKey: string) {
   }
 
   if (!kakaoLoader) {
-    kakaoLoader = new Promise((resolve, reject) => {
+    kakaoLoader = new Promise<KakaoMaps>((resolve, reject) => {
+      const timeoutId = window.setTimeout(() => {
+        reject(new Error("Kakao maps load timed out"));
+      }, KAKAO_LOAD_TIMEOUT_MS);
+
       const script = document.createElement("script");
       script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false`;
       script.async = true;
       script.onload = () => {
-        window.kakao?.maps.load(() => {
+        if (!window.kakao?.maps) {
+          window.clearTimeout(timeoutId);
+          reject(new Error("Kakao maps SDK unavailable (check API key and domain)"));
+          return;
+        }
+
+        window.kakao.maps.load(() => {
+          window.clearTimeout(timeoutId);
           if (window.kakao?.maps) {
             resolve(window.kakao);
           } else {
-            reject(new Error("Kakao maps failed to load"));
+            reject(new Error("Kakao maps failed to initialize"));
           }
         });
       };
-      script.onerror = () => reject(new Error("Kakao maps script failed"));
+      script.onerror = () => {
+        window.clearTimeout(timeoutId);
+        reject(new Error("Kakao maps script failed"));
+      };
       document.head.appendChild(script);
     });
   }
 
-  return kakaoLoader;
+  return kakaoLoader.catch((error) => {
+    kakaoLoader = null;
+    throw error;
+  });
 }
 
 function markerHtml(vehicle: MapVehicle, selected: boolean) {
@@ -118,15 +137,37 @@ export function VehicleMap({
   centerOnSelected = false,
   hero = false,
 }: VehicleMapProps) {
-  const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY?.trim();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<InstanceType<KakaoMaps["maps"]["Map"]> | null>(null);
   const overlaysRef = useRef<InstanceType<KakaoMaps["maps"]["CustomOverlay"]>[]>([]);
+  const onSelectRef = useRef(onSelect);
+  const vehiclesRef = useRef(vehicles);
   const [ready, setReady] = useState(false);
+  const [useFallback, setUseFallback] = useState(false);
+
+  const vehicleSignature = useMemo(
+    () =>
+      vehicles
+        .map(
+          (vehicle) =>
+            `${vehicle.id}:${vehicle.latitude}:${vehicle.longitude}:${vehicle.status}:${vehicle.batteryPercent ?? ""}`,
+        )
+        .join("|"),
+    [vehicles],
+  );
 
   useEffect(() => {
-    if (!apiKey || !containerRef.current || vehicles.length === 0) return;
+    onSelectRef.current = onSelect;
+    vehiclesRef.current = vehicles;
+  }, [onSelect, vehicles]);
 
+  useEffect(() => {
+    if (!apiKey || vehiclesRef.current.length === 0) {
+      return;
+    }
+
+    const currentVehicles = vehiclesRef.current;
     let cancelled = false;
 
     loadKakaoMaps(apiKey)
@@ -134,7 +175,8 @@ export function VehicleMap({
         if (cancelled || !containerRef.current) return;
 
         const centerVehicle =
-          vehicles.find((vehicle) => vehicle.id === selectedId) ?? vehicles[0];
+          currentVehicles.find((vehicle) => vehicle.id === selectedId) ??
+          currentVehicles[0];
         const center = new kakao.maps.LatLng(
           centerVehicle.latitude,
           centerVehicle.longitude,
@@ -153,7 +195,7 @@ export function VehicleMap({
         overlaysRef.current.forEach((overlay) => overlay.setMap(null));
         overlaysRef.current = [];
 
-        vehicles.forEach((vehicle) => {
+        currentVehicles.forEach((vehicle) => {
           const position = new kakao.maps.LatLng(vehicle.latitude, vehicle.longitude);
           const selected = vehicle.id === selectedId;
           const content = document.createElement("div");
@@ -161,7 +203,7 @@ export function VehicleMap({
           const button = content.querySelector("button");
           button?.addEventListener("click", (event) => {
             event.preventDefault();
-            onSelect?.(vehicle.id);
+            onSelectRef.current?.(vehicle.id);
           });
 
           const overlay = new kakao.maps.CustomOverlay({
@@ -175,18 +217,23 @@ export function VehicleMap({
           overlaysRef.current.push(overlay);
         });
 
+        setUseFallback(false);
         setReady(true);
       })
-      .catch(() => {
-        setReady(false);
+      .catch((error) => {
+        console.warn("Kakao map unavailable, using fallback:", error);
+        if (!cancelled) {
+          setUseFallback(true);
+          setReady(false);
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [apiKey, centerOnSelected, hero, onSelect, selectedId, vehicles]);
+  }, [apiKey, centerOnSelected, hero, selectedId, vehicleSignature]);
 
-  if (!apiKey) {
+  if (!apiKey || useFallback) {
     return (
       <SimpleMapFallback
         vehicles={vehicles}

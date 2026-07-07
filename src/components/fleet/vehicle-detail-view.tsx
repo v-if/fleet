@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
 import { BatteryHealthGauge } from "@/components/fleet/battery-health-gauge";
 import { IssueTag } from "@/components/fleet/issue-tag";
@@ -12,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useVehicleDetail } from "@/hooks/use-vehicles";
+import { useVehicleDetail, useVehicleRefresh } from "@/hooks/use-vehicles";
 import { cn } from "@/lib/utils";
 import {
   CHARGING_STATUS_BADGE_VARIANT,
@@ -79,8 +80,18 @@ function collectIssueTags(vehicle: VehicleDetailDto): IssueTagItem[] {
 }
 
 export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
-  const { data, isLoading, isError, error, refetch, isFetching } =
-    useVehicleDetail(vehicleId);
+  const { data, isLoading, isError, error, isFetching } = useVehicleDetail(vehicleId);
+  const refreshVehicles = useVehicleRefresh();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  async function handleRefresh() {
+    setIsRefreshing(true);
+    try {
+      await refreshVehicles();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -156,8 +167,8 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
         description={`${vehicle.model} (${vehicle.year})`}
         provider={data.provider}
         lastUpdatedAt={snapshot?.lastUpdatedAt ?? null}
-        onRefresh={() => refetch()}
-        isRefreshing={isFetching}
+        onRefresh={() => void handleRefresh()}
+        isRefreshing={isRefreshing || isFetching}
         actions={
           <Button variant="outline" size="sm" disabled title="Phase 3 이후 제공">
             제어
@@ -400,7 +411,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
               {formatDateTime(snapshot?.lastUpdatedAt ?? null)}
             </time>
           </span>
-          <RefreshButton onClick={() => refetch()} isRefreshing={isFetching} />
+          <RefreshButton onClick={() => void handleRefresh()} isRefreshing={isRefreshing || isFetching} />
         </footer>
       </div>
     </>
