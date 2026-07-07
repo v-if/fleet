@@ -1,6 +1,6 @@
 # FMS 개발 체크리스트
 
-요구사항(`requirements.md`)·기술스택(`requirements-tech-stack.md`)을 기반으로 한 단계별 개발 체크리스트다. 각 Phase는 `requirements.md` §12 마일스톤(M1~M5)과 대응한다.
+요구사항(`requirements.md`)·기술스택(`requirements-tech-stack.md`)·DB(`requirements-db.md`)을 기반으로 한 단계별 개발 체크리스트다. 각 Phase는 `requirements.md` §12 마일스톤(M1~M5)과 대응한다.
 
 - 설치·환경 준비는 [setup-guide.md](./setup-guide.md)를 참고한다. (한 번에 모두 설치하지 않고 Phase별로 필요한 시점에 설치)
 - 우선순위 표기: **P0**(데모 필수) / **P1**(데모 강화) / **P2**(투자·확장)
@@ -40,7 +40,7 @@
 - [x] 폴더 구조 정의 (`app/`, `components/`, `lib/`, `lib/vehicle-providers/`)
 
 ### 데이터 계층
-- [ ] Supabase 프로젝트 생성 (dev) — **Phase 1은 로컬 SQLite로 대체, Supabase는 Phase 4 인증·배포 시 연결**
+- [x] Supabase 프로젝트 생성 (dev) — **Phase 3.6에서 생성·연결 완료 (로컬)**
 - [x] 환경 변수 파일 구성 (`.env`, `.env.example`)
 - [x] Prisma 설치 및 `schema.prisma` 작성
   - [x] `vehicles` (차량 기본정보)
@@ -59,7 +59,7 @@
 
 ### Phase 1 실행 메모
 - Next.js 16 + React 19 + TypeScript + Tailwind v4 스캐폴딩 완료
-- Prisma **6.19** + **SQLite** (`prisma/dev.db`) 로컬 개발 DB 구성 (Supabase PostgreSQL은 이후 전환)
+- Prisma **6.19** + **Supabase PostgreSQL** (Phase 3.6 로컬 연결 완료, 2026-07-07)
 - Mock 차량 **12대** 시드 완료 (`pnpm db:seed`)
 - API `GET /api/vehicles` — 12대 조회 확인
 - 홈(`/`) 대시보드 프로토타입: KPI 카드 + 차량 목록 테이블 (Phase 2 본격 UI 전 단계)
@@ -237,7 +237,7 @@
 
 ### Phase 3 실행 메모
 - Tesla OAuth: `/api/auth/tesla` → callback `/api/auth/tesla/callback` → 설정 화면 `/settings`
-- 토큰 저장: `TeslaOAuthToken` (SQLite), refresh token rotation 지원
+- 토큰 저장: `TeslaOAuthToken` (Supabase PostgreSQL), refresh token rotation 지원
 - Provider: `src/lib/vehicle-providers/tesla-provider.ts` + `src/lib/tesla/*`
 - 동기화: `syncVehiclesFromProvider()` → `POST /api/sync/vehicles`, `GET /api/vehicles?refresh=1`
 - 자동 폴링: `TESLA_SYNC_POLL_INTERVAL_MINUTES`(기본 3분), API 조회 시 stale이면 sync
@@ -256,7 +256,7 @@
 > **배경**: Phase 3 OAuth는 사용자(Third-party) 토큰만 발급한다. Fleet API **데이터 조회**(`GET /api/1/vehicles` 등)는 앱이 해당 리전에 **Partner Register** 되어 있어야 한다. 미등록 시 `412` + `must be registered in the current region` 오류가 발생한다.
 
 ### 사전 조건 (인프라)
-- [ ] **공개 HTTPS 도메인** 확보 (Vercel 배포 URL, ngrok 등) — `localhost`만으로는 register 불가
+- [x] **공개 HTTPS 도메인** 확보 — `fleet-tau.vercel.app` (Vercel 배포, UI 로드 확인)
 - [ ] Tesla 포털 `allowed_origins`에 배포 도메인 등록
 - [ ] OAuth `redirect_uri`를 배포 URL로 추가 (로컬 URI와 병행 가능)
 - [ ] EC 키 쌍 생성 (secp256r1 / prime256v1)
@@ -288,7 +288,7 @@
 - [ ] `provider: tesla` + 실제 VIN/배터리/위치 확인
 
 ### 트러블슈팅 체크
-- [ ] `Invalid audience` → `TESLA_FLEET_API_REGION=na` (한국)
+- [x] `Invalid audience` → `TESLA_FLEET_API_REGION=na` (한국) — Phase 3에서 해결
 - [ ] `412 must be registered` → Partner Register 미완료 (본 Phase)
 - [ ] `403 missing scopes` → 포털 스코프·앱 재연결(`prompt=consent`)
 - [ ] Partner 토큰 vs Third-party 토큰 혼동 금지 — register는 **client_credentials** 토큰 사용
@@ -299,7 +299,71 @@
 - OAuth 연결됨 ≠ Fleet API 사용 가능 — Register는 **앱(파트너)** 단위 1회(리전별)
 - Register에 **공개 도메인 + 공개키 호스팅** 필수, 로컬만으로는 실데이터 연동 불가
 - Phase 3 Mock 폴백으로 데모데이 일정은 보호 가능 → Register는 배포 직전 스프린트로 분리
+- **선행 조건**: Phase 3.6 **로컬 DB 완료** (2026-07-07) — Vercel API 200·Register 검증은 Vercel env·재배포 후 진행
 - 참고: [Partner Endpoints — register](https://developer.tesla.com/docs/fleet-api/endpoints/partner-endpoints#register)
+
+---
+
+## Phase 3.6. Supabase PostgreSQL (M3.6)
+
+> 설치: [setup-guide.md](./setup-guide.md) §5.7
+> 근거: [requirements-db.md](./requirements-db.md) (Vercel 배포 오류 분석·DB 전환 요구사항)
+>
+> **배경**: Vercel 배포(`https://fleet-tau.vercel.app`)에서 UI는 로드되나 `GET /api/vehicles`가 **HTTP 500** → "차량 목록을 불러오지 못했습니다." SQLite(`file:./dev.db`)는 서버리스 환경에서 사용 불가. Phase 3 Tesla OAuth·동기화 **배포 테스트**를 위해 클라우드 DB 전환이 선행되어야 한다.
+
+### 사전 조건
+- [x] Vercel 배포 완료 (페이지 로드 확인) — `fleet-tau.vercel.app` 등
+- [x] [requirements-db.md §3](./requirements-db.md) 오류 원인 이해 (SQLite ≠ Vercel)
+
+### Supabase 프로젝트
+- [x] Supabase **dev** 프로젝트 생성 (Free tier)
+- [x] Connection String 확보
+  - [x] **Transaction pooler** URL (Vercel serverless용, 포트 6543)
+  - [x] **Session pooler** URL (Prisma migrate용, 포트 5432 — Direct `db.xxx` 차단 시)
+- [x] 비밀번호 URL 인코딩 (`@` → `%40`) 적용
+
+### Prisma 전환
+- [x] `schema.prisma` `provider`를 `postgresql`로 변경
+- [x] `directUrl` 환경 변수 설정 (pooler 사용 시)
+- [x] PostgreSQL 마이그레이션 파일 생성 (`20260707143000_init_postgresql`)
+- [x] PostgreSQL에 마이그레이션 적용 (`pnpm db:setup` 성공, 2026-07-07)
+- [x] SQLite→PostgreSQL 호환 점검 (enum, JSON 필드 등 — [requirements-db.md §4.4](./requirements-db.md))
+
+### 환경 변수
+- [x] 로컬 `.env`: `DATABASE_URL`·`DIRECT_URL` Supabase URL 설정
+- [ ] Vercel Environment Variables 등록
+  - [ ] `DATABASE_URL` (pooler)
+  - [ ] `DIRECT_URL` (Session pooler, migrate·빌드 시)
+  - [ ] 기존 `VEHICLE_DATA_PROVIDER`, `TESLA_*`, `NEXT_PUBLIC_KAKAO_MAP_KEY` 유지
+- [ ] Vercel 재배포 (`build` 스크립트에 `prisma migrate deploy` 포함됨)
+
+### 데이터 초기화·검증
+- [x] `pnpm db:setup`으로 dev DB에 Mock 12대 주입
+- [x] 로컬: `GET /api/vehicles` → **200**
+- [ ] 배포: `https://fleet-tau.vercel.app/api/vehicles` → **200** + JSON (현재 500 — Vercel env 미설정)
+- [ ] 배포 대시보드: KPI·지도·차량 목록 정상 표시
+
+### Tesla 배포 테스트 (Phase 3 + 3.6 연계)
+- [ ] `/settings` Tesla OAuth (배포 redirect URI)
+- [ ] OAuth 토큰이 PostgreSQL `tesla_oauth_tokens`에 저장됨
+- [ ] `POST /api/sync/vehicles` API 200 (412는 Phase 3.5에서 해결)
+
+### Out of Scope (Phase 4로 유지)
+- [ ] Supabase Auth (관리자 로그인) — Phase 4
+- [ ] RLS 정책 — Phase 4~5
+
+**완료 기준**: Vercel 프로덕션에서 `/api/vehicles` 200 + 대시보드 데이터 표시 + (Tesla 시) 토큰·스냅샷 DB 저장 가능  
+> **진행 상태 (2026-07-07)**: **로컬 완료** ✅ — Vercel env·재배포 후 프로덕션 검증 남음
+
+### Phase 3.6 실행 메모
+- Phase 3.6은 **DB만** 전환한다. 인증(Supabase Auth)은 Phase 4.
+- Phase 3.5(Register)보다 **먼저** 진행 — Register·OAuth 배포 테스트 모두 API→DB 경로 필요
+- 초기 MVP: Supabase dev 프로젝트 1개를 로컬·Vercel이 공유 가능
+- `DATABASE_URL=file:./dev.db`를 Vercel에 설정해도 **해결되지 않음**
+- **코드 반영 (2026-07-07)**: `schema.prisma` postgresql, `directUrl`, 마이그레이션 `init_postgresql`, `build`에 `prisma migrate deploy`, `pnpm db:setup` 스크립트
+- **로컬 완료 (2026-07-07)**: Supabase dev 연결, migrate·시드 12대, `localhost/api/vehicles` 200
+- **P1001 해결**: Direct `db.xxx:5432` 차단 시 `DIRECT_URL`을 **Session pooler**(pooler 호스트:5432)로 변경
+- **남은 작업**: Vercel에 `DATABASE_URL`·`DIRECT_URL` 등록 → 재배포 → 배포 API·대시보드 검증
 
 ---
 
@@ -336,9 +400,10 @@
 
 > 설치: [setup-guide.md](./setup-guide.md) §7
 
-- [ ] Vercel 프로젝트 연결 및 환경변수 등록
-- [ ] Supabase production 설정
-- [ ] production 배포 및 도메인 확인
+- [x] Vercel 프로젝트 연결 및 GitHub 자동 배포 (`fleet-tau.vercel.app`)
+- [ ] Vercel 환경변수 완비 (Phase 3.6 `DATABASE_URL` 등 — [requirements-db.md](./requirements-db.md))
+- [ ] Supabase production 설정 (dev → production 프로젝트 분리)
+- [ ] production 배포 및 도메인 확인 (API 200·대시보드 데이터 표시)
 - [ ] 배포 환경 데모 시나리오 최종 점검
 - [ ] 데모데이 시연 및 피드백 수집
 
@@ -373,3 +438,6 @@
 | 2026-07-07 | Phase 3 완료 — Tesla OAuth, TeslaVehicleProvider, 토큰 갱신, 동기화 API, Mock 폴백 |
 | 2026-07-07 | Tesla 리전 수정 — 한국은 `na`(NA+APAC), `ap` audience 오류 문서·코드 반영 |
 | 2026-07-07 | Phase 3.5 추가 — Tesla Partner Register(412) 체크리스트·setup/requirements 보강 |
+| 2026-07-07 | Phase 3.6 추가 — Vercel SQLite 500 분석, Supabase PostgreSQL 전환 체크리스트·requirements-db.md |
+| 2026-07-07 | Phase 3.6 코드 반영 — Prisma postgresql, 마이그레이션, build/deploy 스크립트 (Supabase 연결·배포 검증 대기) |
+| 2026-07-07 | Phase 3.6 로컬 완료 — Supabase 연결, migrate·시드, API 200 / Vercel env·재배포 대기 |

@@ -9,6 +9,7 @@
 | [requirements.md](./requirements.md) | 핵심 요구사항 (개요·범위·기능·성공기준·일정·리스크·용어) | 무엇을 만들지 정할 때 |
 | [requirements-benchmarking.md](./requirements-benchmarking.md) | UMOS ONE Pleos Fleet 벤치마킹, 기능 우선순위·화면·차별화 | 기능·화면 설계 참고할 때 |
 | [requirements-tech-stack.md](./requirements-tech-stack.md) | 기술스택 정의 (Next.js+Supabase), 아키텍처·수집전략·보안 | 어떻게 만들지 정할 때 |
+| [requirements-db.md](./requirements-db.md) | DB 전략, Vercel 배포 오류 분석, Phase 3.6 Supabase PostgreSQL 요구사항 | DB 전환·배포 DB 이슈 해결할 때 |
 | [requirements-tesla-api.md](./requirements-tesla-api.md) | 테슬라 Fleet API 조회/제어 기능 정리, FMS 화면 적용안 | 데이터 연동·제어 기능 설계할 때 |
 | [requirements-front-design.md](./requirements-front-design.md) | Pleos Fleet UI 벤치마킹, 프론트 구성·디자인 개선 요구사항 | 화면 UI/UX 개선할 때 |
 | [development-checklist.md](./development-checklist.md) | Phase별(M1~M5) 개발 체크리스트 | 개발 진행·진척 관리할 때 |
@@ -21,9 +22,10 @@
 | 제품 | PC 웹 대시보드 중심 차량 관제 MVP |
 | 타깃 차종 | 테슬라(Tesla) 1종 — 공식 Fleet API + OAuth |
 | 데이터 수집 | 테슬라 Fleet API + Mock 폴백 (Deviceless) |
-| Tesla 실데이터 | Phase 3 OAuth + **Phase 3.5 Partner Register** (`412` 해결) |
+| Tesla 실데이터 | Phase 3 OAuth + **Phase 3.6 DB** + **Phase 3.5 Partner Register** (`412` 해결) |
 | 기술 스택 | TypeScript · Next.js · Supabase(PostgreSQL) · Prisma · Vercel |
-| 로컬 DB (현재) | SQLite (`prisma/dev.db`) — Phase 1 완료, Supabase는 Phase 4 |
+| 로컬 DB (현재) | **Supabase PostgreSQL** — Phase 3.6 로컬 연결·API 200 완료 (2026-07-07) |
+| 배포 이슈 | Vercel API 500 — `DATABASE_URL`·`DIRECT_URL` Vercel 등록·재배포 필요 |
 | 지도 | Kakao Maps API |
 | 방법론 | AI-assisted Lean MVP (Agile Lite) |
 | 1차 목표 | 데모데이 시연 → 이후 투자 시 확장 |
@@ -51,3 +53,5 @@
 | 2026-07-07 | Phase 3 완료 — Tesla OAuth, Fleet API Provider, 동기화 API, Mock 폴백 |
 | 2026-07-07 | Tesla 리전 정정 — 한국 계정 `na` (Invalid audience 해결) |
 | 2026-07-07 | Phase 3.5 — Tesla Partner Register(412) 체크리스트·가이드 추가 |
+| 2026-07-07 | Phase 3.6 — requirements-db.md 추가, Prisma postgresql 전환·db:setup 스크립트 |
+| 2026-07-07 | Phase 3.6 로컬 완료 — Supabase migrate·시드·API 200 / Phase 3.5 Register·Vercel 배포 대기 |

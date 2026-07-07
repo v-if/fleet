@@ -66,7 +66,7 @@ node_modules/
 
 ## §3. 프로젝트 기반 구축 (Phase 1)
 
-> **실행 완료 (2026-07-06)** — 로컬 DB는 SQLite(`prisma/dev.db`). Supabase PostgreSQL은 Phase 4에서 전환.
+> **실행 완료 (2026-07-06)** — Phase 1은 SQLite로 시작. **Phase 3.6 (2026-07-07)** 에 Supabase PostgreSQL로 전환 (Auth는 Phase 4).
 
 ### 3.1 Next.js + TypeScript + Tailwind 생성
 
@@ -96,7 +96,7 @@ pnpm dlx shadcn@latest add button card table badge -y
 
 ### 3.4 Prisma + 로컬 DB (SQLite)
 
-Phase 1은 Supabase 없이 **SQLite**로 빠르게 시작한다. (Supabase는 Phase 4)
+Phase 1은 Supabase 없이 **SQLite**로 빠르게 시작한다. (Supabase PostgreSQL은 **Phase 3.6**, Auth는 Phase 4)
 
 ```powershell
 pnpm add @prisma/client@6 dotenv
@@ -128,7 +128,7 @@ pnpm db:seed
 pnpm add @supabase/supabase-js
 ```
 
-`src/lib/supabase/client.ts` — URL·키 미설정 시 `null` 반환 (Phase 4에서 연결).
+`src/lib/supabase/client.ts` — URL·키 미설정 시 `null` 반환 (Phase 4 Auth에서 연결).
 
 ### 3.7 Phase 1 검증
 
@@ -390,6 +390,118 @@ pnpm dev
 # /settings → Tesla 연결 → 대시보드 새로고침
 ```
 
+### 5.7 Supabase PostgreSQL (Phase 3.6)
+
+> 근거: [requirements-db.md](./requirements-db.md) — Vercel 배포 시 SQLite API 500 해결·Tesla 배포 테스트
+
+Phase 3.6은 **DB만** 전환한다. Supabase Auth는 Phase 4.
+
+**코드 상태 (2026-07-07)**: Prisma `postgresql` 전환·마이그레이션·`pnpm db:setup` 반영 완료.
+
+**로컬 실행 완료 (2026-07-07)**: Supabase dev 연결, migrate·시드(Mock 12대), `localhost/api/vehicles` 200.
+
+**남은 작업**: Vercel env·재배포 → 배포 API·대시보드 검증 → Phase 3.5 Register.
+
+#### 5.7.1 Supabase 프로젝트 생성 (처음부터)
+
+**1단계 — 계정·프로젝트**
+1. https://supabase.com 접속 → GitHub로 로그인
+2. **New project** 클릭
+3. 설정:
+   - **Name**: `fleet-dev` (임의)
+   - **Database Password**: 강한 비밀번호 생성 → **반드시 메모** (복구 불가)
+   - **Region**: `Northeast Asia (Seoul)` 권장
+4. **Create new project** → 프로비저닝 1~2분 대기
+
+**2단계 — Connection String 복사**
+1. 좌측 **Project Settings** (톱니바퀴) → **Database**
+2. **Connection string** 탭 → **URI** 선택
+3. 아래 두 가지를 각각 복사한다.
+
+| 용도 | Supabase UI에서 선택 | `.env` 변수 | 포트 |
+|------|---------------------|-------------|------|
+| 앱 런타임·Vercel | **Transaction pooler** + Mode: **Transaction** | `DATABASE_URL` | 6543 |
+| Prisma migrate | **Session pooler** (pooler 호스트, 포트 5432) — Direct 차단 시 | `DIRECT_URL` | 5432 |
+
+4. `[YOUR-PASSWORD]`를 1단계에서 만든 DB 비밀번호로 교체. 비밀번호에 `@` 등 특수문자가 있으면 URL 인코딩 (`@` → `%40`).
+
+> **P1001 연결 실패 시**: `db.xxx.supabase.co:5432`(Direct)는 일부 네트워크에서 **5432 포트가 차단**된다.  
+> 이 경우 `DIRECT_URL`도 **pooler 호스트 + 5432(Session mode)** 로 설정한다. 사용자명은 `postgres.[project-ref]`.
+
+예시 (프로젝트마다 `ref`·호스트가 다름):
+```env
+DATABASE_URL="postgresql://postgres.abcdefghijklmnop:[YOUR-PASSWORD]@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.abcdefghijklmnop:[YOUR-PASSWORD]@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres"
+```
+
+**3단계 — 로컬 `.env` 수정**
+
+기존 SQLite 줄을 **삭제 또는 주석 처리**하고 위 두 줄을 추가한다.
+```env
+# DATABASE_URL="file:./dev.db"   ← 삭제
+DATABASE_URL="postgresql://..."
+DIRECT_URL="postgresql://..."
+```
+
+**4단계 — DB 초기화 (로컬)**
+```powershell
+$env:Path = "$env:LOCALAPPDATA\pnpm;$env:Path"
+# dev 서버가 켜져 있으면 먼저 중지 (Ctrl+C)
+pnpm db:setup
+pnpm dev
+Invoke-RestMethod http://localhost:3000/api/vehicles   # 200 + JSON 확인 ✅ (2026-07-07)
+```
+
+> Vercel 배포 검증은 §5.7.3 환경 변수 등록·재배포 후 `https://fleet-tau.vercel.app/api/vehicles` 200 확인.
+
+#### 5.7.2 Prisma (코드 반영 완료)
+
+`prisma/schema.prisma`는 이미 `postgresql` + `directUrl`로 전환되어 있다.  
+마이그레이션 파일: `prisma/migrations/20260707143000_init_postgresql/`
+
+수동 migrate가 필요하면:
+```powershell
+pnpm db:deploy   # migrate deploy만
+pnpm db:seed     # 시드만
+```
+
+#### 5.7.3 Vercel 환경 변수
+
+Vercel 대시보드 → **fleet-tau** 프로젝트 → **Settings → Environment Variables**:
+
+| 변수 | Environment | 값 |
+|------|-------------|-----|
+| `DATABASE_URL` | Production, Preview | Supabase **pooler** URL (6543) |
+| `DIRECT_URL` | Production, Preview | Supabase **direct** URL (5432) |
+| `VEHICLE_DATA_PROVIDER` | Production, Preview | `mock` 또는 `tesla` |
+| `TESLA_FLEET_API_*` | Production, Preview | Phase 3와 동일 |
+| `TESLA_FLEET_API_REDIRECT_URI` | Production | `https://fleet-tau.vercel.app/api/auth/tesla/callback` |
+| `NEXT_PUBLIC_KAKAO_MAP_KEY` | Production, Preview | Kakao JS 키 (배포 도메인 등록) |
+
+1. 변수 저장 후 **Deployments → Redeploy** (최신 main)
+2. 빌드 로그에서 `prisma migrate deploy` 성공 확인
+3. 배포 후 시드 (최초 1회): 로컬에서 `pnpm db:setup`을 실행하면 **같은 Supabase DB**에 데이터가 들어간다 (로컬·Vercel이 dev DB 공유)
+
+재배포 후 확인:
+```
+https://fleet-tau.vercel.app/api/vehicles  → HTTP 200
+```
+
+> **주의**: `DATABASE_URL=file:./dev.db`를 Vercel에 넣어도 해결되지 않는다.
+
+#### 5.7.4 Phase 3.6 검증
+```powershell
+pnpm db:setup    # migrate deploy + seed
+pnpm lint
+pnpm build
+pnpm dev
+Invoke-RestMethod http://localhost:3000/api/vehicles
+# 배포 API (Vercel env 설정·재배포 후)
+# https://fleet-tau.vercel.app/api/vehicles
+```
+
+> Windows에서 `prisma generate` EPERM 오류 시 `pnpm dev`를 중지한 뒤 재시도하세요.
+
 ---
 
 ## §6. 안정화 · 테스트 (Phase 4)
@@ -441,6 +553,7 @@ vercel
 | 2.1 | (설치 없음) Prisma 스키마 확장 + Mock 시드 재실행 |
 | 2.2 | (설치 없음) UI 컴포넌트·테마·지도 Hero 개선 |
 | 3 | (설치 없음) Tesla Fleet API 등록·키 발급 |
+| 3.6 | Supabase dev 프로젝트, Prisma PostgreSQL 전환, `pnpm db:setup` ([§5.7](./setup-guide.md)) |
 | 4 | Vitest, Playwright, (Sentry) |
 | 5 | (선택) Vercel CLI / Vercel·Supabase 설정 |
 
@@ -451,7 +564,8 @@ vercel
 - `pnpm` 인식 안 됨 → PowerShell 재시작 또는 `corepack enable`, 권한 이슈면 사용자 로컬 경로(`$env:LOCALAPPDATA\pnpm\pnpm.cmd`)로 실행
 - `winget` 없음 → Microsoft Store에서 "앱 설치 관리자" 설치
 - Prisma 연결 실패 → Supabase Connection String의 `?sslmode=require`·비밀번호 확인
-- Kakao 지도 안 뜸 → 도메인(localhost) 등록 및 JS 키 확인
+- Vercel "차량 목록을 불러오지 못했습니다" → `GET /api/vehicles` 500, SQLite 미지원 — [requirements-db.md](./requirements-db.md), Phase 3.6 Supabase 전환
+- Kakao 지도 안 뜸 → 도메인(localhost·배포 URL) 등록 및 JS 키 확인
 
 ---
 
@@ -468,3 +582,5 @@ vercel
 | 2026-07-07 | Phase 3 실행 결과 반영 — Tesla OAuth, 동기화 API, 설정 화면 |
 | 2026-07-07 | Tesla 리전 정정 — 한국 `na`, `Invalid audience` 트러블슈팅 추가 |
 | 2026-07-07 | Phase 3.5 추가 — Partner Register(412) 절차, PowerShell 예시 |
+| 2026-07-07 | Phase 3.6 추가 — Supabase PostgreSQL 전환 절차(§5.7), Vercel SQLite 트러블슈팅 |
+| 2026-07-07 | Phase 3.6 로컬 완료 반영 — Session pooler DIRECT_URL, P1001·setup-db.ps1 수정 |
