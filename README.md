@@ -16,7 +16,8 @@ pnpm dev
 - 지도: http://localhost:3000/map
 - API: http://localhost:3000/api/vehicles
 
-Phase 2.1부터 대시보드·상세에 충전 상태, 주행거리, TPMS, 센트리, 공조 등 Tesla API §5.2 필드가 Mock 데이터로 표시된다.
+Phase 2.1부터 충전·TPMS·센트리 등 Tesla API §5.2 필드가 Mock으로 표시됩니다.
+Phase 2.2부터 지도 Hero·커스텀 마커·Tesla EV 테마·탭/위젯 UI가 적용됩니다.
 
 ## 주요 스크립트
 

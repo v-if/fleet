@@ -209,6 +209,28 @@ Invoke-RestMethod http://localhost:3000/api/vehicles | ConvertTo-Json -Depth 6
 
 ---
 
+## §4.6. 프론트 UI/UX 개선 (Phase 2.2)
+
+> **실행 완료 (2026-07-07)** — [requirements-front-design.md](./requirements-front-design.md) 기준 Pleos 벤치마킹 + Tesla EV 감성
+
+### 4.6.1 주요 변경
+| 영역 | 내용 |
+|------|------|
+| 테마 | 딥 사이드바 + Tesla 레드 포인트 (`globals.css`) |
+| 공통 | `PageHeader`, `Breadcrumb`, `RefreshButton` |
+| 대시보드 | 지도 Hero, 커스텀 마커, 이상/미운행/충전 위젯 |
+| 목록 | 총 N건 배지, 위치 컬럼, 페이지네이션 |
+| 상세 | 요약 헤더, 홈/이벤트 탭, TPMS 도식, 배터리 게이지 |
+
+### 4.6.2 Phase 2.2 검증
+```powershell
+pnpm lint
+pnpm build
+pnpm dev
+```
+
+---
+
 ## §5. 데이터 연동 (Phase 3)
 
 이 단계에서는 **새 패키지보다 외부 서비스 설정**이 핵심이다.
@@ -276,6 +298,7 @@ vercel
 | 1 | Next.js, Prettier, shadcn/ui, Prisma, @supabase/supabase-js |
 | 2 | @tanstack/react-query, (recharts) / Kakao 키 발급 |
 | 2.1 | (설치 없음) Prisma 스키마 확장 + Mock 시드 재실행 |
+| 2.2 | (설치 없음) UI 컴포넌트·테마·지도 Hero 개선 |
 | 3 | (설치 없음) Tesla Fleet API 등록·키 발급 |
 | 4 | Vitest, Playwright, (Sentry) |
 | 5 | (선택) Vercel CLI / Vercel·Supabase 설정 |
@@ -300,3 +323,4 @@ vercel
 | 2026-07-06 | Phase 1 실행 결과 반영 — 임시 폴더 스캐폴딩, Prisma 6 + SQLite, 검증 명령 추가 |
 | 2026-07-06 | Phase 2 실행 결과 반영 — TanStack Query, 페이지 경로, Kakao Maps 폴백 |
 | 2026-07-07 | Phase 2.1 실행 결과 반영 — §5.2 Mock 데이터 화면 매핑, 스키마 확장 |
+| 2026-07-07 | Phase 2.2 실행 결과 반영 — 지도 Hero, 커스텀 마커, PageHeader, 탭·위젯 |

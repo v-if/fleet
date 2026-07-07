@@ -91,4 +91,5 @@ export type MapVehicle = {
   longitude: number;
   batteryPercent: number | null;
   ignitionOn: boolean;
+  chargingStatus?: ChargingStatus;
 };

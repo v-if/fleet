@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 type KpiCardsProps = {
   summary: {
@@ -23,16 +24,21 @@ const items = [
 
 export function KpiCards({ summary }: KpiCardsProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
       {items.map((item) => (
-        <Card key={item.key}>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card
+          key={item.key}
+          className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <CardHeader className="pb-1">
+            <CardTitle className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
               {item.label}
             </CardTitle>
           </CardHeader>
-          <CardContent className={`text-3xl font-semibold ${item.className}`}>
-            {summary[item.key]}
+          <CardContent>
+            <p className={cn("text-3xl font-bold tabular-nums", item.className)}>
+              {summary[item.key]}
+            </p>
           </CardContent>
         </Card>
       ))}

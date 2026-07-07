@@ -4,9 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { SimpleMapFallback } from "@/components/fleet/simple-map-fallback";
-import {
-  STATUS_LABEL,
-} from "@/lib/vehicle-status";
+import { STATUS_LABEL } from "@/lib/vehicle-status";
 import type { MapVehicle } from "@/lib/types/vehicle";
 
 type VehicleMapProps = {
@@ -15,6 +13,7 @@ type VehicleMapProps = {
   onSelect?: (id: string) => void;
   height?: number;
   centerOnSelected?: boolean;
+  hero?: boolean;
 };
 
 type KakaoMaps = {
@@ -28,16 +27,17 @@ type KakaoMaps = {
       setCenter: (center: unknown) => void;
       setLevel: (level: number) => void;
     };
-    Marker: new (options: {
+    CustomOverlay: new (options: {
       map: unknown;
       position: unknown;
-      title?: string;
+      content: string | HTMLElement;
+      yAnchor?: number;
+      zIndex?: number;
     }) => {
       setMap: (map: unknown | null) => void;
-    };
-    InfoWindow: new (options: { content: string }) => {
-      open: (map: unknown, marker: unknown) => void;
-      close: () => void;
+      setPosition: (position: unknown) => void;
+      setContent: (content: string | HTMLElement) => void;
+      setZIndex: (zIndex: number) => void;
     };
     event: {
       addListener: (target: unknown, type: string, handler: () => void) => void;
@@ -80,20 +80,48 @@ function loadKakaoMaps(appKey: string) {
   return kakaoLoader;
 }
 
+function markerHtml(vehicle: MapVehicle, selected: boolean) {
+  const shortPlate = vehicle.plateNumber.replace(/\s/g, "").slice(-4);
+  const battery =
+    vehicle.batteryPercent != null ? `${Math.round(vehicle.batteryPercent)}%` : "-";
+  const ringColors: Record<MapVehicle["status"], string> = {
+    ONLINE: "#10b981",
+    OFFLINE: "#a1a1aa",
+    WARNING: "#f59e0b",
+    ALERT: "#ef4444",
+  };
+
+  return `
+    <button type="button" data-vehicle-id="${vehicle.id}" style="
+      display:flex;flex-direction:column;align-items:center;border:none;background:transparent;cursor:pointer;
+      transform:${selected ? "scale(1.1)" : "scale(1)"};transition:transform 0.2s;
+    ">
+      <div style="
+        width:${selected ? "40px" : "32px"};height:${selected ? "40px" : "32px"};
+        border-radius:9999px;border:2px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.25);
+        background:${ringColors[vehicle.status]};display:flex;align-items:center;justify-content:center;
+        color:white;font-size:10px;font-weight:700;
+      ">${shortPlate}</div>
+      <div style="
+        margin-top:4px;padding:2px 8px;border-radius:9999px;background:${selected ? "#e11d48" : "rgba(24,24,27,0.85)"};
+        color:white;font-size:10px;font-weight:600;
+      ">${battery}</div>
+    </button>
+  `;
+}
+
 export function VehicleMap({
   vehicles,
   selectedId,
   onSelect,
   height = 420,
   centerOnSelected = false,
+  hero = false,
 }: VehicleMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<InstanceType<KakaoMaps["maps"]["Map"]> | null>(null);
-  const markersRef = useRef<InstanceType<KakaoMaps["maps"]["Marker"]>[]>([]);
-  const infoWindowRef = useRef<InstanceType<KakaoMaps["maps"]["InfoWindow"]> | null>(
-    null,
-  );
+  const overlaysRef = useRef<InstanceType<KakaoMaps["maps"]["CustomOverlay"]>[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -105,7 +133,8 @@ export function VehicleMap({
       .then((kakao) => {
         if (cancelled || !containerRef.current) return;
 
-        const centerVehicle = vehicles.find((vehicle) => vehicle.id === selectedId) ?? vehicles[0];
+        const centerVehicle =
+          vehicles.find((vehicle) => vehicle.id === selectedId) ?? vehicles[0];
         const center = new kakao.maps.LatLng(
           centerVehicle.latitude,
           centerVehicle.longitude,
@@ -114,41 +143,36 @@ export function VehicleMap({
         if (!mapRef.current) {
           mapRef.current = new kakao.maps.Map(containerRef.current, {
             center,
-            level: 7,
+            level: hero ? 8 : 7,
           });
-          infoWindowRef.current = new kakao.maps.InfoWindow({ content: "" });
         } else if (centerOnSelected && selectedId) {
           mapRef.current.setCenter(center);
-          mapRef.current.setLevel(5);
+          mapRef.current.setLevel(hero ? 6 : 5);
         }
 
-        markersRef.current.forEach((marker) => marker.setMap(null));
-        markersRef.current = [];
+        overlaysRef.current.forEach((overlay) => overlay.setMap(null));
+        overlaysRef.current = [];
 
         vehicles.forEach((vehicle) => {
           const position = new kakao.maps.LatLng(vehicle.latitude, vehicle.longitude);
-          const marker = new kakao.maps.Marker({
+          const selected = vehicle.id === selectedId;
+          const content = document.createElement("div");
+          content.innerHTML = markerHtml(vehicle, selected);
+          const button = content.querySelector("button");
+          button?.addEventListener("click", (event) => {
+            event.preventDefault();
+            onSelect?.(vehicle.id);
+          });
+
+          const overlay = new kakao.maps.CustomOverlay({
             map: mapRef.current,
             position,
-            title: vehicle.plateNumber,
+            content,
+            yAnchor: 1,
+            zIndex: selected ? 10 : 1,
           });
 
-          kakao.maps.event.addListener(marker, "click", () => {
-            onSelect?.(vehicle.id);
-            infoWindowRef.current?.close();
-            infoWindowRef.current = new kakao.maps.InfoWindow({
-              content: `
-                <div style="padding:8px 10px;min-width:160px;font-size:13px;line-height:1.5">
-                  <strong>${vehicle.plateNumber}</strong><br/>
-                  ${vehicle.model}<br/>
-                  ${STATUS_LABEL[vehicle.status]} · 배터리 ${vehicle.batteryPercent != null ? `${Math.round(vehicle.batteryPercent)}%` : "-"}
-                </div>
-              `,
-            });
-            infoWindowRef.current.open(mapRef.current, marker);
-          });
-
-          markersRef.current.push(marker);
+          overlaysRef.current.push(overlay);
         });
 
         setReady(true);
@@ -160,7 +184,7 @@ export function VehicleMap({
     return () => {
       cancelled = true;
     };
-  }, [apiKey, centerOnSelected, onSelect, selectedId, vehicles]);
+  }, [apiKey, centerOnSelected, hero, onSelect, selectedId, vehicles]);
 
   if (!apiKey) {
     return (
@@ -169,6 +193,7 @@ export function VehicleMap({
         selectedId={selectedId}
         onSelect={onSelect}
         height={height}
+        hero={hero}
       />
     );
   }
@@ -177,7 +202,7 @@ export function VehicleMap({
     <div className="space-y-3">
       <div
         ref={containerRef}
-        className="overflow-hidden rounded-xl border"
+        className="overflow-hidden rounded-xl border shadow-sm"
         style={{ height }}
       />
       {!ready ? (
@@ -201,7 +226,7 @@ function SelectedVehicleLink({
   if (!vehicle) return null;
 
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className="rounded-lg border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="font-medium">{vehicle.plateNumber}</p>

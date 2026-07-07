@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -19,6 +20,7 @@ import {
   STATUS_BADGE_VARIANT,
   STATUS_LABEL,
   formatDateTime,
+  formatLocationSummary,
   formatOdometer,
 } from "@/lib/vehicle-status";
 import type { VehicleListItemDto } from "@/lib/types/vehicle";
@@ -29,6 +31,7 @@ type VehicleTableProps = {
   vehicles: VehicleListItemDto[];
   showFilters?: boolean;
   showOdometer?: boolean;
+  pageSize?: number;
 };
 
 const filterOptions: { value: StatusFilter; label: string }[] = [
@@ -45,9 +48,11 @@ export function VehicleTable({
   vehicles,
   showFilters = true,
   showOdometer = true,
+  pageSize = 10,
 }: VehicleTableProps) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
     return vehicles.filter((vehicle) => {
@@ -63,7 +68,11 @@ export function VehicleTable({
     });
   }, [query, statusFilter, vehicles]);
 
-  const colSpan = showOdometer ? 8 : 7;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paged = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const colSpan = showOdometer ? 9 : 8;
 
   return (
     <div className="space-y-4">
@@ -71,7 +80,10 @@ export function VehicleTable({
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Input
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(1);
+            }}
             placeholder="차량번호 또는 모델 검색"
             className="max-w-sm"
           />
@@ -80,7 +92,10 @@ export function VehicleTable({
               <button
                 key={option.value}
                 type="button"
-                onClick={() => setStatusFilter(option.value)}
+                onClick={() => {
+                  setStatusFilter(option.value);
+                  setPage(1);
+                }}
                 className={`rounded-full border px-3 py-1 text-sm transition-colors ${
                   statusFilter === option.value
                     ? "border-primary bg-primary text-primary-foreground"
@@ -104,28 +119,29 @@ export function VehicleTable({
             <TableHead>배터리</TableHead>
             <TableHead>주행가능</TableHead>
             {showOdometer ? <TableHead>주행거리</TableHead> : null}
+            <TableHead>위치</TableHead>
             <TableHead>최종 업데이트</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filtered.length === 0 ? (
+          {paged.length === 0 ? (
             <TableRow>
               <TableCell colSpan={colSpan} className="py-8 text-center text-muted-foreground">
                 조건에 맞는 차량이 없습니다.
               </TableCell>
             </TableRow>
           ) : (
-            filtered.map((vehicle) => {
+            paged.map((vehicle) => {
               const snapshot = vehicle.snapshot;
               const status = snapshot?.status ?? "OFFLINE";
               const chargingStatus = snapshot?.chargingStatus ?? "DISCONNECTED";
 
               return (
-                <TableRow key={vehicle.id}>
+                <TableRow key={vehicle.id} className="transition-colors hover:bg-muted/40">
                   <TableCell>
                     <Link
                       href={`/vehicles/${vehicle.id}`}
-                      className="font-medium text-primary hover:underline"
+                      className="font-semibold text-primary hover:underline"
                     >
                       {vehicle.plateNumber}
                     </Link>
@@ -135,8 +151,9 @@ export function VehicleTable({
                       </Badge>
                     ) : null}
                   </TableCell>
-                  <TableCell>
-                    {vehicle.model} ({vehicle.year})
+                  <TableCell className="text-muted-foreground">
+                    {vehicle.model}
+                    <span className="text-xs"> ({vehicle.year})</span>
                   </TableCell>
                   <TableCell>
                     <Badge variant={STATUS_BADGE_VARIANT[status]}>
@@ -148,26 +165,59 @@ export function VehicleTable({
                       {CHARGING_STATUS_LABEL[chargingStatus]}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="font-medium tabular-nums">
                     {snapshot?.batteryPercent != null
                       ? `${Math.round(snapshot.batteryPercent)}%`
                       : "-"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="tabular-nums">
                     {snapshot?.rangeKm != null
                       ? `${Math.round(snapshot.rangeKm)} km`
                       : "-"}
                   </TableCell>
                   {showOdometer ? (
-                    <TableCell>{formatOdometer(snapshot?.odometerKm ?? null)}</TableCell>
+                    <TableCell className="tabular-nums">
+                      {formatOdometer(snapshot?.odometerKm ?? null)}
+                    </TableCell>
                   ) : null}
-                  <TableCell>{formatDateTime(snapshot?.lastUpdatedAt ?? null)}</TableCell>
+                  <TableCell className="max-w-[140px] truncate text-xs text-muted-foreground">
+                    {snapshot
+                      ? formatLocationSummary(snapshot.latitude, snapshot.longitude)
+                      : "-"}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {formatDateTime(snapshot?.lastUpdatedAt ?? null)}
+                  </TableCell>
                 </TableRow>
               );
             })
           )}
         </TableBody>
       </Table>
+
+      {filtered.length > pageSize ? (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage <= 1}
+            onClick={() => setPage((value) => Math.max(1, value - 1))}
+          >
+            이전
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage >= totalPages}
+            onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+          >
+            다음
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }
