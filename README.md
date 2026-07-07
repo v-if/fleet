@@ -7,7 +7,7 @@
 ```powershell
 $env:Path = "$env:LOCALAPPDATA\pnpm;$env:Path"
 pnpm install
-pnpm db:seed    # 최초 1회
+pnpm db:seed    # 최초 1회 또는 스키마 변경 후
 pnpm dev
 ```
 
@@ -15,6 +15,8 @@ pnpm dev
 - 차량 목록: http://localhost:3000/vehicles
 - 지도: http://localhost:3000/map
 - API: http://localhost:3000/api/vehicles
+
+Phase 2.1부터 대시보드·상세에 충전 상태, 주행거리, TPMS, 센트리, 공조 등 Tesla API §5.2 필드가 Mock 데이터로 표시된다.
 
 ## 주요 스크립트
 

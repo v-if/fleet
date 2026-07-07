@@ -108,19 +108,61 @@
 
 ---
 
+## Phase 2.1. 조회 데이터 화면 매핑 (Mock)
+
+> 근거: [requirements-tesla-api.md §5.2](./requirements-tesla-api.md) 조회 데이터 → 화면 매핑
+> 범위: **실제 Fleet API 연동이 아닌 Mock 데이터**로 화면에 표시 (실 연동은 Phase 3)
+> 선행 작업: Mock provider·타입(`lib/vehicle-providers/`)·시드에 해당 필드 추가 → 화면 표시
+
+### P0 (대시보드 + 차량 상세)
+- [x] 온라인/오프라인 상태 표시 *(Phase 2 반영됨 — 확인)*
+- [x] 배터리 잔량(%) 표시 *(Phase 2 반영됨 — 확인)*
+- [x] 주행가능거리 표시 *(Phase 2 반영됨 — 확인)*
+- [x] 위치(위도/경도) 지도 표시 *(Phase 2 반영됨 — 확인)*
+- [x] 충전 상태(충전중/완료/미연결) 표시 + 대시보드 KPI "충전중" 추가
+
+### P1
+- [x] 최근 경고(alerts): 대시보드 알림 패널 + 상세 이벤트 타임라인 (Mock 이벤트)
+- [x] 주행거리(odometer): 상세(○) / 대시보드(△)
+- [x] 잠금/문/창문 상태: 차량 상세
+
+### P2 (차량 상세 중심)
+- [x] 실내/외 온도·공조 상태
+- [x] 타이어 공기압(TPMS)
+- [x] 센트리/도난 관련 상태 (대시보드 이상 △)
+- [x] 서비스(정비) 상태
+- [x] 소프트웨어 버전
+- [x] 인근 충전소 (상세 △)
+
+**완료 기준**: §5.2 표의 P0~P1 필드가 Mock 데이터로 대시보드·차량 상세에 표시됨 ✅
+
+### Phase 2.1 실행 메모
+- Prisma `VehicleSnapshot` 확장: `chargingStatus`, `odometerKm`, 잠금/개폐, 공조/TPMS, 센트리, 서비스, 펌웨어, 인근 충전소
+- Mock provider 12대 차량에 §5.2 필드 반영, Mock 이벤트 9건
+- 대시보드: KPI "충전중" 추가, 알림 패널(경고·센트리·TPMS·보안), 목록에 충전/주행거리 컬럼
+- 차량 상세: 잠금·개폐, 공조, TPMS, 정비·펌웨어, 인근 충전소, 이벤트 타임라인
+- 검증: `pnpm db:push`, `pnpm db:seed`, `pnpm lint`, `pnpm build` 성공
+
+---
+
 ## Phase 3. 데이터 연동 (M3)
 
 > 설치: [setup-guide.md](./setup-guide.md) §5
+> 근거: [requirements-tesla-api.md](./requirements-tesla-api.md) (조회/제어 기능·스코프·비용 제약)
 
 ### 테슬라 Fleet API (P0~P1)
 - [ ] Tesla 개발자 앱 등록 / OAuth 클라이언트 발급
+- [ ] 스코프 요청: `openid`·`offline_access`·`vehicle_device_data`·`vehicle_location`
 - [ ] `TeslaVehicleProvider` 구현 (OAuth 인증 흐름)
-- [ ] 토큰 저장·갱신 처리
-- [ ] 실 차량 데이터 → 내부 스냅샷 모델 매핑
+- [ ] 토큰 저장·갱신 처리 (refresh token)
+- [ ] `GET /api/1/vehicles` 목록 + `vehicle_data`(location_data 포함) 조회
+- [ ] 조회 P0 매핑: 상태·배터리·주행가능거리·위치·충전상태 → 내부 스냅샷 모델 (Phase 2.1 Mock 표시를 실 데이터로 대체)
+- [ ] 조회 P1 매핑: `recent_alerts`·odometer·잠금/개폐 (Phase 2.1 Mock 표시를 실 데이터로 대체)
 
 ### 동기화
 - [ ] 데이터 동기화 로직 (Provider → DB upsert)
-- [ ] Vercel Cron 또는 API 라우트 기반 주기 폴링(1~5분)
+- [ ] Vercel Cron 또는 API 라우트 기반 주기 폴링(1~5분, 비용 고려)
+- [ ] `fleet_status`로 펌웨어·프로토콜·할인 자격 사전 확인
 - [ ] `mock` ↔ `tesla` 환경변수 전환 검증 (30초 내 전환)
 
 **완료 기준**: 실제 테슬라 데이터(또는 실패 시 Mock 폴백)로 대시보드 갱신
@@ -174,7 +216,7 @@
 - [ ] Geofencing 관심 지역 (P1)
 - [ ] 운행 거리·시간 집계·리포트 export (P1)
 - [ ] 위험 운전 이벤트 카운트 (P1)
-- [ ] 원격 차량 제어 (P2)
+- [ ] 원격 차량 제어 (P2) — Virtual Key 서명 인프라 + `wake_up`→잠금/충전/센트리/위치핑 (스코프 `vehicle_cmds`·`vehicle_charging_cmds`, [tesla-api §5.3](./requirements-tesla-api.md))
 - [ ] 정비 이력·예약 (P2)
 - [ ] EV 배터리·타이어 예지 (P2)
 - [ ] 다차종·다역할·RBAC (P2)
@@ -189,3 +231,6 @@
 | 2026-07-06 | Phase 0 실행 반영 — Git/Node/pnpm/브랜치 전략 점검, `.gitignore` 정리, 실행 메모 추가 |
 | 2026-07-06 | Phase 1 완료 — Next.js 스캐폴딩, Prisma+SQLite, Mock 12대, API `/api/vehicles` |
 | 2026-07-06 | Phase 2 완료 — 레이아웃, TanStack Query, 목록/지도/상세 화면, Kakao Maps+폴백 |
+| 2026-07-07 | Phase 3 보강 — Fleet API 스코프·조회 P0/P1 매핑·비용 제약 반영, 제어 스프린트 근거 연결 |
+| 2026-07-07 | Phase 2.1 추가 — §5.2 조회 데이터 화면 매핑(Mock 표시) 체크리스트 |
+| 2026-07-07 | Phase 2.1 완료 — §5.2 Mock 데이터 화면 매핑(충전·odometer·TPMS·센트리 등) |

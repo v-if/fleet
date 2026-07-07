@@ -2,11 +2,22 @@ import type { VehicleSnapshot } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { isIdleVehicle } from "@/lib/vehicle-status";
+import type { NearbyChargingSiteDto } from "@/lib/types/vehicle";
 import type {
   VehicleDetailDto,
   VehicleListItemDto,
   VehiclesResponse,
 } from "@/lib/types/vehicle";
+
+function parseNearbyChargingSites(json: string | null): NearbyChargingSiteDto[] {
+  if (!json) return [];
+  try {
+    const parsed = JSON.parse(json) as NearbyChargingSiteDto[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 function serializeSnapshot(snapshot: VehicleSnapshot) {
   return {
@@ -18,6 +29,22 @@ function serializeSnapshot(snapshot: VehicleSnapshot) {
     rangeKm: snapshot.rangeKm,
     ignitionOn: snapshot.ignitionOn,
     status: snapshot.status,
+    chargingStatus: snapshot.chargingStatus,
+    odometerKm: snapshot.odometerKm,
+    locked: snapshot.locked,
+    doorsOpen: snapshot.doorsOpen,
+    windowsOpen: snapshot.windowsOpen,
+    insideTempC: snapshot.insideTempC,
+    outsideTempC: snapshot.outsideTempC,
+    climateOn: snapshot.climateOn,
+    tpmsFrontLeft: snapshot.tpmsFrontLeft,
+    tpmsFrontRight: snapshot.tpmsFrontRight,
+    tpmsRearLeft: snapshot.tpmsRearLeft,
+    tpmsRearRight: snapshot.tpmsRearRight,
+    sentryMode: snapshot.sentryMode,
+    serviceStatus: snapshot.serviceStatus,
+    softwareVersion: snapshot.softwareVersion,
+    nearbyChargingSites: parseNearbyChargingSites(snapshot.nearbyChargingSites),
     lastUpdatedAt: snapshot.lastUpdatedAt.toISOString(),
     createdAt: snapshot.createdAt.toISOString(),
   };
@@ -92,6 +119,8 @@ export async function getVehiclesResponse(): Promise<VehiclesResponse> {
       alert: snapshots.filter((snapshot) => snapshot.status === "ALERT").length,
       offline: snapshots.filter((snapshot) => snapshot.status === "OFFLINE").length,
       idle: items.filter((item) => item.isIdle).length,
+      charging: snapshots.filter((snapshot) => snapshot.chargingStatus === "CHARGING")
+        .length,
     },
     vehicles: items,
   };

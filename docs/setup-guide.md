@@ -178,6 +178,37 @@ Invoke-RestMethod http://localhost:3000/api/vehicles
 
 ---
 
+## §4.5. 조회 데이터 화면 매핑 (Phase 2.1)
+
+> **실행 완료 (2026-07-07)** — [requirements-tesla-api.md §5.2](./requirements-tesla-api.md) 기준 Mock 데이터 화면 반영
+
+### 4.5.1 스키마 확장
+`VehicleSnapshot`에 충전·주행거리·잠금/개폐·공조·TPMS·센트리·서비스·펌웨어·인근 충전소 필드 추가.
+
+```powershell
+pnpm db:push
+pnpm db:seed
+```
+
+### 4.5.2 화면 반영
+| 화면 | 추가 항목 |
+|------|-----------|
+| 대시보드 KPI | 충전중 |
+| 대시보드 알림 | 경고·센트리·TPMS·보안 이상 |
+| 차량 목록 | 충전 상태, 주행거리(odometer) |
+| 차량 상세 | 잠금/개폐, 공조, TPMS, 정비·펌웨어, 인근 충전소, 이벤트 |
+
+### 4.5.3 Phase 2.1 검증
+```powershell
+pnpm lint
+pnpm build
+pnpm db:seed
+pnpm dev
+Invoke-RestMethod http://localhost:3000/api/vehicles | ConvertTo-Json -Depth 6
+```
+
+---
+
 ## §5. 데이터 연동 (Phase 3)
 
 이 단계에서는 **새 패키지보다 외부 서비스 설정**이 핵심이다.
@@ -244,6 +275,7 @@ vercel
 | 0 | Git, Node.js, pnpm |
 | 1 | Next.js, Prettier, shadcn/ui, Prisma, @supabase/supabase-js |
 | 2 | @tanstack/react-query, (recharts) / Kakao 키 발급 |
+| 2.1 | (설치 없음) Prisma 스키마 확장 + Mock 시드 재실행 |
 | 3 | (설치 없음) Tesla Fleet API 등록·키 발급 |
 | 4 | Vitest, Playwright, (Sentry) |
 | 5 | (선택) Vercel CLI / Vercel·Supabase 설정 |
@@ -267,3 +299,4 @@ vercel
 | 2026-07-06 | Phase 0 실행 결과 반영 — Windows 권한 이슈 시 pnpm 사용자 로컬 설치 경로 추가 |
 | 2026-07-06 | Phase 1 실행 결과 반영 — 임시 폴더 스캐폴딩, Prisma 6 + SQLite, 검증 명령 추가 |
 | 2026-07-06 | Phase 2 실행 결과 반영 — TanStack Query, 페이지 경로, Kakao Maps 폴백 |
+| 2026-07-07 | Phase 2.1 실행 결과 반영 — §5.2 Mock 데이터 화면 매핑, 스키마 확장 |

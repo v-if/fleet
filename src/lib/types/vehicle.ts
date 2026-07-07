@@ -1,4 +1,9 @@
-import type { EventType, VehicleStatus } from "@prisma/client";
+import type { ChargingStatus, EventType, ServiceStatus, VehicleStatus } from "@prisma/client";
+
+export type NearbyChargingSiteDto = {
+  name: string;
+  distanceKm: number;
+};
 
 export type VehicleSnapshotDto = {
   id: string;
@@ -9,6 +14,22 @@ export type VehicleSnapshotDto = {
   rangeKm: number | null;
   ignitionOn: boolean;
   status: VehicleStatus;
+  chargingStatus: ChargingStatus;
+  odometerKm: number | null;
+  locked: boolean;
+  doorsOpen: boolean;
+  windowsOpen: boolean;
+  insideTempC: number | null;
+  outsideTempC: number | null;
+  climateOn: boolean;
+  tpmsFrontLeft: number | null;
+  tpmsFrontRight: number | null;
+  tpmsRearLeft: number | null;
+  tpmsRearRight: number | null;
+  sentryMode: boolean;
+  serviceStatus: ServiceStatus;
+  softwareVersion: string | null;
+  nearbyChargingSites: NearbyChargingSiteDto[];
   lastUpdatedAt: string;
   createdAt: string;
 };
@@ -45,6 +66,7 @@ export type VehiclesResponse = {
     alert: number;
     offline: number;
     idle: number;
+    charging: number;
   };
   vehicles: VehicleListItemDto[];
 };

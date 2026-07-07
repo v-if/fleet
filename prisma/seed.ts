@@ -8,6 +8,9 @@ async function main() {
   const provider = createVehicleProvider();
   const vehicles = await provider.fetchVehicles();
 
+  await prisma.vehicleEvent.deleteMany();
+  await prisma.vehicleSnapshot.deleteMany();
+
   for (const snapshot of vehicles) {
     const vehicle = await prisma.vehicle.upsert({
       where: { plateNumber: snapshot.plateNumber },
@@ -33,6 +36,24 @@ async function main() {
         rangeKm: snapshot.rangeKm,
         ignitionOn: snapshot.ignitionOn,
         status: snapshot.status,
+        chargingStatus: snapshot.chargingStatus,
+        odometerKm: snapshot.odometerKm,
+        locked: snapshot.locked,
+        doorsOpen: snapshot.doorsOpen,
+        windowsOpen: snapshot.windowsOpen,
+        insideTempC: snapshot.insideTempC,
+        outsideTempC: snapshot.outsideTempC,
+        climateOn: snapshot.climateOn,
+        tpmsFrontLeft: snapshot.tpmsFrontLeft,
+        tpmsFrontRight: snapshot.tpmsFrontRight,
+        tpmsRearLeft: snapshot.tpmsRearLeft,
+        tpmsRearRight: snapshot.tpmsRearRight,
+        sentryMode: snapshot.sentryMode,
+        serviceStatus: snapshot.serviceStatus,
+        softwareVersion: snapshot.softwareVersion,
+        nearbyChargingSites: snapshot.nearbyChargingSites
+          ? JSON.stringify(snapshot.nearbyChargingSites)
+          : null,
         lastUpdatedAt: snapshot.lastUpdatedAt,
       },
     });

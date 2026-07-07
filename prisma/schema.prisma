@@ -14,6 +14,19 @@ enum VehicleStatus {
   ALERT
 }
 
+enum ChargingStatus {
+  CHARGING
+  COMPLETE
+  DISCONNECTED
+  STOPPED
+}
+
+enum ServiceStatus {
+  OK
+  DUE_SOON
+  IN_SERVICE
+}
+
 enum EventType {
   ALERT
   WARNING
@@ -43,17 +56,33 @@ model Vehicle {
 }
 
 model VehicleSnapshot {
-  id             String        @id @default(cuid())
+  id             String          @id @default(cuid())
   vehicleId      String
-  vehicle        Vehicle       @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   latitude       Float
   longitude      Float
   batteryPercent Float?
   rangeKm        Float?
-  ignitionOn     Boolean       @default(false)
-  status         VehicleStatus @default(OFFLINE)
-  lastUpdatedAt  DateTime      @default(now())
-  createdAt      DateTime      @default(now())
+  ignitionOn     Boolean         @default(false)
+  status         VehicleStatus   @default(OFFLINE)
+  chargingStatus ChargingStatus  @default(DISCONNECTED)
+  odometerKm     Float?
+  locked         Boolean         @default(true)
+  doorsOpen      Boolean         @default(false)
+  windowsOpen    Boolean         @default(false)
+  insideTempC    Float?
+  outsideTempC   Float?
+  climateOn      Boolean         @default(false)
+  tpmsFrontLeft  Float?
+  tpmsFrontRight Float?
+  tpmsRearLeft   Float?
+  tpmsRearRight  Float?
+  sentryMode     Boolean         @default(false)
+  serviceStatus  ServiceStatus   @default(OK)
+  softwareVersion String?
+  nearbyChargingSites String?
+  lastUpdatedAt  DateTime        @default(now())
+  createdAt      DateTime        @default(now())
 
   @@index([vehicleId])
   @@index([lastUpdatedAt])

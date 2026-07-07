@@ -9,6 +9,7 @@
 | [requirements.md](./requirements.md) | 핵심 요구사항 (개요·범위·기능·성공기준·일정·리스크·용어) | 무엇을 만들지 정할 때 |
 | [requirements-benchmarking.md](./requirements-benchmarking.md) | UMOS ONE Pleos Fleet 벤치마킹, 기능 우선순위·화면·차별화 | 기능·화면 설계 참고할 때 |
 | [requirements-tech-stack.md](./requirements-tech-stack.md) | 기술스택 정의 (Next.js+Supabase), 아키텍처·수집전략·보안 | 어떻게 만들지 정할 때 |
+| [requirements-tesla-api.md](./requirements-tesla-api.md) | 테슬라 Fleet API 조회/제어 기능 정리, FMS 화면 적용안 | 데이터 연동·제어 기능 설계할 때 |
 | [development-checklist.md](./development-checklist.md) | Phase별(M1~M5) 개발 체크리스트 | 개발 진행·진척 관리할 때 |
 | [setup-guide.md](./setup-guide.md) | 단계별 설치 가이드 (Windows/PowerShell) | 도구를 Phase별로 설치할 때 |
 
@@ -37,3 +38,6 @@
 | 2026-07-06 | 개발 체크리스트·설치 가이드 문서 추가 |
 | 2026-07-06 | Phase 1 완료 — 앱 스캐폴딩, Prisma+SQLite, Mock API 반영 |
 | 2026-07-06 | Phase 2 완료 — 대시보드/목록/지도/상세 UI, TanStack Query |
+| 2026-07-07 | 테슬라 Fleet API 요구사항 문서 추가 (조회/제어 기능·FMS 적용안) |
+| 2026-07-07 | 체크리스트에 Phase 2.1(§5.2 조회 데이터 화면 매핑, Mock 표시) 추가 |
+| 2026-07-07 | Phase 2.1 완료 — §5.2 Mock 데이터 화면 매핑(충전·odometer·TPMS·센트리 등) |

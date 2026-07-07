@@ -14,29 +14,38 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  CHARGING_STATUS_BADGE_VARIANT,
+  CHARGING_STATUS_LABEL,
   STATUS_BADGE_VARIANT,
   STATUS_LABEL,
   formatDateTime,
+  formatOdometer,
 } from "@/lib/vehicle-status";
 import type { VehicleListItemDto } from "@/lib/types/vehicle";
 
-type StatusFilter = "ALL" | "ONLINE" | "WARNING" | "ALERT" | "OFFLINE" | "IDLE";
+type StatusFilter = "ALL" | "ONLINE" | "WARNING" | "ALERT" | "OFFLINE" | "IDLE" | "CHARGING";
 
 type VehicleTableProps = {
   vehicles: VehicleListItemDto[];
   showFilters?: boolean;
+  showOdometer?: boolean;
 };
 
 const filterOptions: { value: StatusFilter; label: string }[] = [
   { value: "ALL", label: "전체" },
   { value: "ONLINE", label: "정상" },
+  { value: "CHARGING", label: "충전중" },
   { value: "WARNING", label: "주의" },
   { value: "ALERT", label: "이상" },
   { value: "OFFLINE", label: "오프라인" },
   { value: "IDLE", label: "미운행" },
 ];
 
-export function VehicleTable({ vehicles, showFilters = true }: VehicleTableProps) {
+export function VehicleTable({
+  vehicles,
+  showFilters = true,
+  showOdometer = true,
+}: VehicleTableProps) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
 
@@ -49,9 +58,12 @@ export function VehicleTable({ vehicles, showFilters = true }: VehicleTableProps
       if (!matchesQuery) return false;
       if (statusFilter === "ALL") return true;
       if (statusFilter === "IDLE") return vehicle.isIdle;
+      if (statusFilter === "CHARGING") return snapshot?.chargingStatus === "CHARGING";
       return snapshot?.status === statusFilter;
     });
   }, [query, statusFilter, vehicles]);
+
+  const colSpan = showOdometer ? 8 : 7;
 
   return (
     <div className="space-y-4">
@@ -88,16 +100,17 @@ export function VehicleTable({ vehicles, showFilters = true }: VehicleTableProps
             <TableHead>차량번호</TableHead>
             <TableHead>모델</TableHead>
             <TableHead>상태</TableHead>
+            <TableHead>충전</TableHead>
             <TableHead>배터리</TableHead>
             <TableHead>주행가능</TableHead>
-            <TableHead>시동</TableHead>
+            {showOdometer ? <TableHead>주행거리</TableHead> : null}
             <TableHead>최종 업데이트</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filtered.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+              <TableCell colSpan={colSpan} className="py-8 text-center text-muted-foreground">
                 조건에 맞는 차량이 없습니다.
               </TableCell>
             </TableRow>
@@ -105,6 +118,7 @@ export function VehicleTable({ vehicles, showFilters = true }: VehicleTableProps
             filtered.map((vehicle) => {
               const snapshot = vehicle.snapshot;
               const status = snapshot?.status ?? "OFFLINE";
+              const chargingStatus = snapshot?.chargingStatus ?? "DISCONNECTED";
 
               return (
                 <TableRow key={vehicle.id}>
@@ -130,6 +144,11 @@ export function VehicleTable({ vehicles, showFilters = true }: VehicleTableProps
                     </Badge>
                   </TableCell>
                   <TableCell>
+                    <Badge variant={CHARGING_STATUS_BADGE_VARIANT[chargingStatus]}>
+                      {CHARGING_STATUS_LABEL[chargingStatus]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
                     {snapshot?.batteryPercent != null
                       ? `${Math.round(snapshot.batteryPercent)}%`
                       : "-"}
@@ -139,7 +158,9 @@ export function VehicleTable({ vehicles, showFilters = true }: VehicleTableProps
                       ? `${Math.round(snapshot.rangeKm)} km`
                       : "-"}
                   </TableCell>
-                  <TableCell>{snapshot?.ignitionOn ? "ON" : "OFF"}</TableCell>
+                  {showOdometer ? (
+                    <TableCell>{formatOdometer(snapshot?.odometerKm ?? null)}</TableCell>
+                  ) : null}
                   <TableCell>{formatDateTime(snapshot?.lastUpdatedAt ?? null)}</TableCell>
                 </TableRow>
               );
