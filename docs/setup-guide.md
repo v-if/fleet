@@ -381,6 +381,8 @@ Invoke-RestMethod `
 
 > 진행 상태 (2026-07-07): 로컬 기준 `POST /api/sync/vehicles` 성공, `usedFallback=false`, `provider=tesla` 확인.  
 > 추가 수정: Tesla `fleet_status` 응답이 배열이 아닐 때도 파싱되도록 보강했고, `/api/vehicles`, `/api/auth/tesla/status`는 동적 응답으로 전환해 stale mock 응답을 방지했다.
+> 추가 UI 보정: Tesla `display_name` 대신 VIN suffix 기반 식별명(`TESLA-xxxxxx`)을 기본 표기로 사용하고, 좌표 `0,0`은 `위치 데이터 없음`으로 처리해 카카오맵 미표시 원인을 사용자에게 안내한다.
+> TPMS 표시 보정: Tesla `tpmsFrontLeft` 등은 atm(≈bar) 기준으로 보고, 차량 상세 화면에서는 `1 atm ≒ 14.7 PSI`를 곱한 PSI 값으로 표시한다.
 
 **트러블슈팅 요약**
 
@@ -409,7 +411,7 @@ Phase 3.6은 **DB만** 전환한다. Supabase Auth는 Phase 4.
 
 **로컬 실행 완료 (2026-07-07)**: Supabase dev 연결, migrate·시드(Mock 12대), `localhost/api/vehicles` 200.
 
-**남은 작업**: Vercel env·재배포 → 배포 API·대시보드 검증 → Phase 3.5 Register.
+**Vercel 배포 완료 (2026-07-07)**: env 등록·재배포, `fleet-tau.vercel.app/api/vehicles` 200, mock·tesla 대시보드 확인.
 
 #### 5.7.1 Supabase 프로젝트 생성 (처음부터)
 
@@ -461,7 +463,7 @@ pnpm dev
 Invoke-RestMethod http://localhost:3000/api/vehicles   # 200 + JSON 확인 ✅ (2026-07-07)
 ```
 
-> Vercel 배포 검증은 §5.7.3 환경 변수 등록·재배포 후 `https://fleet-tau.vercel.app/api/vehicles` 200 확인.
+> Vercel 배포 검증 완료 (2026-07-07): `https://fleet-tau.vercel.app/api/vehicles` → HTTP 200, mock·tesla 연동 확인.
 
 #### 5.7.2 Prisma (코드 반영 완료)
 
@@ -506,7 +508,7 @@ pnpm build
 pnpm dev
 Invoke-RestMethod http://localhost:3000/api/vehicles
 # 배포 API (Vercel env 설정·재배포 후)
-# https://fleet-tau.vercel.app/api/vehicles
+Invoke-RestMethod https://fleet-tau.vercel.app/api/vehicles   # 200 + JSON 확인 ✅ (2026-07-07)
 ```
 
 > Windows에서 `prisma generate` EPERM 오류 시 `pnpm dev`를 중지한 뒤 재시도하세요.
@@ -593,4 +595,7 @@ vercel
 | 2026-07-07 | Phase 3.5 추가 — Partner Register(412) 절차, PowerShell 예시 |
 | 2026-07-07 | Phase 3.6 추가 — Supabase PostgreSQL 전환 절차(§5.7), Vercel SQLite 트러블슈팅 |
 | 2026-07-07 | Phase 3.6 로컬 완료 반영 — Session pooler DIRECT_URL, P1001·setup-db.ps1 수정 |
+| 2026-07-07 | Phase 3.5·3.6 Vercel 배포 검증 완료 — env·재배포, API 200, mock·tesla 연동 |
 | 2026-07-07 | Tesla 연동 검증 반영 — `fleet_status` 파싱 오류·API 캐시 수정, `usedFallback=false` 확인 |
+| 2026-07-07 | Tesla UI 보정 반영 — 식별명/위치 데이터 없음 처리, 좌표 0 안내 |
+| 2026-07-07 | Tesla TPMS 보정 반영 — 차량 상세에 PSI 환산 표시 적용 |

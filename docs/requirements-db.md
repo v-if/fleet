@@ -27,7 +27,7 @@
 - Prisma `provider = "postgresql"`, Supabase dev `DATABASE_URL` + Session pooler `DIRECT_URL`
 - 차량·스냅샷·이벤트·Tesla OAuth 토큰·동기화 메타데이터를 **Supabase PostgreSQL**에 저장
 - 로컬: `pnpm db:setup` + `pnpm dev` → `/api/vehicles` **200**, Mock 12대
-- Vercel 배포(`https://fleet-tau.vercel.app`): UI 로드, **API 500** — Vercel env·재배포 대기
+- Vercel 배포(`https://fleet-tau.vercel.app`): UI·API **200**, mock·tesla 연동 검증 완료 (2026-07-07)
 
 ---
 
@@ -38,9 +38,9 @@
 | 구분 | 로컬 (`localhost:3000`) | Vercel (`fleet-tau.vercel.app`) |
 |------|-------------------------|----------------------------------|
 | 대시보드 HTML | ✅ 정상 | ✅ 정상 (레이아웃·사이드바 표시) |
-| `GET /api/vehicles` | ✅ 200 + JSON | ❌ **HTTP 500** |
-| UI 메시지 | — | **"차량 목록을 불러오지 못했습니다."** |
-| 지도·KPI·목록 | ✅ 데이터 표시 | ❌ API 의존 → 표시 불가 |
+| `GET /api/vehicles` | ✅ 200 + JSON | ✅ **200** + JSON (mock·tesla) |
+| UI 메시지 | — | — (정상) |
+| 지도·KPI·목록 | ✅ 데이터 표시 | ✅ 데이터 표시 (tesla 시 위치 `0,0`이면 지도 안내) |
 
 ### 3.2 오류 흐름
 
@@ -249,10 +249,10 @@ Phase 5     Production DB 분리  — 데모데이·운영
 - [x] Supabase dev 프로젝트 생성 및 Connection String 확보 (로컬, 2026-07-07)
 - [x] 로컬 migrate·시드 (`pnpm db:setup`, Mock 12대)
 - [x] 로컬 `GET /api/vehicles` → HTTP 200
-- [ ] Vercel `DATABASE_URL`(pooler)·`DIRECT_URL`(Session pooler) 등록 및 재배포
-- [ ] `https://fleet-tau.vercel.app/api/vehicles` → **HTTP 200** + 차량 JSON (현재 500)
-- [ ] 배포 대시보드에서 지도·KPI·목록 정상 표시
-- [ ] (Tesla 테스트 시) OAuth·sync가 DB에 토큰·스냅샷 저장 가능
+- [x] Vercel `DATABASE_URL`(pooler)·`DIRECT_URL`(Session pooler) 등록 및 재배포 (2026-07-07)
+- [x] `https://fleet-tau.vercel.app/api/vehicles` → **HTTP 200** + 차량 JSON (2026-07-07)
+- [x] 배포 대시보드에서 지도·KPI·목록 정상 표시 (mock·tesla, 2026-07-07)
+- [x] (Tesla 테스트 시) OAuth·sync가 DB에 토큰·스냅샷 저장 가능 (2026-07-07)
 
 ---
 
@@ -273,3 +273,4 @@ Phase 5     Production DB 분리  — 데모데이·운영
 | 2026-07-07 | 초안 — Vercel SQLite 500 분석, Phase 3.6 Supabase PostgreSQL 요구사항 정의 |
 | 2026-07-07 | 코드 반영 — Prisma postgresql, 마이그레이션, build/deploy/db:setup (Supabase 연결 대기) |
 | 2026-07-07 | 로컬 완료 — Supabase dev 연결, migrate·시드, API 200 / Vercel env·재배포 대기 |
+| 2026-07-07 | Vercel 배포 검증 완료 — env 등록·재배포, API 200, mock·tesla 연동 |

@@ -114,7 +114,17 @@ export function formatTempC(temp: number | null | undefined) {
 }
 
 export function formatLocationSummary(lat: number, lng: number) {
+  if (!hasValidCoordinates(lat, lng)) {
+    return "위치 데이터 없음";
+  }
   return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+}
+
+export function hasValidCoordinates(lat: number | null | undefined, lng: number | null | undefined) {
+  if (lat == null || lng == null) return false;
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+  if (lat === 0 && lng === 0) return false;
+  return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
 }
 
 export function getIdleDurationLabel(lastUpdatedAt: Date | string | null) {

@@ -84,7 +84,7 @@ export function VehicleTable({
               setQuery(event.target.value);
               setPage(1);
             }}
-            placeholder="차량번호 또는 모델 검색"
+            placeholder="차량 식별명 또는 모델 검색"
             className="max-w-sm"
           />
           <div className="flex flex-wrap gap-2">
@@ -112,7 +112,7 @@ export function VehicleTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>차량번호</TableHead>
+            <TableHead>차량 식별명</TableHead>
             <TableHead>모델</TableHead>
             <TableHead>상태</TableHead>
             <TableHead>충전</TableHead>

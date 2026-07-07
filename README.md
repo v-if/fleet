@@ -23,6 +23,8 @@ Phase 2.2부터 지도 Hero·커스텀 마커·Tesla EV 테마·탭/위젯 UI가
 Phase 3부터 Tesla Fleet API OAuth 연동·동기화 파이프라인(Mock 폴백)이 지원됩니다.
 Phase 3.6에서 Supabase PostgreSQL로 전환했습니다. 로컬은 `pnpm db:setup` 완료·API 200 확인됨 ([가이드](./docs/setup-guide.md#57-supabase-postgresql-phase-36)).
 Phase 3.5에서 Partner Register와 Tesla sync 검증을 진행했습니다. 현재 로컬 기준 `provider=tesla`, `usedFallback=false`가 확인됩니다 ([체크리스트](./docs/development-checklist.md#phase-35-tesla-partner-register-m35)).
+Tesla 실데이터는 Tesla API 한계에 따라 실제 번호판 대신 VIN suffix 식별명(`TESLA-xxxxxx`)으로 표시될 수 있고, 좌표가 `0,0`이면 지도 대신 `위치 데이터 없음` 안내가 보입니다.
+차량 상세 TPMS는 Tesla 원본 atm(≈bar) 값을 `1 atm ≒ 14.7 PSI` 기준으로 환산해 표시합니다.
 
 **배포 URL**: https://fleet-tau.vercel.app/ — Vercel에 `DATABASE_URL`·`DIRECT_URL`(Session pooler) 등록 및 재배포 필요 (현재 API 500)
 

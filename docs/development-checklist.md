@@ -191,6 +191,7 @@
 
 ### 차량 상세 (P1)
 - [x] **TPMS 차량 도식** (4타이어 PSI, 이상 강조)
+- [x] **Tesla TPMS 단위 보정**: 원본 atm(≈bar) 값을 PSI로 환산해 표시 (`× 14.7`)
 - [x] **배터리 건강 게이지** (잔량 기반 Mock)
 - [x] 액션 버튼 placeholder (제어)
 - [x] 푸터: 마지막 업데이트 + 새로고침
@@ -244,7 +245,7 @@
 - Mock 폴백: `VEHICLE_DATA_PROVIDER=tesla` + 연동 실패 시 Mock으로 자동 전환, `SyncMetadata.usedFallback` 기록
 - 리전: `TESLA_FLEET_API_REGION=na` (한국·아시아태평양·북미, OAuth audience)
 - OAuth 연동 검증: `na` 리전으로 계정 연결 완료 (2026-07-07)
-- **412 register 미완료** — OAuth 성공 후 `GET /api/1/vehicles` 412 → Mock 폴백으로 대시보드 시연 가능, 실데이터는 Phase 3.5 필요
+- **412 register** — Phase 3.5 Partner Register 완료 (2026-07-07)
 
 ---
 
@@ -257,8 +258,8 @@
 
 ### 사전 조건 (인프라)
 - [x] **공개 HTTPS 도메인** 확보 — `fleet-tau.vercel.app` (Vercel 배포, UI 로드 확인)
-- [ ] Tesla 포털 `allowed_origins`에 배포 도메인 등록
-- [ ] OAuth `redirect_uri`를 배포 URL로 추가 (로컬 URI와 병행 가능)
+- [x] Tesla 포털 `allowed_origins`에 배포 도메인 등록 (2026-07-07)
+- [x] OAuth `redirect_uri`를 배포 URL로 추가 (로컬 URI와 병행, 2026-07-07)
 - [x] EC 키 쌍 생성 (secp256r1 / prime256v1)
   ```powershell
   openssl ecparam -name prime256v1 -genkey -noout -out private-key.pem
@@ -282,11 +283,11 @@
 - [ ] (선택) `scripts/tesla-register.ps1` 또는 API 라우트로 register 자동화
 
 ### 연동 검증
-- [ ] `/settings`에서 Tesla 재연결 (배포 URL 기준 OAuth)
+- [x] `/settings`에서 Tesla 재연결 (배포 URL 기준 OAuth, 2026-07-07)
 - [x] `POST /api/sync/vehicles` 성공, `SyncMetadata.usedFallback=false`
 - [x] `/settings` **최근 오류**에 412 메시지 없음
 - [x] 대시보드/API에 **본인 Tesla 차량** 실데이터 표시 (Mock 12대 아님, 2026-07-07)
-- [ ] `provider: tesla` + 실제 VIN/배터리/위치 확인
+- [x] `provider: tesla` + 실제 VIN/배터리 확인 (위치는 수면·비주행 시 `0,0` — 지도 미표시, 2026-07-07)
 
 ### 트러블슈팅 체크
 - [x] `Invalid audience` → `TESLA_FLEET_API_REGION=na` (한국) — Phase 3에서 해결
@@ -294,16 +295,17 @@
 - [ ] `403 missing scopes` → 포털 스코프·앱 재연결(`prompt=consent`)
 - [x] Partner 토큰 vs Third-party 토큰 혼동 금지 — register는 **client_credentials** 토큰 사용
 
-**완료 기준**: `GET /api/1/vehicles` 412 없이 본인 차량 실데이터가 대시보드에 반영
+**완료 기준**: `GET /api/1/vehicles` 412 없이 본인 차량 실데이터가 대시보드에 반영 ✅
 
 ### Phase 3.5 실행 메모
 - OAuth 연결됨 ≠ Fleet API 사용 가능 — Register는 **앱(파트너)** 단위 1회(리전별)
 - Register에 **공개 도메인 + 공개키 호스팅** 필수, 로컬만으로는 실데이터 연동 불가
 - Phase 3 Mock 폴백으로 데모데이 일정은 보호 가능 → Register는 배포 직전 스프린트로 분리
-- **선행 조건**: Phase 3.6 **로컬 DB 완료** (2026-07-07) — Vercel API 200·Register 검증은 Vercel env·재배포 후 진행
+- **선행 조건**: Phase 3.6 **완료** (2026-07-07) — 로컬·Vercel API 200, Register·Tesla 배포 검증 완료
 - **진행 상태 (2026-07-07)**: EC 키 쌍 생성, 공개키 URL 접근 확인, Partner 토큰 발급, `fleet-tau.vercel.app` 도메인 Register 및 public key 조회 확인 완료.
-- **연동 상태 (2026-07-07)**: Tesla OAuth 연결 + `POST /api/sync/vehicles` 성공, `usedFallback=false`, `provider=tesla` 확인. `fleet_status` 응답 파싱 오류(`map is not a function`)와 API 캐시 이슈 수정 완료.
-- **잔여 확인**: 현재 실차량 1대와 실제 VIN은 확인되었으나, 배터리/위치는 차량 상태에 따라 `null`/`0`으로 올 수 있어 추가 확인 필요.
+- **연동 상태 (2026-07-07)**: 로컬·Vercel 모두 Tesla OAuth 연결 + `POST /api/sync/vehicles` 성공, `usedFallback=false`, `provider=tesla` 확인. `fleet_status` 응답 파싱 오류(`map is not a function`)와 API 캐시 이슈 수정 완료.
+- **UI 보정 (2026-07-07)**: Tesla `display_name`이 번호판처럼 보이지 않도록 VIN suffix 기반 식별명(`TESLA-xxxxxx`)으로 고정, 좌표 `0,0`은 `위치 데이터 없음`으로 표시, 지도는 유효 좌표가 없을 때 안내 문구를 노출. TPMS atm→PSI 환산 적용.
+- **알려진 제한**: 실차량 1대, VIN·배터리 확인. 위치는 수면·비주행 시 `0,0`으로 수신되어 지도 마커 미표시 — wake-up·주행 중 telemetry 재확인 필요.
 - 참고: [Partner Endpoints — register](https://developer.tesla.com/docs/fleet-api/endpoints/partner-endpoints#register)
 
 ---
@@ -335,29 +337,29 @@
 
 ### 환경 변수
 - [x] 로컬 `.env`: `DATABASE_URL`·`DIRECT_URL` Supabase URL 설정
-- [ ] Vercel Environment Variables 등록
-  - [ ] `DATABASE_URL` (pooler)
-  - [ ] `DIRECT_URL` (Session pooler, migrate·빌드 시)
-  - [ ] 기존 `VEHICLE_DATA_PROVIDER`, `TESLA_*`, `NEXT_PUBLIC_KAKAO_MAP_KEY` 유지
-- [ ] Vercel 재배포 (`build` 스크립트에 `prisma migrate deploy` 포함됨)
+- [x] Vercel Environment Variables 등록 (2026-07-07)
+  - [x] `DATABASE_URL` (pooler)
+  - [x] `DIRECT_URL` (Session pooler, migrate·빌드 시)
+  - [x] 기존 `VEHICLE_DATA_PROVIDER`, `TESLA_*`, `NEXT_PUBLIC_KAKAO_MAP_KEY` 유지
+- [x] Vercel 재배포 (`build` 스크립트에 `prisma migrate deploy` 포함됨, 2026-07-07)
 
 ### 데이터 초기화·검증
 - [x] `pnpm db:setup`으로 dev DB에 Mock 12대 주입
 - [x] 로컬: `GET /api/vehicles` → **200**
-- [ ] 배포: `https://fleet-tau.vercel.app/api/vehicles` → **200** + JSON (현재 500 — Vercel env 미설정)
-- [ ] 배포 대시보드: KPI·지도·차량 목록 정상 표시
+- [x] 배포: `https://fleet-tau.vercel.app/api/vehicles` → **200** + JSON (2026-07-07)
+- [x] 배포 대시보드: KPI·지도·차량 목록 정상 표시 (mock·tesla 모두 확인, 2026-07-07)
 
 ### Tesla 배포 테스트 (Phase 3 + 3.6 연계)
-- [ ] `/settings` Tesla OAuth (배포 redirect URI)
-- [ ] OAuth 토큰이 PostgreSQL `tesla_oauth_tokens`에 저장됨
-- [ ] `POST /api/sync/vehicles` API 200 (412는 Phase 3.5에서 해결)
+- [x] `/settings` Tesla OAuth (배포 redirect URI, 2026-07-07)
+- [x] OAuth 토큰이 PostgreSQL `tesla_oauth_tokens`에 저장됨 (2026-07-07)
+- [x] `POST /api/sync/vehicles` API 200, `usedFallback=false` (2026-07-07)
 
 ### Out of Scope (Phase 4로 유지)
 - [ ] Supabase Auth (관리자 로그인) — Phase 4
 - [ ] RLS 정책 — Phase 4~5
 
-**완료 기준**: Vercel 프로덕션에서 `/api/vehicles` 200 + 대시보드 데이터 표시 + (Tesla 시) 토큰·스냅샷 DB 저장 가능  
-> **진행 상태 (2026-07-07)**: **로컬 완료** ✅ — Vercel env·재배포 후 프로덕션 검증 남음
+**완료 기준**: Vercel 프로덕션에서 `/api/vehicles` 200 + 대시보드 데이터 표시 + (Tesla 시) 토큰·스냅샷 DB 저장 가능 ✅  
+> **진행 상태 (2026-07-07)**: **로컬·Vercel 완료** ✅ — dev Supabase 공유, mock·tesla 배포 검증 완료
 
 ### Phase 3.6 실행 메모
 - Phase 3.6은 **DB만** 전환한다. 인증(Supabase Auth)은 Phase 4.
@@ -366,8 +368,9 @@
 - `DATABASE_URL=file:./dev.db`를 Vercel에 설정해도 **해결되지 않음**
 - **코드 반영 (2026-07-07)**: `schema.prisma` postgresql, `directUrl`, 마이그레이션 `init_postgresql`, `build`에 `prisma migrate deploy`, `pnpm db:setup` 스크립트
 - **로컬 완료 (2026-07-07)**: Supabase dev 연결, migrate·시드 12대, `localhost/api/vehicles` 200
+- **Vercel 완료 (2026-07-07)**: env 등록·재배포, `fleet-tau.vercel.app/api/vehicles` 200, mock·tesla 대시보드 확인
 - **P1001 해결**: Direct `db.xxx:5432` 차단 시 `DIRECT_URL`을 **Session pooler**(pooler 호스트:5432)로 변경
-- **남은 작업**: Vercel에 `DATABASE_URL`·`DIRECT_URL` 등록 → 재배포 → 배포 API·대시보드 검증
+- **pgbouncer 해결**: Transaction pooler `DATABASE_URL`에 `?pgbouncer=true` 필수
 
 ---
 
@@ -405,9 +408,9 @@
 > 설치: [setup-guide.md](./setup-guide.md) §7
 
 - [x] Vercel 프로젝트 연결 및 GitHub 자동 배포 (`fleet-tau.vercel.app`)
-- [ ] Vercel 환경변수 완비 (Phase 3.6 `DATABASE_URL` 등 — [requirements-db.md](./requirements-db.md))
+- [x] Vercel 환경변수 완비 (Phase 3.6 `DATABASE_URL`·`DIRECT_URL` 등 — 2026-07-07)
 - [ ] Supabase production 설정 (dev → production 프로젝트 분리)
-- [ ] production 배포 및 도메인 확인 (API 200·대시보드 데이터 표시)
+- [x] production 배포 및 도메인 확인 (API 200·대시보드 mock·tesla 데이터 표시, 2026-07-07)
 - [ ] 배포 환경 데모 시나리오 최종 점검
 - [ ] 데모데이 시연 및 피드백 수집
 
@@ -445,6 +448,9 @@
 | 2026-07-07 | Phase 3.5 일부 진행 — EC 키 생성, `.well-known` 공개키 파일 배치 |
 | 2026-07-07 | Phase 3.5 Register 완료 — 공개키 URL 확인, Partner 토큰 발급, `partner_accounts` 등록·조회 성공 |
 | 2026-07-07 | Phase 3.5 연동 검증 진행 — Tesla sync 성공, `usedFallback=false`, `provider=tesla` 확인 |
+| 2026-07-07 | Tesla 실데이터 UI 보정 — VIN suffix 식별명, 위치 데이터 없음 처리, 지도 좌표 안내 |
+| 2026-07-07 | Tesla TPMS 표시 보정 — 원본 atm(≈bar) 값을 PSI로 환산해 차량 상세에 반영 |
 | 2026-07-07 | Phase 3.6 추가 — Vercel SQLite 500 분석, Supabase PostgreSQL 전환 체크리스트·requirements-db.md |
 | 2026-07-07 | Phase 3.6 코드 반영 — Prisma postgresql, 마이그레이션, build/deploy 스크립트 (Supabase 연결·배포 검증 대기) |
 | 2026-07-07 | Phase 3.6 로컬 완료 — Supabase 연결, migrate·시드, API 200 / Vercel env·재배포 대기 |
+| 2026-07-07 | Phase 3.5·3.6 배포 검증 완료 — Vercel env·재배포, API 200, mock·tesla 연동, TPMS PSI 환산 |

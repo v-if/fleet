@@ -13,6 +13,8 @@ import type {
 } from "./types";
 import type { NearbyChargingSite, VehicleEventData, VehicleSnapshotData } from "../vehicle-providers/types";
 
+const KOREAN_PLATE_REGEX = /^\d{2,3}[가-힣]\d{4}$/;
+
 function mapVehicleStatus(state: string | undefined): VehicleStatus {
   switch (state) {
     case "online":
@@ -49,8 +51,9 @@ function mapAlertType(alert: TeslaAlert): EventType {
 }
 
 function derivePlateNumber(vin: string, displayName?: string | null) {
-  if (displayName?.trim()) {
-    return displayName.trim();
+  const normalizedName = displayName?.replace(/\s/g, "").trim();
+  if (normalizedName && KOREAN_PLATE_REGEX.test(normalizedName)) {
+    return normalizedName;
   }
   return `TESLA-${vin.slice(-6).toUpperCase()}`;
 }
@@ -77,6 +80,10 @@ function deriveYearFromVin(vin: string) {
   return mapping[yearCode] ?? new Date().getFullYear();
 }
 
+function hasUsableCoordinates(lat: number, lng: number) {
+  return !(lat === 0 && lng === 0);
+}
+
 export function mapTeslaVehicleToSnapshot(
   listItem: TeslaVehicleListItem,
   data: TeslaVehicleDataResponse["response"],
@@ -94,12 +101,20 @@ export function mapTeslaVehicleToSnapshot(
   const rangeKm = charge?.est_battery_range ?? charge?.battery_range;
   const latitude = drive?.latitude ?? 0;
   const longitude = drive?.longitude ?? 0;
+  const hasTelemetry =
+    batteryPercent !== undefined ||
+    charge?.charging_state !== undefined ||
+    drive?.shift_state !== undefined ||
+    hasUsableCoordinates(latitude, longitude);
   const doorsOpen = Boolean(
     vehicle?.df || vehicle?.dr || vehicle?.pf || vehicle?.pr || closures?.door_open,
   );
   const windowsOpen = Boolean(vehicle?.ft || vehicle?.rt || closures?.window_open);
 
   let status = mapVehicleStatus(state);
+  if (!hasTelemetry) {
+    status = "OFFLINE";
+  }
   if (batteryPercent !== undefined && batteryPercent < 15) {
     status = "ALERT";
   } else if (batteryPercent !== undefined && batteryPercent < 25) {
@@ -119,7 +134,7 @@ export function mapTeslaVehicleToSnapshot(
     longitude,
     batteryPercent,
     rangeKm: rangeKm ? Math.round(rangeKm * 1.60934) : undefined,
-    ignitionOn: drive?.shift_state !== null && drive?.shift_state !== "P",
+    ignitionOn: drive?.shift_state != null && drive.shift_state !== "P",
     status,
     chargingStatus: mapChargingStatus(charge?.charging_state),
     odometerKm: vehicle?.odometer ? Math.round(vehicle.odometer * 1.60934) : undefined,

@@ -39,6 +39,14 @@ type IssueTagItem = {
   variant: "warning" | "alert" | "info";
 };
 
+const ATM_TO_PSI = 14.7;
+
+function convertTeslaTpmsToPsi(value: number | null, provider: string) {
+  if (value == null) return null;
+  if (provider !== "tesla") return value;
+  return value * ATM_TO_PSI;
+}
+
 function collectIssueTags(vehicle: VehicleDetailDto): IssueTagItem[] {
   const snapshot = vehicle.snapshot;
   const tags: IssueTagItem[] = [];
@@ -323,11 +331,20 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
                 </CardHeader>
                 <CardContent>
                   <TpmsDiagram
-                    frontLeft={snapshot?.tpmsFrontLeft ?? null}
-                    frontRight={snapshot?.tpmsFrontRight ?? null}
-                    rearLeft={snapshot?.tpmsRearLeft ?? null}
-                    rearRight={snapshot?.tpmsRearRight ?? null}
+                    frontLeft={convertTeslaTpmsToPsi(snapshot?.tpmsFrontLeft ?? null, data.provider)}
+                    frontRight={convertTeslaTpmsToPsi(
+                      snapshot?.tpmsFrontRight ?? null,
+                      data.provider,
+                    )}
+                    rearLeft={convertTeslaTpmsToPsi(snapshot?.tpmsRearLeft ?? null, data.provider)}
+                    rearRight={convertTeslaTpmsToPsi(snapshot?.tpmsRearRight ?? null, data.provider)}
                   />
+                  {data.provider === "tesla" ? (
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Tesla TPMS 원본값은 atm(또는 bar에 준하는 압력 단위) 기준으로 간주하고,
+                      화면에는 1 atm ≒ 14.7 PSI 환산값을 표시합니다.
+                    </p>
+                  ) : null}
                 </CardContent>
               </Card>
 

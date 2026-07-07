@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 
 import { VehicleMarkerPin } from "@/components/fleet/vehicle-marker-pin";
-import { STATUS_LABEL } from "@/lib/vehicle-status";
+import { hasValidCoordinates, STATUS_LABEL } from "@/lib/vehicle-status";
 import type { MapVehicle } from "@/lib/types/vehicle";
 
 type SimpleMapFallbackProps = {
@@ -35,7 +35,11 @@ export function SimpleMapFallback({
   height = 420,
   hero = false,
 }: SimpleMapFallbackProps) {
-  const markers = useMemo(() => vehicles.filter((vehicle) => vehicle.latitude), [vehicles]);
+  const markers = useMemo(
+    () =>
+      vehicles.filter((vehicle) => hasValidCoordinates(vehicle.latitude, vehicle.longitude)),
+    [vehicles],
+  );
 
   return (
     <div className="space-y-3">
@@ -97,6 +101,11 @@ export function SimpleMapFallback({
           Kakao Maps API 키가 없어 간이 지도로 표시 중입니다.{" "}
           <code className="rounded bg-muted px-1 py-0.5">NEXT_PUBLIC_KAKAO_MAP_KEY</code>를
           설정하면 실제 지도로 전환됩니다.
+        </p>
+      ) : null}
+      {vehicles.length > 0 && markers.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          현재 차량에서 유효한 위치 좌표를 받지 못해 지도를 표시할 수 없습니다.
         </p>
       ) : null}
       {selectedId ? (

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SimpleMapFallback } from "@/components/fleet/simple-map-fallback";
-import { STATUS_LABEL } from "@/lib/vehicle-status";
+import { hasValidCoordinates, STATUS_LABEL } from "@/lib/vehicle-status";
 import type { MapVehicle } from "@/lib/types/vehicle";
 
 type VehicleMapProps = {
@@ -138,6 +138,10 @@ export function VehicleMap({
   hero = false,
 }: VehicleMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY?.trim();
+  const validVehicles = useMemo(
+    () => vehicles.filter((vehicle) => hasValidCoordinates(vehicle.latitude, vehicle.longitude)),
+    [vehicles],
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<InstanceType<KakaoMaps["maps"]["Map"]> | null>(null);
   const overlaysRef = useRef<InstanceType<KakaoMaps["maps"]["CustomOverlay"]>[]>([]);
@@ -148,19 +152,19 @@ export function VehicleMap({
 
   const vehicleSignature = useMemo(
     () =>
-      vehicles
+      validVehicles
         .map(
           (vehicle) =>
             `${vehicle.id}:${vehicle.latitude}:${vehicle.longitude}:${vehicle.status}:${vehicle.batteryPercent ?? ""}`,
         )
         .join("|"),
-    [vehicles],
+    [validVehicles],
   );
 
   useEffect(() => {
     onSelectRef.current = onSelect;
-    vehiclesRef.current = vehicles;
-  }, [onSelect, vehicles]);
+    vehiclesRef.current = validVehicles;
+  }, [onSelect, validVehicles]);
 
   useEffect(() => {
     if (!apiKey || vehiclesRef.current.length === 0) {
@@ -233,15 +237,22 @@ export function VehicleMap({
     };
   }, [apiKey, centerOnSelected, hero, selectedId, vehicleSignature]);
 
-  if (!apiKey || useFallback) {
+  if (!apiKey || useFallback || validVehicles.length === 0) {
     return (
-      <SimpleMapFallback
-        vehicles={vehicles}
-        selectedId={selectedId}
-        onSelect={onSelect}
-        height={height}
-        hero={hero}
-      />
+      <div className="space-y-3">
+        <SimpleMapFallback
+          vehicles={vehicles}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          height={height}
+          hero={hero}
+        />
+        {vehicles.length > 0 && validVehicles.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Tesla 차량의 위치 좌표가 없어 실제 지도를 표시하지 못했습니다.
+          </p>
+        ) : null}
+      </div>
     );
   }
 

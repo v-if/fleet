@@ -50,6 +50,7 @@ export function TpmsDiagram({
 }: TpmsDiagramProps) {
   return (
     <div className="relative mx-auto w-full max-w-xs py-4">
+      <p className="mb-3 text-center text-xs text-muted-foreground">단위: PSI</p>
       <div className="mx-auto h-40 w-28 rounded-3xl border-2 border-dashed border-muted-foreground/30 bg-muted/20" />
       <Tire label="전좌" value={frontLeft} className="absolute top-2 left-0" />
       <Tire label="전우" value={frontRight} className="absolute top-2 right-0" />
