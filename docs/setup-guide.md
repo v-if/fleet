@@ -329,6 +329,9 @@ https://{domain}/.well-known/appspecific/com.tesla.3p.public-key.pem
 
 Vercel 예: `public/.well-known/appspecific/com.tesla.3p.public-key.pem` 에 파일 배치 후 배포.
 
+> 진행 상태 (2026-07-07): 프로젝트에 `public/.well-known/appspecific/com.tesla.3p.public-key.pem` 파일 배치 완료,  
+> `https://fleet-tau.vercel.app/.well-known/appspecific/com.tesla.3p.public-key.pem` 접근 확인 완료.
+
 #### 5.5.4 Partner 토큰 발급 + Register (한국 → `na`)
 
 **1) Partner 토큰** (`client_credentials` — OAuth 사용자 토큰과 다름)
@@ -366,6 +369,9 @@ Invoke-RestMethod `
   -Uri "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/partner_accounts/public_key?domain=$domain" `
   -Headers @{ Authorization = "Bearer $partnerToken" }
 ```
+
+> 진행 상태 (2026-07-07): `fleet-tau.vercel.app` 기준 Partner token 발급, `POST /api/1/partner_accounts`,  
+> `GET /api/1/partner_accounts/public_key?domain=fleet-tau.vercel.app` 확인까지 완료.
 
 #### 5.5.5 연동 재검증
 1. 배포 URL `/settings` → Tesla 계정 연결

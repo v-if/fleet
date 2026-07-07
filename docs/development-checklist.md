@@ -259,25 +259,26 @@
 - [x] **공개 HTTPS 도메인** 확보 — `fleet-tau.vercel.app` (Vercel 배포, UI 로드 확인)
 - [ ] Tesla 포털 `allowed_origins`에 배포 도메인 등록
 - [ ] OAuth `redirect_uri`를 배포 URL로 추가 (로컬 URI와 병행 가능)
-- [ ] EC 키 쌍 생성 (secp256r1 / prime256v1)
+- [x] EC 키 쌍 생성 (secp256r1 / prime256v1)
   ```powershell
   openssl ecparam -name prime256v1 -genkey -noout -out private-key.pem
   openssl ec -in private-key.pem -pubout -out public-key.pem
   ```
 
 ### 공개키 호스팅
-- [ ] 공개키를 아래 경로에 HTTPS로 호스팅
+- [x] 공개키를 아래 경로에 프로젝트에 배치
   ```
   https://{도메인}/.well-known/appspecific/com.tesla.3p.public-key.pem
   ```
-- [ ] 브라우저/curl로 공개키 URL 접근 확인
+- [x] 프로젝트 경로 확인: `public/.well-known/appspecific/com.tesla.3p.public-key.pem`
+- [x] 브라우저/curl로 공개키 URL 접근 확인 (`fleet-tau.vercel.app`, 2026-07-07)
 
 ### Partner Register (`na` 리전 — 한국)
-- [ ] **Partner 토큰** 발급 (`grant_type=client_credentials`, OAuth 사용자 토큰과 별개)
-- [ ] `POST https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/partner_accounts` 호출
+- [x] **Partner 토큰** 발급 (`grant_type=client_credentials`, OAuth 사용자 토큰과 별개)
+- [x] `POST https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/partner_accounts` 호출
   - `Authorization: Bearer {partner_token}`
-  - Body: `{"domain": "{도메인}"}` (scheme 제외, 예: `fleet-xxx.vercel.app`)
-- [ ] 등록 확인: `GET /api/1/partner_accounts/public_key?domain={도메인}` (partner 토큰)
+  - Body: `{"domain": "fleet-tau.vercel.app"}` (scheme 제외)
+- [x] 등록 확인: `GET /api/1/partner_accounts/public_key?domain={도메인}` (partner 토큰)
 - [ ] (선택) `scripts/tesla-register.ps1` 또는 API 라우트로 register 자동화
 
 ### 연동 검증
@@ -289,9 +290,9 @@
 
 ### 트러블슈팅 체크
 - [x] `Invalid audience` → `TESLA_FLEET_API_REGION=na` (한국) — Phase 3에서 해결
-- [ ] `412 must be registered` → Partner Register 미완료 (본 Phase)
+- [x] `412 must be registered` 원인 파악 및 Partner Register 완료 (2026-07-07)
 - [ ] `403 missing scopes` → 포털 스코프·앱 재연결(`prompt=consent`)
-- [ ] Partner 토큰 vs Third-party 토큰 혼동 금지 — register는 **client_credentials** 토큰 사용
+- [x] Partner 토큰 vs Third-party 토큰 혼동 금지 — register는 **client_credentials** 토큰 사용
 
 **완료 기준**: `GET /api/1/vehicles` 412 없이 본인 차량 실데이터가 대시보드에 반영
 
@@ -300,6 +301,7 @@
 - Register에 **공개 도메인 + 공개키 호스팅** 필수, 로컬만으로는 실데이터 연동 불가
 - Phase 3 Mock 폴백으로 데모데이 일정은 보호 가능 → Register는 배포 직전 스프린트로 분리
 - **선행 조건**: Phase 3.6 **로컬 DB 완료** (2026-07-07) — Vercel API 200·Register 검증은 Vercel env·재배포 후 진행
+- **진행 상태 (2026-07-07)**: EC 키 쌍 생성, 공개키 URL 접근 확인, Partner 토큰 발급, `fleet-tau.vercel.app` 도메인 Register 및 public key 조회 확인 완료.
 - 참고: [Partner Endpoints — register](https://developer.tesla.com/docs/fleet-api/endpoints/partner-endpoints#register)
 
 ---
@@ -438,6 +440,8 @@
 | 2026-07-07 | Phase 3 완료 — Tesla OAuth, TeslaVehicleProvider, 토큰 갱신, 동기화 API, Mock 폴백 |
 | 2026-07-07 | Tesla 리전 수정 — 한국은 `na`(NA+APAC), `ap` audience 오류 문서·코드 반영 |
 | 2026-07-07 | Phase 3.5 추가 — Tesla Partner Register(412) 체크리스트·setup/requirements 보강 |
+| 2026-07-07 | Phase 3.5 일부 진행 — EC 키 생성, `.well-known` 공개키 파일 배치 |
+| 2026-07-07 | Phase 3.5 Register 완료 — 공개키 URL 확인, Partner 토큰 발급, `partner_accounts` 등록·조회 성공 |
 | 2026-07-07 | Phase 3.6 추가 — Vercel SQLite 500 분석, Supabase PostgreSQL 전환 체크리스트·requirements-db.md |
 | 2026-07-07 | Phase 3.6 코드 반영 — Prisma postgresql, 마이그레이션, build/deploy 스크립트 (Supabase 연결·배포 검증 대기) |
 | 2026-07-07 | Phase 3.6 로컬 완료 — Supabase 연결, migrate·시드, API 200 / Vercel env·재배포 대기 |

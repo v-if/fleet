@@ -53,5 +53,7 @@
 | 2026-07-07 | Phase 3 완료 — Tesla OAuth, Fleet API Provider, 동기화 API, Mock 폴백 |
 | 2026-07-07 | Tesla 리전 정정 — 한국 계정 `na` (Invalid audience 해결) |
 | 2026-07-07 | Phase 3.5 — Tesla Partner Register(412) 체크리스트·가이드 추가 |
+| 2026-07-07 | Phase 3.5 일부 진행 — EC 키 생성, `.well-known` 공개키 파일 배치 |
+| 2026-07-07 | Phase 3.5 Register 진행 — 공개키 URL 확인, `fleet-tau.vercel.app` Partner Register 완료 |
 | 2026-07-07 | Phase 3.6 — requirements-db.md 추가, Prisma postgresql 전환·db:setup 스크립트 |
 | 2026-07-07 | Phase 3.6 로컬 완료 — Supabase migrate·시드·API 200 / Phase 3.5 Register·Vercel 배포 대기 |
