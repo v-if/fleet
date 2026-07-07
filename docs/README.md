@@ -21,6 +21,7 @@
 | 제품 | PC 웹 대시보드 중심 차량 관제 MVP |
 | 타깃 차종 | 테슬라(Tesla) 1종 — 공식 Fleet API + OAuth |
 | 데이터 수집 | 테슬라 Fleet API + Mock 폴백 (Deviceless) |
+| Tesla 실데이터 | Phase 3 OAuth + **Phase 3.5 Partner Register** (`412` 해결) |
 | 기술 스택 | TypeScript · Next.js · Supabase(PostgreSQL) · Prisma · Vercel |
 | 로컬 DB (현재) | SQLite (`prisma/dev.db`) — Phase 1 완료, Supabase는 Phase 4 |
 | 지도 | Kakao Maps API |
@@ -49,3 +50,4 @@
 | 2026-07-07 | Phase 2.2 완료 — 지도 Hero·커스텀 마커·Tesla EV 테마·탭/위젯 UI |
 | 2026-07-07 | Phase 3 완료 — Tesla OAuth, Fleet API Provider, 동기화 API, Mock 폴백 |
 | 2026-07-07 | Tesla 리전 정정 — 한국 계정 `na` (Invalid audience 해결) |
+| 2026-07-07 | Phase 3.5 — Tesla Partner Register(412) 체크리스트·가이드 추가 |

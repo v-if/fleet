@@ -189,6 +189,8 @@ flowchart TB
 | 4 | **Webhook / Streaming** | Tesla telemetry 스트리밍 등 (Phase 2) |
 
 > **리스크·폴백**: Tesla Fleet API는 앱 등록 절차와 사용 과금이 있을 수 있고 승인이 지연될 수 있다. 따라서 Mock Adapter를 항상 유지하고, 환경 변수(`VEHICLE_DATA_PROVIDER`)로 `mock` ↔ `tesla` 를 즉시 전환할 수 있게 한다. 데모 시연은 안정적인 쪽을 선택한다.
+>
+> **Phase 3 vs 3.5**: OAuth(Phase 3)만으로는 Fleet API 조회가 불가할 수 있다(`412 register`). 실차량 데이터는 **Partner Register**(Phase 3.5: 공개 도메인·공개키·`POST /partner_accounts`) 완료 후 가능 — [requirements-tesla-api.md §2.5](./requirements-tesla-api.md).
 
 **Adapter 패턴**으로 차종별 API 차이를 `VehicleDataProvider` 인터페이스 뒤에 숨겨, 향후 다차종 확장 시에도 상위 로직을 변경하지 않는다.
 

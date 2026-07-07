@@ -273,6 +273,11 @@ TESLA_SYNC_CRON_SECRET=
 - 원인: `TESLA_FLEET_API_REGION`이 Tesla 공식 리전과 불일치 (예: 잘못된 `ap`)
 - 해결: 한국 계정은 `TESLA_FLEET_API_REGION=na` 로 설정 후 dev 서버 재시작
 
+**트러블슈팅 — `412 must be registered`**
+- 원인: OAuth는 성공했으나 앱이 Fleet API 리전에 Partner Register 되지 않음
+- 증상: `/settings` “계정 연결됨” + “최근 오류: 412 …” + Mock 폴백
+- 해결: [§5.5 Partner Register](./setup-guide.md) (공개 HTTPS 도메인 + 공개키 + `POST /partner_accounts`)
+
 수동 동기화:
 ```powershell
 Invoke-RestMethod -Method POST http://localhost:3000/api/sync/vehicles
@@ -290,7 +295,94 @@ Invoke-RestMethod -Method POST http://localhost:3000/api/sync/vehicles
 - 로컬: `GET /api/vehicles` 호출 시 `TESLA_SYNC_POLL_INTERVAL_MINUTES`(기본 3분) 경과하면 자동 sync
 - 배포(Vercel Cron 예시): `POST /api/sync/vehicles` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET`
 
-### 5.5 Phase 3 검증
+### 5.5 Tesla Partner Register (Phase 3.5) — 412 해결
+
+Phase 3에서 OAuth “계정 연결됨”이어도, Fleet API 조회 시 아래 오류가 나면 **Partner Register**가 필요하다.
+
+```
+412: Account ... must be registered in the current region https://fleet-api.prd.na.vn.cloud.tesla.com
+```
+
+> OAuth(사용자 동의)와 Register(앱 등록)는 **별개**다. Register 없이는 Mock 폴백만 동작한다.
+
+#### 5.5.1 사전 준비
+1. **Vercel 등에 배포**해 공개 HTTPS 도메인 확보 (예: `fleet-xxx.vercel.app`)
+2. Tesla 포털에 배포 도메인 추가
+   - 출처: `https://fleet-xxx.vercel.app`
+   - 리디렉션 URI: `https://fleet-xxx.vercel.app/api/auth/tesla/callback`
+3. 배포 환경변수에 `TESLA_FLEET_API_*`, `VEHICLE_DATA_PROVIDER=tesla` 설정
+
+#### 5.5.2 EC 키 쌍 생성
+```powershell
+openssl ecparam -name prime256v1 -genkey -noout -out private-key.pem
+openssl ec -in private-key.pem -pubout -out public-key.pem
+```
+- `private-key.pem` — 비밀 보관 (git 제외)
+- `public-key.pem` — 도메인에 호스팅
+
+#### 5.5.3 공개키 호스팅
+배포 도메인에 아래 경로로 공개키를 제공한다.
+
+```
+https://{domain}/.well-known/appspecific/com.tesla.3p.public-key.pem
+```
+
+Vercel 예: `public/.well-known/appspecific/com.tesla.3p.public-key.pem` 에 파일 배치 후 배포.
+
+#### 5.5.4 Partner 토큰 발급 + Register (한국 → `na`)
+
+**1) Partner 토큰** (`client_credentials` — OAuth 사용자 토큰과 다름)
+
+```powershell
+$body = @{
+  grant_type    = "client_credentials"
+  client_id     = $env:TESLA_FLEET_API_CLIENT_ID
+  client_secret = $env:TESLA_FLEET_API_CLIENT_SECRET
+  audience      = "https://fleet-api.prd.na.vn.cloud.tesla.com"
+  scope         = "openid offline_access vehicle_device_data vehicle_location"
+}
+$token = Invoke-RestMethod -Method POST `
+  -Uri "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token" `
+  -ContentType "application/x-www-form-urlencoded" `
+  -Body $body
+$partnerToken = $token.access_token
+```
+
+**2) Register**
+
+```powershell
+$domain = "fleet-xxx.vercel.app"   # scheme 없이 도메인만
+Invoke-RestMethod -Method POST `
+  -Uri "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/partner_accounts" `
+  -Headers @{ Authorization = "Bearer $partnerToken" } `
+  -ContentType "application/json" `
+  -Body (@{ domain = $domain } | ConvertTo-Json)
+```
+
+**3) 등록 확인**
+
+```powershell
+Invoke-RestMethod `
+  -Uri "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/partner_accounts/public_key?domain=$domain" `
+  -Headers @{ Authorization = "Bearer $partnerToken" }
+```
+
+#### 5.5.5 연동 재검증
+1. 배포 URL `/settings` → Tesla 계정 연결
+2. **지금 동기화** 또는 `POST /api/sync/vehicles`
+3. 설정 화면: `usedFallback` 없음, 412 오류 없음
+4. 대시보드에 본인 차량 실데이터 표시
+
+**트러블슈팅 요약**
+
+| 오류 | 원인 | 해결 |
+|------|------|------|
+| `Invalid audience` | 잘못된 리전 (`ap` 등) | `TESLA_FLEET_API_REGION=na` |
+| `412 must be registered` | Partner Register 미완료 | §5.5 절차 |
+| Register 실패 | localhost·공개키 미호스팅 | HTTPS 도메인 + `.well-known/...` 확인 |
+| Third-party 토큰으로 register 시도 | 토큰 종류 오류 | `client_credentials` Partner 토큰 사용 |
+
+### 5.6 Phase 3 검증
 ```powershell
 pnpm lint
 pnpm build
@@ -375,3 +467,4 @@ vercel
 | 2026-07-07 | Phase 2.2 실행 결과 반영 — 지도 Hero, 커스텀 마커, PageHeader, 탭·위젯 |
 | 2026-07-07 | Phase 3 실행 결과 반영 — Tesla OAuth, 동기화 API, 설정 화면 |
 | 2026-07-07 | Tesla 리전 정정 — 한국 `na`, `Invalid audience` 트러블슈팅 추가 |
+| 2026-07-07 | Phase 3.5 추가 — Partner Register(412) 절차, PowerShell 예시 |

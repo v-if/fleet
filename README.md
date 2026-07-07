@@ -19,7 +19,8 @@ pnpm dev
 
 Phase 2.1부터 충전·TPMS·센트리 등 Tesla API §5.2 필드가 Mock으로 표시됩니다.
 Phase 2.2부터 지도 Hero·커스텀 마커·Tesla EV 테마·탭/위젯 UI가 적용됩니다.
-Phase 3부터 Tesla Fleet API OAuth 연동·실데이터 동기화(Mock 폴백)가 지원됩니다.
+Phase 3부터 Tesla Fleet API OAuth 연동·동기화 파이프라인(Mock 폴백)이 지원됩니다.
+Phase 3.5에서 Partner Register 완료 시 본인 Tesla 실차량 데이터 연동이 가능합니다 ([체크리스트](./docs/development-checklist.md#phase-35-tesla-partner-register-m35)).
 
 ## 주요 스크립트
 

@@ -232,7 +232,8 @@
 - [x] `fleet_status`로 펌웨어·프로토콜·할인 자격 사전 확인
 - [x] `mock` ↔ `tesla` 환경변수 전환 검증 (30초 내 전환)
 
-**완료 기준**: 실제 테슬라 데이터(또는 실패 시 Mock 폴백)로 대시보드 갱신 ✅
+**완료 기준**: OAuth 연결 + Provider 동기화 파이프라인 동작 (실패 시 Mock 폴백) ✅  
+> **참고**: OAuth “계정 연결됨”만으로는 Fleet API 조회가 불가하다. `412 register` 해결은 **Phase 3.5** 참고.
 
 ### Phase 3 실행 메모
 - Tesla OAuth: `/api/auth/tesla` → callback `/api/auth/tesla/callback` → 설정 화면 `/settings`
@@ -243,6 +244,62 @@
 - Mock 폴백: `VEHICLE_DATA_PROVIDER=tesla` + 연동 실패 시 Mock으로 자동 전환, `SyncMetadata.usedFallback` 기록
 - 리전: `TESLA_FLEET_API_REGION=na` (한국·아시아태평양·북미, OAuth audience)
 - OAuth 연동 검증: `na` 리전으로 계정 연결 완료 (2026-07-07)
+- **412 register 미완료** — OAuth 성공 후 `GET /api/1/vehicles` 412 → Mock 폴백으로 대시보드 시연 가능, 실데이터는 Phase 3.5 필요
+
+---
+
+## Phase 3.5. Tesla Partner Register (M3.5)
+
+> 설치: [setup-guide.md](./setup-guide.md) §5.5
+> 근거: [requirements-tesla-api.md §2.5](./requirements-tesla-api.md) (Partner Register·412 대응)
+>
+> **배경**: Phase 3 OAuth는 사용자(Third-party) 토큰만 발급한다. Fleet API **데이터 조회**(`GET /api/1/vehicles` 등)는 앱이 해당 리전에 **Partner Register** 되어 있어야 한다. 미등록 시 `412` + `must be registered in the current region` 오류가 발생한다.
+
+### 사전 조건 (인프라)
+- [ ] **공개 HTTPS 도메인** 확보 (Vercel 배포 URL, ngrok 등) — `localhost`만으로는 register 불가
+- [ ] Tesla 포털 `allowed_origins`에 배포 도메인 등록
+- [ ] OAuth `redirect_uri`를 배포 URL로 추가 (로컬 URI와 병행 가능)
+- [ ] EC 키 쌍 생성 (secp256r1 / prime256v1)
+  ```powershell
+  openssl ecparam -name prime256v1 -genkey -noout -out private-key.pem
+  openssl ec -in private-key.pem -pubout -out public-key.pem
+  ```
+
+### 공개키 호스팅
+- [ ] 공개키를 아래 경로에 HTTPS로 호스팅
+  ```
+  https://{도메인}/.well-known/appspecific/com.tesla.3p.public-key.pem
+  ```
+- [ ] 브라우저/curl로 공개키 URL 접근 확인
+
+### Partner Register (`na` 리전 — 한국)
+- [ ] **Partner 토큰** 발급 (`grant_type=client_credentials`, OAuth 사용자 토큰과 별개)
+- [ ] `POST https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/partner_accounts` 호출
+  - `Authorization: Bearer {partner_token}`
+  - Body: `{"domain": "{도메인}"}` (scheme 제외, 예: `fleet-xxx.vercel.app`)
+- [ ] 등록 확인: `GET /api/1/partner_accounts/public_key?domain={도메인}` (partner 토큰)
+- [ ] (선택) `scripts/tesla-register.ps1` 또는 API 라우트로 register 자동화
+
+### 연동 검증
+- [ ] `/settings`에서 Tesla 재연결 (배포 URL 기준 OAuth)
+- [ ] `POST /api/sync/vehicles` 성공, `SyncMetadata.usedFallback=false`
+- [ ] `/settings` **최근 오류**에 412 메시지 없음
+- [ ] 대시보드에 **본인 Tesla 차량** 실데이터 표시 (Mock 12대 아님)
+- [ ] `provider: tesla` + 실제 VIN/배터리/위치 확인
+
+### 트러블슈팅 체크
+- [ ] `Invalid audience` → `TESLA_FLEET_API_REGION=na` (한국)
+- [ ] `412 must be registered` → Partner Register 미완료 (본 Phase)
+- [ ] `403 missing scopes` → 포털 스코프·앱 재연결(`prompt=consent`)
+- [ ] Partner 토큰 vs Third-party 토큰 혼동 금지 — register는 **client_credentials** 토큰 사용
+
+**완료 기준**: `GET /api/1/vehicles` 412 없이 본인 차량 실데이터가 대시보드에 반영
+
+### Phase 3.5 실행 메모
+- OAuth 연결됨 ≠ Fleet API 사용 가능 — Register는 **앱(파트너)** 단위 1회(리전별)
+- Register에 **공개 도메인 + 공개키 호스팅** 필수, 로컬만으로는 실데이터 연동 불가
+- Phase 3 Mock 폴백으로 데모데이 일정은 보호 가능 → Register는 배포 직전 스프린트로 분리
+- 참고: [Partner Endpoints — register](https://developer.tesla.com/docs/fleet-api/endpoints/partner-endpoints#register)
 
 ---
 
@@ -315,3 +372,4 @@
 | 2026-07-07 | Phase 2.2 완료 — 지도 Hero, 커스텀 마커, PageHeader/Breadcrumb, 위젯·탭·TPMS·배터리 게이지 |
 | 2026-07-07 | Phase 3 완료 — Tesla OAuth, TeslaVehicleProvider, 토큰 갱신, 동기화 API, Mock 폴백 |
 | 2026-07-07 | Tesla 리전 수정 — 한국은 `na`(NA+APAC), `ap` audience 오류 문서·코드 반영 |
+| 2026-07-07 | Phase 3.5 추가 — Tesla Partner Register(412) 체크리스트·setup/requirements 보강 |
