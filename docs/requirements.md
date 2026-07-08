@@ -106,6 +106,7 @@
 - 차량 소유자·운전자의 위치정보 및 개인정보 수집·이용에 대한 사전 동의를 확보해야 한다.
 - OEM API 연동 시 소유자 계정 인증(OAuth) 동의 절차를 준수한다.
 - **데이터 모델**: FMS 고객(User) · 테슬라 계정(TeslaAccount) · 차량(Vehicle) 계층 구조 및 연동 해제 정책은 [requirements-user-db.md](./requirements-user-db.md)를 따른다.
+- **감사 로그**: Tesla/FMS 민감 API의 기록·마스킹·추적 정책은 [requirements-log-db.md](./requirements-log-db.md)를 따른다.
 - 서비스 상용화 단계에서는 위치정보사업/위치기반서비스사업 신고 필요 여부를 검토한다.
 - 개인정보 처리방침을 마련하고, 데이터 접근 권한과 보관 기간을 정의한다.
 - **데모 단계 완화책**: 자가 소유 차량 또는 Mock 데이터로 시연하여 법적 리스크를 최소화한다.
@@ -188,6 +189,8 @@
 | 스냅샷 | 특정 시점의 차량 최신 상태(위치·배터리 등) 데이터 |
 | TeslaAccount | FMS에 연동된 테슬라 OAuth 계정 — 토큰·차량 목록의 단위 ([requirements-user-db.md](./requirements-user-db.md)) |
 | 연동 해제(Unlink) | FMS 관제 대상에서 차량·계정을 제외하는 Soft Delete — Telemetry 구독 선해제 필요 |
+| AuditLog | 사용자 행위 중심의 감사 로그 — 누가 어떤 민감 작업을 수행했는지 기록 |
+| ApiCallLog | Tesla/FMS HTTP 요청·응답 중심의 통신 로그 — request/response·status·duration 기록 |
 | Geofencing | 지도상 관심 지역 설정 및 진출입 감지 기능 |
 | 폴링 | 일정 주기로 데이터를 반복 조회해 갱신하는 방식 |
 
@@ -201,3 +204,4 @@
 | 2026-07-08 | User·TeslaAccount·Vehicle 데이터 모델 — [requirements-user-db.md](./requirements-user-db.md) 연계, 용어 추가 |
 | 2026-07-08 | Phase 3.9 로그인 플로우 반영 — 실제 사용자 로그인/로그아웃, 차량 0대 초기 상태 |
 | 2026-07-08 | Phase 3.9 구현 반영 — TeslaAccount·unlink API |
+| 2026-07-08 | API 로그·감사 요구사항 연계 — [requirements-log-db.md](./requirements-log-db.md), AuditLog/ApiCallLog 용어 추가 |

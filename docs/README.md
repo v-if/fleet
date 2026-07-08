@@ -11,6 +11,7 @@
 | [requirements-tech-stack.md](./requirements-tech-stack.md) | 기술스택 정의 (Next.js+Supabase), 아키텍처·수집전략·보안 | 어떻게 만들지 정할 때 |
 | [requirements-db.md](./requirements-db.md) | DB 전략, Vercel 배포 오류 분석, Phase 3.6 Supabase PostgreSQL 요구사항 | DB 전환·배포 DB 이슈 해결할 때 |
 | [requirements-user-db.md](./requirements-user-db.md) | User·TeslaAccount·Vehicle 계층 DB, 연동 해제(Soft Delete)·Telemetry 요구사항 | 멀티 계정·차량 스키마 설계할 때 |
+| [requirements-log-db.md](./requirements-log-db.md) | Tesla/FMS API 감사 로그 DB, 마스킹, 인터셉터·AuditLog 설계 | 로그 적재·감사 추적 설계할 때 |
 | [auth-user-mapping.md](./auth-user-mapping.md) | Phase 4 Supabase Auth ↔ FMS User 매핑 설계 메모 | 인증·다테넌시 구현 전 |
 | [requirements-tesla-api.md](./requirements-tesla-api.md) | 테슬라 Fleet API 조회/제어 기능 정리, FMS 화면 적용안 | 데이터 연동·제어 기능 설계할 때 |
 | [requirements-front-design.md](./requirements-front-design.md) | Pleos Fleet UI 벤치마킹, 프론트 구성·디자인 개선 요구사항 | 화면 UI/UX 개선할 때 |
@@ -85,3 +86,5 @@
 | 2026-07-08 | 차량 추가 모달 미세 조정 — 배경 오버레이 추가 완화 |
 | 2026-07-08 | TeslaAccount 세션 귀속 — OAuth·동기화 = 로그인 User, 레거시 admin 자동 생성 제거 |
 | 2026-07-08 | Tesla 저장 정책 보강 — OAuth callback 원위치 복귀, placeholder/default 값 대신 `null` 저장 |
+| 2026-07-08 | requirements-log-db.md — API 로그·감사 DB 요구사항 정의 |
+| 2026-07-08 | Phase 4 P0 로그 구현 — `AuditLog`·`ApiCallLog`, Tesla/FMS 변경 API 로그 적재, 마스킹 |

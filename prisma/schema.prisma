@@ -40,6 +40,17 @@ enum TeslaAccountRole {
   DRIVER
 }
 
+enum AuditLogStatus {
+  SUCCESS
+  FAILURE
+  DENIED
+}
+
+enum ApiCallDirection {
+  INBOUND
+  OUTBOUND
+}
+
 model User {
   id            String         @id @default(cuid())
   email         String         @unique
@@ -47,6 +58,8 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   teslaAccounts TeslaAccount[]
+  auditLogs     AuditLog[]     @relation("AuditActorUser")
+  apiCallLogs   ApiCallLog[]   @relation("ApiCallActorUser")
 }
 
 model TeslaAccount {
@@ -65,6 +78,8 @@ model TeslaAccount {
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   vehicles     Vehicle[]
+  auditLogs    AuditLog[]
+  apiCallLogs  ApiCallLog[]
 
   @@unique([userId, teslaEmail])
   @@index([userId])
@@ -94,6 +109,8 @@ model Vehicle {
   updatedAt      DateTime         @updatedAt
   snapshots      VehicleSnapshot[]
   events         VehicleEvent[]
+  auditLogs      AuditLog[]
+  apiCallLogs    ApiCallLog[]
 
   @@unique([teslaAccountId, oemVehicleId])
   @@index([teslaAccountId])
@@ -144,5 +161,70 @@ model VehicleEvent {
   createdAt  DateTime  @default(now())
 
   @@index([vehicleId])
+  @@index([occurredAt])
+}
+
+model AuditLog {
+  id             String         @id @default(cuid())
+  occurredAt     DateTime       @default(now())
+  actorUserId    String?
+  actorUser      User?          @relation("AuditActorUser", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorEmail     String?
+  action         String
+  targetType     String?
+  targetId       String?
+  vehicleId      String?
+  vehicle        Vehicle?       @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  teslaAccountId String?
+  teslaAccount   TeslaAccount?  @relation(fields: [teslaAccountId], references: [id], onDelete: SetNull)
+  requestId      String?
+  status         AuditLogStatus
+  summary        String
+  metadata       Json?
+  createdAt      DateTime       @default(now())
+  apiCallLogs    ApiCallLog[]
+
+  @@index([actorUserId])
+  @@index([vehicleId])
+  @@index([teslaAccountId])
+  @@index([requestId])
+  @@index([action])
+  @@index([occurredAt])
+}
+
+model ApiCallLog {
+  id              String           @id @default(cuid())
+  occurredAt      DateTime         @default(now())
+  direction       ApiCallDirection
+  system          String
+  requestId       String?
+  auditLogId      String?
+  auditLog        AuditLog?        @relation(fields: [auditLogId], references: [id], onDelete: SetNull)
+  actorUserId     String?
+  actorUser       User?            @relation("ApiCallActorUser", fields: [actorUserId], references: [id], onDelete: SetNull)
+  teslaAccountId  String?
+  teslaAccount    TeslaAccount?    @relation(fields: [teslaAccountId], references: [id], onDelete: SetNull)
+  vehicleId       String?
+  vehicle         Vehicle?         @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  method          String
+  url             String
+  path            String?
+  statusCode      Int?
+  success         Boolean
+  durationMs      Int?
+  requestHeaders  Json?
+  requestBody     Json?
+  responseHeaders Json?
+  responseBody    Json?
+  errorCode       String?
+  errorMessage    String?
+  createdAt       DateTime         @default(now())
+
+  @@index([requestId])
+  @@index([auditLogId])
+  @@index([actorUserId])
+  @@index([teslaAccountId])
+  @@index([vehicleId])
+  @@index([system])
   @@index([occurredAt])
 }

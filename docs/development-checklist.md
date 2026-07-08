@@ -588,6 +588,9 @@
 ### 품질·보안
 - [ ] Vitest 단위 테스트 (Provider·판정 로직)
 - [ ] Playwright E2E (데모 시나리오 1~2종)
+- [x] API 감사 로그 스키마 — `AuditLog`·`ApiCallLog` 설계/Prisma 반영 ([requirements-log-db.md](./requirements-log-db.md))
+- [x] Tesla/FMS API 로그 적재 유틸 — 인터셉터 + 명시적 AuditLog 혼합 전략 구현
+- [x] 토큰·비밀번호·쿠키 마스킹 정책 구현 및 검증
 - [ ] 환경변수·키 git 제외 재확인
 - [ ] 개인정보·위치정보 준수 점검 (§9.1 / 데모는 Mock·자가차량)
 
@@ -670,4 +673,6 @@
 | 2026-07-08 | Phase 3.9 완료 — TeslaAccount 스키마·마이그레이션·unlink API·active 필터 |
 | 2026-07-08 | Phase 3.9 보강 — OAuth callback 원위치 복귀, placeholder/default 값 `null` 정책, `teslaAccountId` 매핑 명확화 |
 | 2026-07-08 | Phase 3.9 보강 — Tesla OAuth를 세션 User에 귀속, `admin@fleet.local` 자동 생성 제거 |
+| 2026-07-08 | Phase 4 선행 — API 로그·감사 DB 요구사항([requirements-log-db.md](./requirements-log-db.md)) 및 체크리스트 추가 |
+| 2026-07-08 | Phase 4 P0 1차 구현 — `AuditLog`·`ApiCallLog`, Tesla/FMS 변경 API 로그 적재, 민감정보 마스킹 |
 

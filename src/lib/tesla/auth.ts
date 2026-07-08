@@ -1,3 +1,11 @@
+import { ApiCallDirection } from "@prisma/client";
+
+import {
+  createApiCallLog,
+  createRequestId,
+  sanitizeBody,
+  sanitizeHeaders,
+} from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { unlinkAllVehiclesForAccount } from "@/lib/vehicle-unlink";
 import { activeTeslaAccountWhere } from "@/lib/vehicle-query";
@@ -18,6 +26,8 @@ function buildFormBody(params: Record<string, string>) {
 }
 
 async function requestToken(body: Record<string, string>): Promise<TeslaTokenResponse> {
+  const startedAt = Date.now();
+  const requestId = createRequestId();
   const response = await fetch(TESLA_AUTH_TOKEN_URL, {
     method: "POST",
     headers: {
@@ -25,13 +35,32 @@ async function requestToken(body: Record<string, string>): Promise<TeslaTokenRes
     },
     body: buildFormBody(body),
   });
+  const responseText = await response.text();
+
+  await createApiCallLog({
+    direction: ApiCallDirection.OUTBOUND,
+    system: "TESLA",
+    requestId,
+    method: "POST",
+    url: TESLA_AUTH_TOKEN_URL,
+    path: "/oauth2/v3/token",
+    statusCode: response.status,
+    success: response.ok,
+    durationMs: Date.now() - startedAt,
+    requestHeaders: sanitizeHeaders({
+      "Content-Type": "application/x-www-form-urlencoded",
+    }),
+    requestBody: sanitizeBody(body),
+    responseHeaders: sanitizeHeaders(response.headers),
+    responseBody: sanitizeBody(responseText),
+    errorMessage: response.ok ? null : `Tesla token request failed (${response.status})`,
+  });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Tesla token request failed (${response.status}): ${errorText}`);
+    throw new Error(`Tesla token request failed (${response.status}): ${responseText}`);
   }
 
-  return (await response.json()) as TeslaTokenResponse;
+  return JSON.parse(responseText) as TeslaTokenResponse;
 }
 
 function decodeJwtPayload(token: string) {

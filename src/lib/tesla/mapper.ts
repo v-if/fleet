@@ -1,5 +1,8 @@
+import { ApiCallDirection } from "@prisma/client";
 import type { ChargingStatus, EventType, VehicleStatus } from "@prisma/client";
 
+import { createApiCallLog, createRequestId, sanitizeBody, sanitizeHeaders } from "@/lib/audit-log";
+import { prisma } from "@/lib/prisma";
 import { getValidTeslaAccessToken } from "./auth";
 import { getTeslaRegionConfig } from "./config";
 import type {
@@ -192,6 +195,16 @@ export class TeslaFleetClient {
       throw new Error("Tesla user context is missing");
     }
 
+    const startedAt = Date.now();
+    const requestId = createRequestId();
+    const teslaAccount = await prisma.teslaAccount.findFirst({
+      where: {
+        userId: this.userId,
+        unlinkedAt: null,
+      },
+      select: { id: true },
+      orderBy: { linkedAt: "desc" },
+    });
     const accessToken = await getValidTeslaAccessToken(this.userId);
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...init,
@@ -201,13 +214,36 @@ export class TeslaFleetClient {
         ...(init?.headers ?? {}),
       },
     });
+    const responseText = await response.text();
+
+    await createApiCallLog({
+      direction: ApiCallDirection.OUTBOUND,
+      system: "TESLA",
+      requestId,
+      actorUserId: this.userId,
+      teslaAccountId: teslaAccount?.id ?? null,
+      method: init?.method ?? "GET",
+      url: `${this.baseUrl}${path}`,
+      path,
+      statusCode: response.status,
+      success: response.ok,
+      durationMs: Date.now() - startedAt,
+      requestHeaders: sanitizeHeaders({
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        ...(init?.headers ?? {}),
+      }),
+      requestBody: sanitizeBody(init?.body ? String(init.body) : null),
+      responseHeaders: sanitizeHeaders(response.headers),
+      responseBody: sanitizeBody(responseText),
+      errorMessage: response.ok ? null : `Tesla Fleet API ${path} failed (${response.status})`,
+    });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Tesla Fleet API ${path} failed (${response.status}): ${errorText}`);
+      throw new Error(`Tesla Fleet API ${path} failed (${response.status}): ${responseText}`);
     }
 
-    return (await response.json()) as T;
+    return JSON.parse(responseText) as T;
   }
 
   async listVehicles(): Promise<TeslaVehicleListItem[]> {

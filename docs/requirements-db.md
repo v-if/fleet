@@ -232,6 +232,8 @@ Phase 4     Supabase Auth       — 관리자 로그인·API 보호
      ↓
 Phase 3.9   User·TeslaAccount·Vehicle — 멀티 계정·연동 해제 스키마 ([requirements-user-db.md](./requirements-user-db.md))
      ↓
+Phase 4     AuditLog·ApiCallLog — 감사·추적 로그 DB ([requirements-log-db.md](./requirements-log-db.md))
+     ↓
 Phase 5     Production DB 분리  — 데모데이·운영
 ```
 
@@ -279,3 +281,5 @@ Phase 5     Production DB 분리  — 데모데이·운영
 | 2026-07-07 | Vercel 배포 검증 완료 — env 등록·재배포, API 200, mock·tesla 연동 |
 | 2026-07-08 | Phase 3.9 연계 — User·TeslaAccount·Vehicle 계층 요구사항은 [requirements-user-db.md](./requirements-user-db.md) 참고 |
 | 2026-07-08 | Phase 3.9 구현 — `TeslaAccount` 테이블, `TeslaOAuthToken` 제거, unlink API |
+| 2026-07-08 | Phase 4 선행 — API 로그·감사 DB 요구사항 [requirements-log-db.md](./requirements-log-db.md) 연계 |
+| 2026-07-08 | Phase 4 P0 로그 구현 — `AuditLog`·`ApiCallLog` 테이블, 감사 로그 마이그레이션 반영 |
