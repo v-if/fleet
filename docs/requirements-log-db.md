@@ -146,6 +146,16 @@ Vehicle 1 --- N AuditLog / ApiCallLog
 | 향후 원격 제어 명령 | AuditLog + ApiCallLog |
 | Tesla API 4xx/5xx | ApiCallLog |
 
+### 6.1.1 로그 시각 저장 정책
+
+`AuditLog.occurredAt`, `ApiCallLog.occurredAt`, `createdAt` 계열 컬럼은 **PostgreSQL `timestamptz(3)`** 로 저장한다.
+
+원칙:
+
+- DB 저장 시각과 UI 표시 시각이 9시간 어긋나 보이지 않도록 DB timezone은 `Asia/Seoul` 기준으로 운영한다.
+- 단, 의미적으로는 "한국 시계값 문자열"이 아니라 **절대 시각이 보존된 timezone-aware 값**이어야 한다.
+- 장애 분석 시 DB 콘솔, Prisma 조회 결과, UI `ko-KR` 렌더링이 모두 같은 시점을 가리켜야 한다.
+
 ### 6.2 본문 저장 원칙
 
 | 항목 | 정책 |

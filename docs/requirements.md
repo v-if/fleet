@@ -107,6 +107,7 @@
 - OEM API 연동 시 소유자 계정 인증(OAuth) 동의 절차를 준수한다.
 - **데이터 모델**: FMS 고객(User) · 테슬라 계정(TeslaAccount) · 차량(Vehicle) 계층 구조 및 연동 해제 정책은 [requirements-user-db.md](./requirements-user-db.md)를 따른다.
 - **감사 로그**: Tesla/FMS 민감 API의 기록·마스킹·추적 정책은 [requirements-log-db.md](./requirements-log-db.md)를 따른다.
+- **데모용 가상 차량**: 실차 `sleep` 상태 대응을 위한 `차량 추가(가상)` 시드 정책은 [requirements-virtual-vehicle-seeding.md](./requirements-virtual-vehicle-seeding.md)를 따른다.
 - 서비스 상용화 단계에서는 위치정보사업/위치기반서비스사업 신고 필요 여부를 검토한다.
 - 개인정보 처리방침을 마련하고, 데이터 접근 권한과 보관 기간을 정의한다.
 - **데모 단계 완화책**: 자가 소유 차량 또는 Mock 데이터로 시연하여 법적 리스크를 최소화한다.
@@ -205,3 +206,6 @@
 | 2026-07-08 | Phase 3.9 로그인 플로우 반영 — 실제 사용자 로그인/로그아웃, 차량 0대 초기 상태 |
 | 2026-07-08 | Phase 3.9 구현 반영 — TeslaAccount·unlink API |
 | 2026-07-08 | API 로그·감사 요구사항 연계 — [requirements-log-db.md](./requirements-log-db.md), AuditLog/ApiCallLog 용어 추가 |
+| 2026-07-08 | 데모 안정화 요구사항 추가 — `차량 추가(가상)` 기반 가상 차량 시드 정책 [requirements-virtual-vehicle-seeding.md](./requirements-virtual-vehicle-seeding.md) |
+| 2026-07-08 | Phase 4.1 구현 반영 — `/vehicles` 가상 차량 시드 UI/API 및 sync guard 적용 |
+| 2026-07-08 | DB 시간대 정책 반영 — PostgreSQL `DateTime`을 `timestamptz(3)` + `Asia/Seoul` 기준으로 통일 |

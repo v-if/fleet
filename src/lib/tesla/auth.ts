@@ -20,6 +20,7 @@ import {
   TESLA_OAUTH_SCOPES,
 } from "./config";
 import type { TeslaTokenResponse } from "./types";
+import type { TeslaAccount } from "@prisma/client";
 
 function buildFormBody(params: Record<string, string>) {
   return new URLSearchParams(params).toString();
@@ -79,6 +80,14 @@ function decodeJwtPayload(token: string) {
 function getTeslaEmailFromToken(token: TeslaTokenResponse) {
   const email = token.id_token ? decodeJwtPayload(token.id_token)?.email : undefined;
   return email?.trim().toLowerCase() || null;
+}
+
+function isVirtualTeslaAccount(account: Pick<TeslaAccount, "teslaEmail" | "scope" | "accessToken">) {
+  return (
+    account.teslaEmail?.endsWith("@virtual.tesla.local") === true ||
+    account.scope?.startsWith("virtual ") === true ||
+    account.accessToken.startsWith("virtual-access-")
+  );
 }
 
 async function persistTokenForUser(
@@ -181,20 +190,22 @@ export async function refreshAccessTokenForAccount(
 }
 
 export async function getActiveTeslaAccountForUser(userId: string) {
-  return prisma.teslaAccount.findFirst({
+  const accounts = await prisma.teslaAccount.findMany({
     where: {
       userId,
       ...activeTeslaAccountWhere,
     },
     orderBy: { linkedAt: "desc" },
   });
+  return accounts.find((account) => !isVirtualTeslaAccount(account)) ?? null;
 }
 
 export async function getAnyActiveTeslaAccount() {
-  return prisma.teslaAccount.findFirst({
+  const accounts = await prisma.teslaAccount.findMany({
     where: activeTeslaAccountWhere,
     orderBy: { linkedAt: "desc" },
   });
+  return accounts.find((account) => !isVirtualTeslaAccount(account)) ?? null;
 }
 
 /** @deprecated Use getActiveTeslaAccount — kept for status API compatibility */

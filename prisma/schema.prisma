@@ -55,8 +55,8 @@ model User {
   id            String         @id @default(cuid())
   email         String         @unique
   name          String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime       @updatedAt @db.Timestamptz(3)
   teslaAccounts TeslaAccount[]
   auditLogs     AuditLog[]     @relation("AuditActorUser")
   apiCallLogs   ApiCallLog[]   @relation("ApiCallActorUser")
@@ -70,13 +70,13 @@ model TeslaAccount {
   region       String?
   accessToken  String
   refreshToken String
-  expiresAt    DateTime
+  expiresAt    DateTime          @db.Timestamptz(3)
   scope        String?
   role         TeslaAccountRole?
-  linkedAt     DateTime          @default(now())
-  unlinkedAt   DateTime?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  linkedAt     DateTime          @default(now()) @db.Timestamptz(3)
+  unlinkedAt   DateTime?         @db.Timestamptz(3)
+  createdAt    DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime          @updatedAt @db.Timestamptz(3)
   vehicles     Vehicle[]
   auditLogs    AuditLog[]
   apiCallLogs  ApiCallLog[]
@@ -88,11 +88,11 @@ model TeslaAccount {
 
 model SyncMetadata {
   id           String    @id @default("default")
-  lastSyncedAt DateTime?
+  lastSyncedAt DateTime? @db.Timestamptz(3)
   provider     String?
   usedFallback Boolean   @default(false)
   lastError    String?
-  updatedAt    DateTime  @updatedAt
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(3)
 }
 
 model Vehicle {
@@ -103,10 +103,10 @@ model Vehicle {
   oemVehicleId   String?
   teslaAccountId String?
   teslaAccount   TeslaAccount?    @relation(fields: [teslaAccountId], references: [id], onDelete: SetNull)
-  unlinkedAt     DateTime?
+  unlinkedAt     DateTime?         @db.Timestamptz(3)
   isDeleted      Boolean          @default(false)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
   snapshots      VehicleSnapshot[]
   events         VehicleEvent[]
   auditLogs      AuditLog[]
@@ -143,8 +143,8 @@ model VehicleSnapshot {
   serviceStatus       ServiceStatus?
   softwareVersion     String?
   nearbyChargingSites String?
-  lastUpdatedAt       DateTime       @default(now())
-  createdAt           DateTime       @default(now())
+  lastUpdatedAt       DateTime       @default(now()) @db.Timestamptz(3)
+  createdAt           DateTime       @default(now()) @db.Timestamptz(3)
 
   @@index([vehicleId])
   @@index([lastUpdatedAt])
@@ -156,9 +156,9 @@ model VehicleEvent {
   vehicle    Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   type       EventType
   message    String
-  occurredAt DateTime  @default(now())
-  resolvedAt DateTime?
-  createdAt  DateTime  @default(now())
+  occurredAt DateTime  @default(now()) @db.Timestamptz(3)
+  resolvedAt DateTime? @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
 
   @@index([vehicleId])
   @@index([occurredAt])
@@ -166,7 +166,7 @@ model VehicleEvent {
 
 model AuditLog {
   id             String         @id @default(cuid())
-  occurredAt     DateTime       @default(now())
+  occurredAt     DateTime       @default(now()) @db.Timestamptz(3)
   actorUserId    String?
   actorUser      User?          @relation("AuditActorUser", fields: [actorUserId], references: [id], onDelete: SetNull)
   actorEmail     String?
@@ -181,7 +181,7 @@ model AuditLog {
   status         AuditLogStatus
   summary        String
   metadata       Json?
-  createdAt      DateTime       @default(now())
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
   apiCallLogs    ApiCallLog[]
 
   @@index([actorUserId])
@@ -194,7 +194,7 @@ model AuditLog {
 
 model ApiCallLog {
   id              String           @id @default(cuid())
-  occurredAt      DateTime         @default(now())
+  occurredAt      DateTime         @default(now()) @db.Timestamptz(3)
   direction       ApiCallDirection
   system          String
   requestId       String?
@@ -218,7 +218,7 @@ model ApiCallLog {
   responseBody    Json?
   errorCode       String?
   errorMessage    String?
-  createdAt       DateTime         @default(now())
+  createdAt       DateTime         @default(now()) @db.Timestamptz(3)
 
   @@index([requestId])
   @@index([auditLogId])

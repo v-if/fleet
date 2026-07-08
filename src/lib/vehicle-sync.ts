@@ -106,11 +106,22 @@ async function upsertSnapshot(
   return vehicle;
 }
 
-async function replaceEvents(events: VehicleEventData[]) {
+async function replaceEvents(
+  events: VehicleEventData[],
+  options: { teslaAccountId?: string | null } = {},
+) {
+  const { teslaAccountId } = options;
   await prisma.vehicleEvent.deleteMany({
-    where: {
-      vehicle: activeVehicleWhere,
-    },
+    where: teslaAccountId
+      ? {
+          vehicle: {
+            ...activeVehicleWhere,
+            teslaAccountId,
+          },
+        }
+      : {
+          vehicle: activeVehicleWhere,
+        },
   });
 
   for (const event of events) {
@@ -190,11 +201,6 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
       : await getAnyActiveTeslaAccount();
     if (!account) {
       await resetMockFleet();
-      await prisma.vehicleEvent.deleteMany({
-        where: {
-          vehicle: activeVehicleWhere,
-        },
-      });
       await prisma.syncMetadata.upsert({
         where: { id: "default" },
         update: {
@@ -212,10 +218,14 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
         },
       });
 
+      const activeCount = await prisma.vehicle.count({
+        where: activeVehicleWhere,
+      });
+
       return {
         provider: "tesla",
         usedFallback: false,
-        vehicleCount: 0,
+        vehicleCount: activeCount,
         eventCount: 0,
         lastSyncedAt: lastSyncedAt.toISOString(),
       };
@@ -270,7 +280,9 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
     events = [];
   }
 
-  await replaceEvents(events);
+  await replaceEvents(events, {
+    teslaAccountId: effectiveProvider === "tesla" ? teslaAccountId : null,
+  });
 
   await prisma.syncMetadata.upsert({
     where: { id: "default" },

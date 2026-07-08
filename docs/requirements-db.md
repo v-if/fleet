@@ -165,6 +165,23 @@ datasource db {
 3. `pnpm db:seed`로 Mock 12대 + 이벤트 주입
 4. Vercel 재배포 후 `/api/vehicles` 200 확인
 
+#### 4.4.4 DateTime / Timezone 정책
+
+PostgreSQL `DateTime` 컬럼은 기본 `timestamp without time zone`으로 두지 않고, **`timestamptz(3)` 기준**으로 관리한다.
+
+이유:
+
+- 애플리케이션은 `new Date()` 기반으로 절대 시각(UTC instant)을 생성한다.
+- `timestamp without time zone`은 이 값을 지역 시각 정보 없이 저장하므로, DB 콘솔에서 **UTC처럼 보이는 9시간 차이**가 발생할 수 있다.
+- 차량 스냅샷, 로그, 동기화 시각은 **정렬·비교·추적**이 중요하므로 절대 시각 보존이 필요하다.
+
+운영 원칙:
+
+1. Prisma `DateTime`은 PostgreSQL에서 `@db.Timestamptz(3)`로 매핑한다.
+2. DB 기본 timezone은 **`Asia/Seoul`** 로 맞춘다.
+3. 기존 `timestamp` 데이터는 과거 저장값이 UTC 기준으로 들어간 것으로 보고 `AT TIME ZONE 'UTC'` 방식으로 `timestamptz`로 변환한다.
+4. UI/API 표시는 계속 `ko-KR` locale 기반으로 렌더링한다.
+
 ### 4.5 환경 변수 요구사항
 
 #### Vercel (Production / Preview)
@@ -216,6 +233,7 @@ DB(3.6) 없이는 3·4·5 단계 API가 500으로 실패한다.
 | Connection pool 고갈 | Supabase pooler URL + Prisma `directUrl` 패턴 |
 | 로컬·배포 DB 데이터 불일치 | 시드·sync API로 재주입, 데모는 Mock 폴백 유지 |
 | Phase 4 Auth와 혼동 | 3.6은 DB만, Auth는 체크리스트 Phase 4에 명시 유지 |
+| DateTime 9시간 오차 혼선 | `timestamptz(3)` + DB timezone `Asia/Seoul`로 통일 |
 
 ---
 

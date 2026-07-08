@@ -599,7 +599,23 @@
 - [ ] 네트워크 불안정 대비 로컬/Mock 폴백 리허설
 - [ ] 성능 점검 (첫 로딩 3초 이내, 차량 10대+ 표시)
 
+### Phase 4.1 가상 차량 시드 (P0)
+- [x] 요구사항 문서 확정 — [requirements-virtual-vehicle-seeding.md](./requirements-virtual-vehicle-seeding.md)
+- [x] `/vehicles` 화면 — `차량 추가` 옆 `차량 추가(가상)` 버튼
+- [x] 가상 추가는 실제 Tesla OAuth/실 API 호출 없이 DB 등록만 수행
+- [x] callback 완료 상태를 가정한 `TeslaAccount` 생성 + 현재 로그인 User 귀속
+- [x] 가상 `TeslaAccount`당 차량 1~5대 랜덤 생성
+- [x] 차량/스냅샷 값은 [requirements-tesla-fleet-api-sample-response.md](./requirements-tesla-fleet-api-sample-response.md) 기반 랜덤 생성
+- [x] 배터리/충전/위치/TPMS/잠금/문/창문/공조/SW 버전 포함
+- [x] 일부 차량은 이상 상태/저배터리/오프라인 등 시연용 분포 반영
+- [x] 가상 차량은 실동기화/soft unlink 정책과 충돌하지 않도록 출처 구분
+- [x] 가상 차량 생성도 감사 로그(`AuditLog`/`ApiCallLog`) 대상 포함
+
 **완료 기준**: 정량 지표(`requirements.md` §11.2) 충족 + 무중단 리허설 성공
+
+> **구현 메모 (2026-07-08)**: `/api/vehicles/virtual` 추가, 가상 TeslaAccount 1건 + Vehicle 1~5대 + VehicleSnapshot/VehicleEvent 생성, `virtual.tesla.local` 이메일·`virtual` scope 패턴으로 실 Tesla sync 대상에서 제외.
+>
+> **추가 메모 (2026-07-08)**: PostgreSQL `DateTime` 컬럼을 `timestamptz(3)`로 전환하고 DB timezone을 `Asia/Seoul`로 맞춰, 테이블 저장 시각과 한국시간 표시 차이(UTC 9시간 오차)를 해소.
 
 ---
 
@@ -675,4 +691,5 @@
 | 2026-07-08 | Phase 3.9 보강 — Tesla OAuth를 세션 User에 귀속, `admin@fleet.local` 자동 생성 제거 |
 | 2026-07-08 | Phase 4 선행 — API 로그·감사 DB 요구사항([requirements-log-db.md](./requirements-log-db.md)) 및 체크리스트 추가 |
 | 2026-07-08 | Phase 4 P0 1차 구현 — `AuditLog`·`ApiCallLog`, Tesla/FMS 변경 API 로그 적재, 민감정보 마스킹 |
+| 2026-07-08 | Phase 4.1 추가 — sleep 상태 대안용 가상 차량 시드 요구사항·체크리스트 ([requirements-virtual-vehicle-seeding.md](./requirements-virtual-vehicle-seeding.md)) |
 

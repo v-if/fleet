@@ -14,6 +14,9 @@ export function FleetVehiclesListView() {
   const refreshVehicles = useVehicleRefresh();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isSeedingVirtual, setIsSeedingVirtual] = useState(false);
+  const [seedMessage, setSeedMessage] = useState<string | null>(null);
+  const [seedError, setSeedError] = useState<string | null>(null);
   const { isOpen, openModal, closeModal } = useModal();
 
   async function handleRefresh() {
@@ -28,6 +31,36 @@ export function FleetVehiclesListView() {
   function handleConnectTesla() {
     setIsConnecting(true);
     window.location.href = "/api/auth/tesla?returnTo=/vehicles";
+  }
+
+  async function handleSeedVirtualVehicles() {
+    setIsSeedingVirtual(true);
+    setSeedMessage(null);
+    setSeedError(null);
+
+    try {
+      const response = await fetch("/api/vehicles/virtual", {
+        method: "POST",
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | { vehicleCount?: number; error?: string }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "가상 차량 추가에 실패했습니다.");
+      }
+
+      await refreshVehicles();
+      setSeedMessage(`가상 차량 ${payload?.vehicleCount ?? 0}대가 추가되었습니다.`);
+    } catch (seedVehicleError) {
+      setSeedError(
+        seedVehicleError instanceof Error
+          ? seedVehicleError.message
+          : "가상 차량 추가에 실패했습니다.",
+      );
+    } finally {
+      setIsSeedingVirtual(false);
+    }
   }
 
   if (isLoading) {
@@ -51,11 +84,26 @@ export function FleetVehiclesListView() {
         onRefresh={() => void handleRefresh()}
         isRefreshing={isRefreshing || isFetching}
         actions={
-          <Button size="sm" onClick={openModal}>
-            차량 추가
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => void handleSeedVirtualVehicles()} disabled={isSeedingVirtual}>
+              {isSeedingVirtual ? "생성 중..." : "차량 추가(가상)"}
+            </Button>
+            <Button size="sm" onClick={openModal}>
+              차량 추가
+            </Button>
+          </div>
         }
       />
+      {seedMessage ? (
+        <div className="rounded-2xl border border-success-200 bg-success-50 p-4 text-theme-sm text-success-700">
+          {seedMessage}
+        </div>
+      ) : null}
+      {seedError ? (
+        <div className="rounded-2xl border border-error-200 bg-error-50 p-4 text-theme-sm text-error-700">
+          {seedError}
+        </div>
+      ) : null}
       <FleetVehicleTable vehicles={data.vehicles} />
       <Modal
         isOpen={isOpen}
