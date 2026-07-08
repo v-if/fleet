@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { VehicleMap } from "@/components/fleet/vehicle-map";
 import { PageHeader } from "@/components/layout/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/shadcn/ui/card";
 import { useVehicles, useVehicleRefresh } from "@/hooks/use-vehicles";
 import { toMapVehicles } from "@/lib/map-utils";
 

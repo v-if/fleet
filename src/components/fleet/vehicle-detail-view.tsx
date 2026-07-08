@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { AlertCircle, Car } from "lucide-react";
 
 import { BatteryHealthGauge } from "@/components/fleet/battery-health-gauge";
 import { IssueTag } from "@/components/fleet/issue-tag";
@@ -9,10 +10,10 @@ import { TpmsDiagram } from "@/components/fleet/tpms-diagram";
 import { VehicleMap } from "@/components/fleet/vehicle-map";
 import { PageHeader } from "@/components/layout/page-header";
 import { RefreshButton } from "@/components/layout/refresh-button";
-import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/shadcn/ui/badge";
+import { Button, buttonVariants } from "@/components/shadcn/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/shadcn/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn/ui/tabs";
 import { useVehicleDetail, useVehicleRefresh } from "@/hooks/use-vehicles";
 import { cn } from "@/lib/utils";
 import {
@@ -106,8 +107,8 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
       <>
         <PageHeader
           breadcrumbs={[
-            { label: "차량", href: "/vehicles" },
-            { label: "차량 목록", href: "/vehicles" },
+            { label: "차량", href: "/fleet/vehicles" },
+            { label: "차량 목록", href: "/fleet/vehicles" },
             { label: "차량 상세" },
           ]}
           title="차량 상세"
@@ -123,8 +124,8 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
       <>
         <PageHeader
           breadcrumbs={[
-            { label: "차량", href: "/vehicles" },
-            { label: "차량 목록", href: "/vehicles" },
+            { label: "차량", href: "/fleet/vehicles" },
+            { label: "차량 목록", href: "/fleet/vehicles" },
             { label: "차량 상세" },
           ]}
           title="차량 상세"
@@ -133,7 +134,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
           <p className="text-sm text-destructive">
             {error?.message ?? "차량 정보를 불러오지 못했습니다."}
           </p>
-          <Link href="/vehicles" className={cn(buttonVariants({ variant: "outline" }))}>
+          <Link href="/fleet/vehicles" className={cn(buttonVariants({ variant: "outline" }))}>
             목록으로
           </Link>
         </div>
@@ -167,8 +168,8 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
     <>
       <PageHeader
         breadcrumbs={[
-          { label: "차량", href: "/vehicles" },
-          { label: "차량 목록", href: "/vehicles" },
+          { label: "차량", href: "/fleet/vehicles" },
+          { label: "차량 목록", href: "/fleet/vehicles" },
           { label: vehicle.plateNumber },
         ]}
         title={vehicle.plateNumber}
@@ -184,41 +185,57 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
         }
       />
 
-      <div className="border-b bg-muted/30 px-6 py-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge variant={STATUS_BADGE_VARIANT[status]} className="text-sm">
-            {STATUS_LABEL[status]}
-          </Badge>
-          <Badge variant={CHARGING_STATUS_BADGE_VARIANT[chargingStatus]}>
-            {CHARGING_STATUS_LABEL[chargingStatus]}
-          </Badge>
-          <span className="text-sm text-muted-foreground">
-            배터리{" "}
-            <strong className="text-foreground">
-              {snapshot?.batteryPercent != null
-                ? `${Math.round(snapshot.batteryPercent)}%`
-                : "-"}
-            </strong>
-          </span>
-          <span className="text-sm text-muted-foreground">
-            시동 <strong className="text-foreground">{snapshot?.ignitionOn ? "ON" : "OFF"}</strong>
-          </span>
-          {issueTags.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {issueTags.slice(0, 4).map((tag) => (
-                <IssueTag key={tag.label} label={tag.label} variant={tag.variant} />
-              ))}
+      <div className="px-6 pt-2">
+        <Card className="fleet-card fleet-card-hover">
+          <CardContent className="flex flex-wrap items-center gap-4 pt-6">
+            <div className="flex size-14 items-center justify-center rounded-full bg-gray-100 dark:bg-white/10">
+              <Car className="size-6 text-gray-500 dark:text-gray-400" />
             </div>
-          ) : null}
-        </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg font-semibold">{vehicle.plateNumber}</h3>
+              <p className="text-theme-sm text-gray-500">
+                {vehicle.model} ({vehicle.year})
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={STATUS_BADGE_VARIANT[status]} className="text-sm">
+                {STATUS_LABEL[status]}
+              </Badge>
+              <Badge variant={CHARGING_STATUS_BADGE_VARIANT[chargingStatus]}>
+                {CHARGING_STATUS_LABEL[chargingStatus]}
+              </Badge>
+              <span className="text-theme-sm text-gray-500">
+                배터리{" "}
+                <strong className="text-foreground">
+                  {snapshot?.batteryPercent != null
+                    ? `${Math.round(snapshot.batteryPercent)}%`
+                    : "-"}
+                </strong>
+              </span>
+              <span className="text-theme-sm text-gray-500">
+                시동{" "}
+                <strong className="text-foreground">
+                  {snapshot?.ignitionOn ? "ON" : "OFF"}
+                </strong>
+              </span>
+            </div>
+            {issueTags.length > 0 ? (
+              <div className="flex w-full flex-wrap gap-1.5 border-t border-gray-100 pt-3 dark:border-gray-800">
+                {issueTags.slice(0, 4).map((tag) => (
+                  <IssueTag key={tag.label} label={tag.label} variant={tag.variant} />
+                ))}
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="flex flex-1 flex-col gap-6 p-6">
         <div className="flex items-center gap-2">
-          <Link href="/vehicles" className={cn(buttonVariants({ variant: "outline" }))}>
+          <Link href="/fleet/vehicles" className={cn(buttonVariants({ variant: "outline" }))}>
             목록으로
           </Link>
-          <Link href="/map" className={cn(buttonVariants({ variant: "outline" }))}>
+          <Link href="/fleet/map" className={cn(buttonVariants({ variant: "outline" }))}>
             전체 지도
           </Link>
         </div>
@@ -231,7 +248,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
 
           <TabsContent value="home">
             <div className="grid gap-6 xl:grid-cols-2">
-              <Card className="transition-shadow hover:shadow-md">
+              <Card className="fleet-card fleet-card-hover">
                 <CardHeader>
                   <CardTitle>배터리 · 주행</CardTitle>
                 </CardHeader>
@@ -253,7 +270,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
                 </CardContent>
               </Card>
 
-              <Card className="transition-shadow hover:shadow-md">
+              <Card className="fleet-card fleet-card-hover">
                 <CardHeader>
                   <CardTitle>현재 위치</CardTitle>
                 </CardHeader>
@@ -278,7 +295,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
             </div>
 
             {issueTags.length > 0 ? (
-              <Card className="mt-6">
+              <Card className="fleet-card mt-6">
                 <CardHeader>
                   <CardTitle>경고 항목</CardTitle>
                 </CardHeader>
@@ -291,7 +308,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
             ) : null}
 
             <div className="mt-6 grid gap-6 xl:grid-cols-2">
-              <Card>
+              <Card className="fleet-card">
                 <CardHeader>
                   <CardTitle>잠금 · 개폐</CardTitle>
                 </CardHeader>
@@ -306,7 +323,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="fleet-card">
                 <CardHeader>
                   <CardTitle>공조 · 온도</CardTitle>
                 </CardHeader>
@@ -325,7 +342,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
             </div>
 
             <div className="mt-6 grid gap-6 xl:grid-cols-2">
-              <Card>
+              <Card className="fleet-card">
                 <CardHeader>
                   <CardTitle>타이어 공기압 (TPMS)</CardTitle>
                 </CardHeader>
@@ -348,7 +365,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="fleet-card">
                 <CardHeader>
                   <CardTitle>정비 · 소프트웨어</CardTitle>
                 </CardHeader>
@@ -371,7 +388,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
             </div>
 
             {snapshot && snapshot.nearbyChargingSites.length > 0 ? (
-              <Card className="mt-6">
+              <Card className="fleet-card mt-6">
                 <CardHeader>
                   <CardTitle>인근 충전소</CardTitle>
                 </CardHeader>
@@ -393,26 +410,33 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
           </TabsContent>
 
           <TabsContent value="events">
-            <Card>
+            <Card className="fleet-card">
               <CardHeader>
                 <CardTitle>이벤트 타임라인</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-0">
                 {vehicle.events.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">등록된 이벤트가 없습니다.</p>
+                  <p className="text-theme-sm text-muted-foreground">등록된 이벤트가 없습니다.</p>
                 ) : (
                   vehicle.events.map((event) => (
                     <div
                       key={event.id}
-                      className="rounded-lg border p-4 transition-colors hover:bg-muted/30"
+                      className="flex gap-3 border-b border-gray-100 py-4 last:border-0 dark:border-gray-800"
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="font-medium">{event.message}</p>
-                        <Badge variant="outline">{event.type}</Badge>
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-warning-50 dark:bg-warning-500/15">
+                        <AlertCircle className="size-4 text-warning-600 dark:text-warning-500" />
                       </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {formatDateTime(event.occurredAt)}
-                      </p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="font-medium">{event.message}</p>
+                          <Badge variant={event.type === "ALERT" ? "error" : "warning"}>
+                            {event.type}
+                          </Badge>
+                        </div>
+                        <p className="mt-1 text-theme-xs text-gray-400">
+                          {formatDateTime(event.occurredAt)}
+                        </p>
+                      </div>
                     </div>
                   ))
                 )}
@@ -445,9 +469,9 @@ function InfoItem({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1 rounded-lg border bg-muted/20 p-3">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      {children ?? <p className="font-medium">{value}</p>}
+    <div className="space-y-1 rounded-xl border border-gray-200 bg-gray-50/50 p-3 dark:border-gray-800 dark:bg-white/5">
+      <p className="text-theme-xs text-gray-500">{label}</p>
+      {children ?? <p className="font-semibold text-foreground">{value}</p>}
     </div>
   );
 }

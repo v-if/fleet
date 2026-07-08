@@ -16,13 +16,23 @@ export const CHARGING_STATUS_LABEL: Record<ChargingStatus, string> = {
   STOPPED: "충전 중지",
 };
 
+export const STATUS_BADGE_VARIANT: Record<
+  VehicleStatus,
+  "success" | "secondary" | "warning" | "error"
+> = {
+  ONLINE: "success",
+  OFFLINE: "secondary",
+  WARNING: "warning",
+  ALERT: "error",
+};
+
 export const CHARGING_STATUS_BADGE_VARIANT: Record<
   ChargingStatus,
-  "default" | "secondary" | "destructive" | "outline"
+  "info" | "success" | "secondary" | "outline"
 > = {
-  CHARGING: "default",
-  COMPLETE: "secondary",
-  DISCONNECTED: "outline",
+  CHARGING: "info",
+  COMPLETE: "success",
+  DISCONNECTED: "secondary",
   STOPPED: "outline",
 };
 
@@ -34,21 +44,11 @@ export const SERVICE_STATUS_LABEL: Record<ServiceStatus, string> = {
 
 export const SERVICE_STATUS_BADGE_VARIANT: Record<
   ServiceStatus,
-  "default" | "secondary" | "destructive" | "outline"
+  "success" | "warning" | "info"
 > = {
-  OK: "default",
-  DUE_SOON: "outline",
-  IN_SERVICE: "secondary",
-};
-
-export const STATUS_BADGE_VARIANT: Record<
-  VehicleStatus,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  ONLINE: "default",
-  OFFLINE: "secondary",
-  WARNING: "outline",
-  ALERT: "destructive",
+  OK: "success",
+  DUE_SOON: "warning",
+  IN_SERVICE: "info",
 };
 
 export const STATUS_DOT_CLASS: Record<VehicleStatus, string> = {

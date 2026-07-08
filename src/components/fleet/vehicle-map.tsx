@@ -292,7 +292,7 @@ function SelectedVehicleLink({
             {vehicle.model} · {STATUS_LABEL[vehicle.status]}
           </p>
         </div>
-        <Link href={`/vehicles/${vehicle.id}`} className="text-sm text-primary hover:underline">
+        <Link href={`/fleet/vehicles/${vehicle.id}`} className="text-sm text-primary hover:underline">
           상세 보기
         </Link>
       </div>

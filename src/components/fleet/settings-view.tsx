@@ -7,9 +7,9 @@ import { AlertCircle, CheckCircle2, Link2, Unlink } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/shadcn/ui/badge";
+import { Button, buttonVariants } from "@/components/shadcn/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/shadcn/ui/card";
 import { useVehicleRefresh } from "@/hooks/use-vehicles";
 import { cn } from "@/lib/utils";
 

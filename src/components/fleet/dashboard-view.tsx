@@ -8,7 +8,7 @@ import { IdleVehiclesWidget } from "@/components/fleet/idle-vehicles-widget";
 import { KpiCards } from "@/components/fleet/kpi-cards";
 import { VehicleMap } from "@/components/fleet/vehicle-map";
 import { PageHeader } from "@/components/layout/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/shadcn/ui/card";
 import { useVehicles, useVehicleRefresh } from "@/hooks/use-vehicles";
 import { toMapVehicles } from "@/lib/map-utils";
 
@@ -51,8 +51,8 @@ export function DashboardView() {
       <div className="flex flex-1 flex-col gap-5 p-6">
         <KpiCards summary={data.summary} />
 
-        <Card className="overflow-hidden border-0 shadow-lg">
-          <CardHeader className="border-b bg-gradient-to-r from-zinc-900 to-zinc-800 text-white">
+        <Card className="fleet-card overflow-hidden border-0 shadow-theme-lg">
+          <CardHeader className="border-b border-white/10 bg-gradient-to-r from-zinc-900 to-zinc-800 text-white dark:from-zinc-950 dark:to-zinc-900">
             <CardTitle className="text-lg">실시간 플릿 지도</CardTitle>
             <p className="text-sm text-zinc-300">
               {mapVehicles.length}대 · 마커 색상으로 상태를 확인하세요

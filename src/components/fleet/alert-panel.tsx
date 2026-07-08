@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/shadcn/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/shadcn/ui/card";
 import {
   STATUS_BADGE_VARIANT,
   STATUS_LABEL,
@@ -79,7 +79,7 @@ export function AlertPanel({ vehicles }: AlertPanelProps) {
             return (
               <Link
                 key={vehicle.id}
-                href={`/vehicles/${vehicle.id}`}
+                href={`/fleet/vehicles/${vehicle.id}`}
                 className="flex items-start justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
               >
                 <div className="space-y-1">

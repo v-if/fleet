@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/shadcn/ui/badge";
 import { isLowTpms } from "@/lib/vehicle-status";
 import { cn } from "@/lib/utils";
 

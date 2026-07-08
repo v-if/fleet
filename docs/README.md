@@ -12,6 +12,7 @@
 | [requirements-db.md](./requirements-db.md) | DB 전략, Vercel 배포 오류 분석, Phase 3.6 Supabase PostgreSQL 요구사항 | DB 전환·배포 DB 이슈 해결할 때 |
 | [requirements-tesla-api.md](./requirements-tesla-api.md) | 테슬라 Fleet API 조회/제어 기능 정리, FMS 화면 적용안 | 데이터 연동·제어 기능 설계할 때 |
 | [requirements-front-design.md](./requirements-front-design.md) | Pleos Fleet UI 벤치마킹, 프론트 구성·디자인 개선 요구사항 | 화면 UI/UX 개선할 때 |
+| [requirements-dashboard-design.md](./requirements-dashboard-design.md) | TailAdmin 템플릿 벤치마킹, 디자인 토큰·컴포넌트 마감 개선 요구사항 (Phase 3.7) · **전면 템플릿 적용** (Phase 3.8) | 대시보드·목록·상세 디자인 다듬을 때 |
 | [development-checklist.md](./development-checklist.md) | Phase별(M1~M5) 개발 체크리스트 | 개발 진행·진척 관리할 때 |
 | [setup-guide.md](./setup-guide.md) | 단계별 설치 가이드 (Windows/PowerShell) | 도구를 Phase별로 설치할 때 |
 
@@ -58,3 +59,18 @@
 | 2026-07-07 | Phase 3.6 — requirements-db.md 추가, Prisma postgresql 전환·db:setup 스크립트 |
 | 2026-07-07 | Phase 3.6 로컬 완료 — Supabase migrate·시드·API 200 / Phase 3.5 Register·Vercel 배포 대기 |
 | 2026-07-07 | Phase 3.5·3.6 배포 검증 완료 — Vercel env·재배포, API 200, mock·tesla 연동, TPMS PSI 환산 |
+| 2026-07-07 | requirements-dashboard-design.md 추가 — TailAdmin 벤치마킹 디자인 개선 요구사항 |
+| 2026-07-07 | Phase 3.7 체크리스트 추가 — TailAdmin 디자인 개선 (development-checklist.md) |
+| 2026-07-07 | Phase 3.7 구현 완료 — TailAdmin 벤치마킹 UI 개선(토큰·다크모드·3화면) |
+| 2026-07-08 | Phase 3.8 완료 — TailAdmin 템플릿 전면 적용(데모 UI), FMS 기능 화면 `/fleet/*` 격리 |
+| 2026-07-08 | Phase 3.8 P1 완료 — TailAdmin UI + FMS API 연동 (`/`, `/vehicles`, `/map`, `/settings`) |
+| 2026-07-08 | Phase 3.8 P1 대시보드 레이아웃 — KPI 6카드·실시간 지도 1:1 가로 배치 |
+| 2026-07-08 | Phase 3.8 P1 KPI 카드 — 아이콘·라벨 가로, 전 항목 % 배지 |
+| 2026-07-08 | Phase 3.8 P1 배터리 — Demographic 스타일 프로그래스바 적용 |
+| 2026-07-08 | Phase 3.8 P1 최근 차량 테이블 — 차량·상태·충전·배터리 컬럼 통일 |
+| 2026-07-08 | Phase 3.8 P1 충전 현황 — 차량 모델 nowrap, 배터리 `120px` |
+| 2026-07-08 | Phase 3.8 P1 충전·최근 차량 — 충전 컬럼 축소, 배터리 프로그래스바 확대 |
+| 2026-07-08 | Phase 3.8 P1 최근 차량 — 상태·충전 배지 줄바꿈 방지, 배터리 폭 조정 |
+| 2026-07-08 | Phase 3.8 P1 KPI — 전체 차량 Fleet 아이콘 배지 복구 |
+| 2026-07-08 | Phase 3.8 P1 사이드바 — Fleet 브랜딩(자동차 아이콘 + 텍스트) |
+| 2026-07-08 | Phase 3.8 P1 차량 목록 — 컬럼 폭 균형 재조정 |

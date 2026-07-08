@@ -1,6 +1,7 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/shadcn/ui/badge";
 import { Breadcrumb, type BreadcrumbItem } from "@/components/layout/breadcrumb";
 import { RefreshButton } from "@/components/layout/refresh-button";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 type PageHeaderProps = {
   breadcrumbs?: BreadcrumbItem[];
@@ -26,7 +27,7 @@ export function PageHeader({
   actions,
 }: PageHeaderProps) {
   return (
-    <header className="border-b bg-background/80 px-6 py-5 backdrop-blur-sm">
+    <header className="sticky top-0 z-30 border-b bg-background/90 px-6 py-5 backdrop-blur-md">
       <div className="flex flex-col gap-4">
         {breadcrumbs && breadcrumbs.length > 0 ? <Breadcrumb items={breadcrumbs} /> : null}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -45,6 +46,7 @@ export function PageHeader({
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {actions}
+            <ThemeToggle />
             {provider ? (
               <span className="flex items-center gap-2">
                 데이터 소스

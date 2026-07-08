@@ -374,6 +374,146 @@
 
 ---
 
+## Phase 3.7. 대시보드 디자인 개선 — TailAdmin 벤치마킹 (M3.7)
+
+> 근거: [requirements-dashboard-design.md](./requirements-dashboard-design.md) (TailAdmin 템플릿 분석·토큰/패턴 차용 전략)
+> 상위 원칙: [requirements-front-design.md](./requirements-front-design.md) — 지도 Hero·테슬라 레드 포인트는 **유지** (회귀 금지)
+>
+> **배경**: Phase 2.2에서 구축한 UI의 **마감 품질**(토큰·카드·배지·표)을 TailAdmin 수준으로 끌어올린다. 템플릿 전면 이식이 아니라 **디자인 시스템(색 스케일·그림자·radius·light 배지·다크모드) 차용**이다. 실 데이터 연동(Phase 3.x)과 독립적인 프론트 작업.
+
+### 사전 조건
+- [x] [requirements-dashboard-design.md](./requirements-dashboard-design.md) §4 적용 전략(채택/비채택) 숙지
+- [x] 브랜드 액센트는 **테슬라 레드 유지** — TailAdmin 블루(`#465fff`) 미채택 확인
+
+### 공통 — 디자인 토큰·레이아웃 (P0)
+- [x] `globals.css` **상태 색 스케일** 추가: `success/warning/error/info` 각 50·100·500·600 + gray 스케일 (TA-COM-01)
+- [x] 카드 공통 마감 통일: `rounded-2xl` + 옅은 계층 그림자 + 보더 (`fleet-card` 유틸, TA-COM-02)
+- [x] KPI 숫자용 **타이틀 타입 스케일** 추가 (`text-title-sm` 등, TA-COM-03)
+
+### 대시보드 `/` (P0)
+- [x] KPI 카드 → **메트릭 카드 패턴**: 원형 아이콘 + 라벨 + 큰 숫자 (TA-DSH-01)
+- [x] 이상/미운행/충전 위젯 카드: 헤더(제목+더보기)·바디 구분, 리스트 행 리듬 정리 (TA-DSH-03)
+- [x] 위젯 내 차량 행 **2줄 셀** (식별명 굵게 + 모델·상태 보조) + light 배지 (TA-DSH-04)
+- [x] 지도 Hero 카드 공통 마감 적용 — Hero 레이아웃 자체는 유지 (TA-DSH-05)
+
+### 차량 목록 `/vehicles` (P0)
+- [x] 테이블 헤더 톤 정돈: `gray-500` 소형 텍스트, 옅은 배경 (TA-VLS-01)
+- [x] 차량 컬럼 **2줄 셀**: 식별명(굵게) + 모델·연식 보조, 상태 도트/아이콘 (TA-VLS-02)
+- [x] 상태·충전 배지 **light-variant** 전환: `bg-*-50 text-*-600` (TA-VLS-03)
+- [x] 행 hover·패딩 리듬 통일 (TA-VLS-04)
+- [x] 테이블 카드 래핑 (`rounded-2xl` + 내부 스크롤) (TA-VLS-07)
+
+### 차량 상세 `/vehicles/[id]` (P0)
+- [x] 요약 헤더 카드: 원형 차량 아이콘 + 식별명·모델 + 상태 light 배지 (TA-VDT-01)
+- [x] 상태 그리드 카드: 라벨/값 위계(`gray-500 text-xs` + `font-semibold`) 정리 (TA-VDT-02)
+- [x] 경고 태그(`IssueTag`) light-variant 배지 체계 통일 (TA-VDT-03)
+- [x] TPMS 도식·지도 카드 공통 마감 적용 (TA-VDT-07)
+
+### P1 — 경험 강화
+- [x] **다크모드**: class 기반 `.dark` + 헤더 토글 + localStorage, 3화면·사이드바·헤더 전체 (TA-COM-04)
+- [x] 접이식 사이드바: 축소(아이콘)↔확장 (TA-COM-05)
+- [x] 헤더 sticky화 + 다크모드 토글 배치 (TA-COM-06)
+- [ ] KPI **증감 배지**: 직전 동기화 대비 — P2로 보류 (sessionStorage·hydration 이슈)
+- [x] 배터리 건강 게이지 radial 스타일 — CSS conic-gradient (TA-VDT-04)
+- [x] 페이지네이션 스타일 정리 (TA-VLS-05)
+- [x] 필터 바 카드 배치 + 포커스 링(레드 계열) (TA-VLS-06)
+- [x] 상세 탭 pill 스타일 (테슬라 레드 액센트, TA-VDT-05)
+- [x] 이벤트 타임라인 아이콘·시간 리듬 정리 (TA-VDT-06)
+
+### P2 — 확장 (투자 이후)
+- [ ] 기간 탭 차트 (주행거리 통계, ApexCharts 도입 검토) (TA-DSH-06)
+- [ ] 글로벌 검색 인풋 (`⌘K`) (TA-COM-08)
+- [x] 커스텀 스크롤바 유틸리티 (`custom-scrollbar`, 위젯 리스트 적용) (TA-COM-07)
+
+### 제약·주의 (requirements-dashboard-design.md §8)
+- [x] Outfit 폰트 미채택 — 타이틀 **크기 스케일만** 차용, 폰트는 현행(Geist) 유지
+- [x] shadcn 토큰과 신규 스케일 **공존(추가)** 방식 — 기존 컴포넌트 회귀 금지
+- [x] Kakao Maps 다크 테마 미지원 — 지도 라이트 유지 + 카드 프레임만 다크
+- [x] Tesla 실데이터 폴백 문구(`위치 데이터 없음` 등) 유지
+
+**완료 기준**: P0·P1 핵심 완료 ✅ (KPI 증감 배지·P2 차트/검색 제외)
+
+### Phase 3.7 실행 메모
+- **코드 반영 (2026-07-07)**: `globals.css` 상태 색·그림자·타이틀 스케일, `fleet-card` 유틸, Badge light-variant(success/warning/error/info)
+- **레이아웃**: `ThemeProvider`+`ThemeToggle`, 접이식 `Sidebar`, sticky `PageHeader`
+- **화면**: KPI 메트릭 카드, 위젯 2줄 셀·헤더 구분, 테이블 2줄 셀·light 배지, 상세 요약 헤더 카드·radial 배터리 게이지·pill 탭
+- **검증**: `pnpm lint`, `pnpm exec next build` 성공 (2026-07-07)
+- KPI 증감 배지(TA-DSH-02)는 hydration·lint 이슈로 P2 보류
+- ApexCharts·글로벌 검색은 P2 유지
+
+---
+
+## Phase 3.8. TailAdmin 템플릿 전면 적용 — 데모 UI (M3.8)
+
+> 근거: [TailAdmin free-nextjs-admin-dashboard](https://github.com/TailAdmin/free-nextjs-admin-dashboard) · [데모](https://nextjs-free-demo.tailadmin.com/)
+>
+> **배경**: Phase 3.7은 기존 FMS UI에 TailAdmin **패턴만** 차용했으나, 원하는 디자인 품질과 차이가 있음. Phase 3.8에서는 템플릿 **구조·박스·버튼·레이아웃을 변경 없이** 그대로 적용하고, FMS 기능 연동은 **다음 단계**로 분리한다.
+
+### 사전 조건
+- [x] TailAdmin MIT 무료 템플릿 v2.3.0 소스 확보 (GitHub clone)
+- [x] Phase 3.7과의 관계 이해 — 3.7은 토큰 차용, 3.8은 **전면 템플릿 이식**
+
+### 템플릿 소스 통합 (P0)
+- [x] TailAdmin `context/`·`layout/`·`icons/`·`hooks/` 복사
+- [x] TailAdmin `components/` (ecommerce·charts·form·ui 등) 복사
+- [x] TailAdmin `app/(admin)/`·`(full-width-pages)/` 라우트 복사
+- [x] TailAdmin `globals.css`·`not-found.tsx` 적용
+- [x] TailAdmin `public/images/` 에셋 복사
+- [x] shadcn/ui 충돌 방지 — `src/components/shadcn/ui/`로 분리
+
+### 의존성·빌드 (P0)
+- [x] ApexCharts·Flatpickr·FullCalendar·Swiper·react-jvectormap 등 템플릿 의존성 설치
+- [x] `@svgr/webpack` + `next.config.ts` SVG 로더 (템플릿 아이콘)
+- [x] `@tailwindcss/forms` (템플릿 폼 스타일)
+- [x] Outfit 폰트 (템플릿 기본 폰트)
+- [x] `pnpm exec next build` 성공
+- [x] ESLint — TailAdmin 템플릿 파일 규칙 완화 (원본 코드 변경 최소화)
+
+### 라우팅·격리 (P0)
+- [x] `/` — TailAdmin E-commerce 대시보드 (데모 데이터, 기능 미연동)
+- [x] TailAdmin 데모 페이지 전체: `/calendar`, `/profile`, `/basic-tables`, `/bar-chart`, `/signin` 등
+- [x] 기존 FMS 화면 → `/fleet/*`로 격리 (Phase 3.x 기능·API 유지, UI는 Phase 3.7 스타일)
+- [x] API 라우트 `/api/*` 변경 없음
+
+### 기능 연동 (P1)
+- [x] TailAdmin 대시보드에 FMS KPI·위젯 데이터 연동 (`FleetDashboardView`, `/`)
+- [x] TailAdmin 테이블 패턴으로 차량 목록 UI (`FleetVehicleTable`, `/vehicles`)
+- [x] TailAdmin 프로필/카드 패턴으로 차량 상세 UI (`FleetVehicleDetailView`, `/vehicles/[id]`)
+- [x] 사이드바 메뉴 FMS 항목으로 교체 (Dashboard · Vehicles · Map · Settings)
+- [x] 사이드바 상단 브랜딩: **TailAdmin → Fleet**, 자동차 아이콘 (`fleet-car-icon.svg`)
+- [x] `/fleet/*` → 신규 경로 리다이렉트, E-commerce 데모는 `/demo`로 격리
+- [x] 대시보드 Hero: KPI 6카드(2×3) + 실시간 지도 **1:1 가로 배치** (`xl:grid-cols-2`)
+- [x] KPI 카드: 아이콘·라벨 상단 가로 배치, 전 카드 **비율(%) 배지** 표시 (전체 차량만 **Fleet** 배지 복구)
+- [x] 배터리 표시: Demographic 스타일 **프로그래스바 + 정수 %** (`BatteryProgressBar`)
+- [x] 최근 차량 테이블: 차량 목록과 동일 컬럼(**차량·상태·충전·배터리**) 구조 통일
+- [x] 충전 현황: 테이블 구조(**차량·충전·배터리**), 헤더 없음, 차량 앞 **번개 아이콘** 유지
+- [x] 충전 현황·최근 차량: **충전 컬럼 축소** · **배터리 컬럼 확대** + `BatteryProgressBar expanded`
+- [x] 충전 현황: 차량 모델 **줄바꿈 방지** (`nowrap`·`truncate`), 배터리 `120px`로 축소
+- [x] 최근 차량: 상태·충전 **줄바꿈 방지** (`whitespace-nowrap`, 배터리 `30%`·`max-w-[200px]`로 재조정)
+- [x] 차량 목록 테이블: **위치 컬럼 제거**, 컬럼 폭 균형 조정(차량 `200px`·배터리 `140px` 등)
+
+**완료 기준**: TailAdmin UI + FMS API/Mock·Tesla 데이터 연동 ✅
+
+### Phase 3.8 실행 메모
+- **P0 (2026-07-08)**: TailAdmin v2.3.0 소스 통합, 루트 `/` = E-commerce 데모
+- **P1 (2026-07-08)**: `src/components/fms/*` — TailAdmin 컴포넌트 + FMS 데이터 연동
+- **P1 레이아웃 (2026-07-08)**: 대시보드 상단 — `FleetMetrics`(6 small 카드) | `FleetMapCard`(지도) 50:50
+- **P1 KPI 카드 (2026-07-08)**: 아이콘+라벨 가로 배치, 숫자 하단 % 배지 — **전체 차량**만 `Fleet` 아이콘 배지(100% 대신 복구)
+- **P1 배터리 UI (2026-07-08)**: 목록·최근차량·충전패널 — TailAdmin Demographic 프로그래스바 + `72%` 정수 표시
+- **P1 최근 차량 (2026-07-08)**: `FleetRecentVehicles` 컬럼을 `FleetVehicleTable`과 통일(차량·상태·충전·배터리)
+- **P1 충전 현황 (2026-07-08)**: `FleetChargingPanel` — 차량·충전·배터리 테이블(헤더 없음), 번개 아이콘 유지
+- **P1 충전 현황 컬럼 (2026-07-08)**: 차량 모델 `nowrap`·`truncate`, 배터리 `120px`·충전 `76px` (모델명 줄바꿈 방지)
+- **P1 사이드바 브랜딩 (2026-07-08)**: `AppSidebar`·모바일 헤더 — TailAdmin 로고 → Fleet 텍스트 + 자동차 아이콘
+- **P1 테이블 컬럼 폭 (2026-07-08)**: 충전 현황·최근 차량 — 충전 `w-[88px]`, 배터리 expanded 프로그래스바
+- **P1 최근 차량 컬럼 (2026-07-08)**: 상태 `92px`·충전 `108px` nowrap, 배터리 `30%` max `200px` (배지 줄바꿈 방지)
+- **P1 차량 목록 테이블 (2026-07-08)**: 위치 컬럼 제거, 컬럼 폭 재조정 — 차량 `200px`, 상태 `72px`, 충전 `84px`, 배터리 `140px`, 주행거리 `92px`, 갱신 `124px`
+- **라우트**: `/`, `/vehicles`, `/vehicles/[id]`, `/map`, `/settings` (admin 레이아웃)
+- **데모 보존**: `/demo` E-commerce 원본, UI Elements 등 기존 TailAdmin 페이지 유지
+- **레거시**: `/fleet/*` → 신규 경로 redirect (`next.config.ts`)
+- **검증**: `pnpm exec next build`, `pnpm lint` 성공 (2026-07-08)
+
+---
+
 ## Phase 4. 안정화 (M4)
 
 > 설치: [setup-guide.md](./setup-guide.md) §6
@@ -454,3 +594,18 @@
 | 2026-07-07 | Phase 3.6 코드 반영 — Prisma postgresql, 마이그레이션, build/deploy 스크립트 (Supabase 연결·배포 검증 대기) |
 | 2026-07-07 | Phase 3.6 로컬 완료 — Supabase 연결, migrate·시드, API 200 / Vercel env·재배포 대기 |
 | 2026-07-07 | Phase 3.5·3.6 배포 검증 완료 — Vercel env·재배포, API 200, mock·tesla 연동, TPMS PSI 환산 |
+| 2026-07-07 | Phase 3.7 추가 — TailAdmin 벤치마킹 디자인 개선 체크리스트 (requirements-dashboard-design.md 기반) |
+| 2026-07-07 | Phase 3.7 완료 — TailAdmin 토큰·light 배지·메트릭 카드·다크모드·접이식 사이드바·3화면 UI 개선 |
+| 2026-07-08 | Phase 3.8 추가·완료 — TailAdmin 템플릿 전면 적용(데모 UI), FMS `/fleet/*` 격리 |
+| 2026-07-08 | Phase 3.8 P1 완료 — TailAdmin UI + FMS 데이터 연동, `/vehicles`·`/map`·`/settings` |
+| 2026-07-08 | Phase 3.8 P1 레이아웃 — 대시보드 KPI 6카드·지도 1:1 가로 배치 |
+| 2026-07-08 | Phase 3.8 P1 KPI 카드 — 아이콘·라벨 가로 배치, 전 카드 % 배지 |
+| 2026-07-08 | Phase 3.8 P1 배터리 UI — Demographic 프로그래스바 + 정수 % 표시 |
+| 2026-07-08 | Phase 3.8 P1 최근 차량 — 목록 테이블과 컬럼 구조 통일 |
+| 2026-07-08 | Phase 3.8 P1 충전 현황 — 차량 모델 줄바꿈 방지, 배터리 컬럼 `120px` |
+| 2026-07-08 | Phase 3.8 P1 테이블 컬럼 — 충전 축소·배터리 확대(expanded 프로그래스바) |
+| 2026-07-08 | Phase 3.8 P1 최근 차량 — 상태·충전 nowrap, 배터리 폭 재조정(줄바꿈 방지) |
+| 2026-07-08 | Phase 3.8 P1 KPI — 전체 차량 카드 Fleet 배지 복구(100% 표기 제거) |
+| 2026-07-08 | Phase 3.8 P1 사이드바 — TailAdmin → Fleet 브랜딩, 자동차 아이콘 |
+| 2026-07-08 | Phase 3.8 P1 차량 목록 — 위치 컬럼 제거, 배터리 expanded 프로그래스바 |
+| 2026-07-08 | Phase 3.8 P1 차량 목록 — 컬럼 폭 균형 재조정 (차량·배터리·갱신 등) |

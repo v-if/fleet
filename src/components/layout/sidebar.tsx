@@ -2,40 +2,79 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, List, Map, Settings, Zap } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  LayoutDashboard,
+  List,
+  Map,
+  Settings,
+  Zap,
+} from "lucide-react";
 
+import { useSidebar } from "@/components/providers/sidebar-provider";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "대시보드", icon: LayoutDashboard },
-  { href: "/vehicles", label: "차량 목록", icon: List },
-  { href: "/map", label: "지도", icon: Map },
-  { href: "/settings", label: "연동 설정", icon: Settings },
+  { href: "/fleet", label: "대시보드", icon: LayoutDashboard },
+  { href: "/fleet/vehicles", label: "차량 목록", icon: List },
+  { href: "/fleet/map", label: "지도", icon: Map },
+  { href: "/fleet/settings", label: "연동 설정", icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { collapsed, toggleCollapsed } = useSidebar();
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-white/5 bg-sidebar text-sidebar-foreground">
-      <div className="border-b border-white/10 px-4 py-5">
-        <div className="flex items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/20">
+    <aside
+      className={cn(
+        "flex shrink-0 flex-col border-r border-white/5 bg-sidebar text-sidebar-foreground transition-[width] duration-200",
+        collapsed ? "w-[72px]" : "w-56",
+      )}
+    >
+      <div className="flex items-center justify-between border-b border-white/10 px-3 py-4">
+        <div className={cn("flex items-center gap-2 overflow-hidden", collapsed && "justify-center")}>
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/20">
             <Zap className="size-4 text-primary" />
           </div>
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-sidebar-muted">
-              Fleet FMS
-            </p>
-            <h1 className="text-base font-semibold">EV 관제</h1>
-          </div>
+          {!collapsed ? (
+            <div className="min-w-0">
+              <p className="text-xs font-medium tracking-wider text-sidebar-muted uppercase">
+                Fleet FMS
+              </p>
+              <h1 className="truncate text-base font-semibold">EV 관제</h1>
+            </div>
+          ) : null}
         </div>
+        {!collapsed ? (
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className="rounded-md p-1 text-sidebar-muted hover:bg-white/5 hover:text-sidebar-foreground"
+            aria-label="사이드바 접기"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+        ) : null}
       </div>
+
+      {collapsed ? (
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          className="mx-auto mt-2 rounded-md p-1 text-sidebar-muted hover:bg-white/5 hover:text-sidebar-foreground"
+          aria-label="사이드바 펼치기"
+        >
+          <ChevronRight className="size-4" />
+        </button>
+      ) : null}
+
       <nav className="flex flex-1 flex-col gap-1 p-3">
         {navItems.map((item) => {
           const active =
-            item.href === "/"
-              ? pathname === "/"
+            item.href === "/fleet"
+              ? pathname === "/fleet"
               : pathname.startsWith(item.href);
           const Icon = item.icon;
 
@@ -43,22 +82,26 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              title={collapsed ? item.label : undefined}
               className={cn(
                 "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                collapsed && "justify-center px-2",
                 active
                   ? "bg-primary/15 text-white shadow-sm ring-1 ring-primary/30"
                   : "text-sidebar-muted hover:bg-white/5 hover:text-sidebar-foreground",
               )}
             >
-              <Icon className={cn("size-4", active && "text-primary")} />
-              {item.label}
+              <Icon className={cn("size-4 shrink-0", active && "text-primary")} />
+              {!collapsed ? <span className="truncate">{item.label}</span> : null}
             </Link>
           );
         })}
       </nav>
-      <div className="border-t border-white/10 p-4 text-xs text-sidebar-muted">
-        Tesla · Deviceless MVP
-      </div>
+      {!collapsed ? (
+        <div className="border-t border-white/10 p-4 text-xs text-sidebar-muted">
+          Tesla · Deviceless MVP
+        </div>
+      ) : null}
     </aside>
   );
 }

@@ -1,25 +1,20 @@
 import type { Metadata } from "next";
+import { Outfit } from "next/font/google";
 
-import { Geist, Geist_Mono } from "next/font/google";
-
-import { AppShell } from "@/components/layout/app-shell";
+import { SidebarProvider } from "@/context/SidebarContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { QueryProvider } from "@/components/providers/query-provider";
 
 import "./globals.css";
+import "flatpickr/dist/flatpickr.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const outfit = Outfit({
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Fleet FMS",
-  description: "차량 관제 시스템 MVP",
+  description: "차량 관제 시스템 — TailAdmin UI",
 };
 
 export default function RootLayout({
@@ -28,14 +23,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full bg-background text-foreground">
-        <QueryProvider>
-          <AppShell>{children}</AppShell>
-        </QueryProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${outfit.className} dark:bg-gray-900`}>
+        <ThemeProvider>
+          <SidebarProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </SidebarProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

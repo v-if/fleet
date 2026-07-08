@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { VehicleTable } from "@/components/fleet/vehicle-table";
 import { PageHeader } from "@/components/layout/page-header";
-import { Card, CardContent } from "@/components/ui/card";
 import { useVehicles, useVehicleRefresh } from "@/hooks/use-vehicles";
 
 export function VehiclesListView() {
@@ -26,7 +25,7 @@ export function VehiclesListView() {
       <>
         <PageHeader
           breadcrumbs={[
-            { label: "차량", href: "/vehicles" },
+            { label: "차량", href: "/fleet/vehicles" },
             { label: "차량 목록" },
           ]}
           title="차량 목록"
@@ -42,7 +41,7 @@ export function VehiclesListView() {
       <>
         <PageHeader
           breadcrumbs={[
-            { label: "차량", href: "/vehicles" },
+            { label: "차량", href: "/fleet/vehicles" },
             { label: "차량 목록" },
           ]}
           title="차량 목록"
@@ -58,7 +57,7 @@ export function VehiclesListView() {
     <>
       <PageHeader
         breadcrumbs={[
-          { label: "차량", href: "/vehicles" },
+          { label: "차량", href: "/fleet/vehicles" },
           { label: "차량 목록" },
         ]}
         title="차량 목록"
@@ -70,11 +69,7 @@ export function VehiclesListView() {
         isRefreshing={isRefreshing || isFetching}
       />
       <div className="flex flex-1 flex-col gap-6 p-6">
-        <Card className="transition-shadow hover:shadow-md">
-          <CardContent className="pt-6">
-            <VehicleTable vehicles={data.vehicles} pageSize={10} />
-          </CardContent>
-        </Card>
+        <VehicleTable vehicles={data.vehicles} pageSize={10} />
       </div>
     </>
   );
