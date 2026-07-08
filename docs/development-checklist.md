@@ -1,6 +1,6 @@
 # FMS 개발 체크리스트
 
-요구사항(`requirements.md`)·기술스택(`requirements-tech-stack.md`)·DB(`requirements-db.md`)을 기반으로 한 단계별 개발 체크리스트다. 각 Phase는 `requirements.md` §12 마일스톤(M1~M5)과 대응한다.
+요구사항(`requirements.md`)·기술스택(`requirements-tech-stack.md`)·DB(`requirements-db.md`)·User/Tesla 계정(`requirements-user-db.md`)을 기반으로 한 단계별 개발 체크리스트다. 각 Phase는 `requirements.md` §12 마일스톤(M1~M5)과 대응한다.
 
 - 설치·환경 준비는 [setup-guide.md](./setup-guide.md)를 참고한다. (한 번에 모두 설치하지 않고 Phase별로 필요한 시점에 설치)
 - 우선순위 표기: **P0**(데모 필수) / **P1**(데모 강화) / **P2**(투자·확장)
@@ -238,7 +238,7 @@
 
 ### Phase 3 실행 메모
 - Tesla OAuth: `/api/auth/tesla` → callback `/api/auth/tesla/callback` → 설정 화면 `/settings`
-- 토큰 저장: `TeslaOAuthToken` (Supabase PostgreSQL), refresh token rotation 지원
+- 토큰 저장: `TeslaAccount` (User 1:N, Supabase PostgreSQL), refresh token rotation 지원
 - Provider: `src/lib/vehicle-providers/tesla-provider.ts` + `src/lib/tesla/*`
 - 동기화: `syncVehiclesFromProvider()` → `POST /api/sync/vehicles`, `GET /api/vehicles?refresh=1`
 - 자동 폴링: `TESLA_SYNC_POLL_INTERVAL_MINUTES`(기본 3분), API 조회 시 stale이면 sync
@@ -514,6 +514,56 @@
 
 ---
 
+## Phase 3.9. User·Tesla 계정·차량 DB 설계
+
+> 요구사항: [requirements-user-db.md](./requirements-user-db.md)  
+> **구현 완료** (2026-07-08)
+
+### 요구사항 정의 (P0)
+- [x] User → TeslaAccount → Vehicle **1:N:N 계층** 비즈니스 규칙 문서화
+- [x] Tesla API **계정 단위 토큰**·Owner/Driver 제약 반영
+- [x] 차량 연동 해제 시나리오(A: 일부 / B: 마지막 1대)·**Soft Delete** 원칙 정의
+- [x] Telemetry **선해제**·과금 방지 요구사항 명시
+- [x] 현행 스키마 Gap (`TeslaOAuthToken` 단일 행, Vehicle FK 없음) 정리
+
+### 스키마·마이그레이션 (P0)
+- [x] `TeslaAccount` 엔티티 신설 (`userId` FK, 토큰·리전·`unlinkedAt`)
+- [x] `Vehicle`에 `teslaAccountId` FK·`unlinkedAt`/`isDeleted` 추가
+- [x] `User` ↔ `TeslaAccount` 1:N 관계 Prisma 반영
+- [x] 기존 `TeslaOAuthToken` → `TeslaAccount` 데이터 이전 (`20260708160000_phase39_user_tesla_account`)
+- [x] Mock 차량은 `teslaAccountId` nullable 유지
+
+### API·비즈니스 로직 (P0)
+- [x] 목록·상세·동기화 API — `unlinkedAt IS NULL` · `isDeleted=false` 기본 필터
+- [x] 차량 연동 해제 API — `DELETE /api/vehicles/[id]/unlink` (Telemetry stub → soft delete)
+- [x] 마지막 차량 unlink 시 `TeslaAccount` 토큰·계정 정리 (시나리오 B)
+- [x] `(teslaAccountId, oemVehicleId)` 유니크 제약
+- [x] 로그인 API — `auth.users` + `User` 조합 검증, 세션 쿠키 발급
+- [x] 로그아웃 API — 세션 쿠키 제거
+- [x] 차량 0대 초기 상태 — 대시보드 KPI `0`, 지도는 유지·마커 없음, 차량 목록 empty state
+- [x] Tesla 미연결 시 **mock 폴백 없이** 빈 데이터 유지
+- [x] 차량 목록 헤더 — 설명 문구 제거, `차량 추가` 버튼 + Tesla Fleet 연동 안내 모달
+- [x] 차량 추가 모달 — `확인` 시 `/api/auth/tesla` 이동, 오버레이 투명도 완화
+
+### 인증 연동 (P1) — Phase 4 선행 설계
+- [x] Supabase Auth `auth.users.id` ↔ FMS `User.id` 매핑 방안 ([auth-user-mapping.md](./auth-user-mapping.md))
+- [ ] 인증된 User 소속 TeslaAccount·Vehicle만 API 접근 (다테넌시) — Phase 4
+
+**완료 기준 (구현)**: Prisma 마이그레이션·API 필터·unlink 파이프라인 ✅
+
+### Phase 3.9 실행 메모
+- **스키마**: `TeslaAccount` 신설, `TeslaOAuthToken` 제거, `Vehicle` soft-delete 필드
+- **라이브러리**: `fms-user.ts`, `vehicle-query.ts`, `vehicle-unlink.ts`, `tesla/auth.ts` → TeslaAccount
+- **API**: `DELETE /api/vehicles/[id]/unlink` — Telemetry stub + soft delete + 계정 정리
+- **인증**: `/signin` → `/api/auth/login` → 세션 쿠키 → 보호 레이아웃(`/`, `/vehicles`, `/map`, `/settings`)
+- **로그인 UI**: 상단 보조 문구·테스트 계정 박스 제거, `회원가입` 링크는 `/signup` 템플릿 그대로 연결
+- **차량 추가 UX**: `/vehicles` 툴바에 `차량 추가` 버튼, 안내 모달 확인 후 `/api/auth/tesla`로 이동
+- **모달 오버레이**: 차량 추가 팝업 배경을 더 투명하게 조정 (`12%`, blur 완화)
+- **동기화**: **mock 미사용**, Tesla 미연결 시 0대 유지 / 계정별 upsert·누락 VIN soft unlink
+- **검증**: `prisma migrate deploy`, `pnpm lint`, `pnpm exec next build` (2026-07-08)
+
+---
+
 ## Phase 4. 안정화 (M4)
 
 > 설치: [setup-guide.md](./setup-guide.md) §6
@@ -609,3 +659,5 @@
 | 2026-07-08 | Phase 3.8 P1 사이드바 — TailAdmin → Fleet 브랜딩, 자동차 아이콘 |
 | 2026-07-08 | Phase 3.8 P1 차량 목록 — 위치 컬럼 제거, 배터리 expanded 프로그래스바 |
 | 2026-07-08 | Phase 3.8 P1 차량 목록 — 컬럼 폭 균형 재조정 (차량·배터리·갱신 등) |
+| 2026-07-08 | Phase 3.9 추가 — User·TeslaAccount·Vehicle DB 요구사항 정의 ([requirements-user-db.md](./requirements-user-db.md), 코드 미착수) |
+| 2026-07-08 | Phase 3.9 완료 — TeslaAccount 스키마·마이그레이션·unlink API·active 필터 |

@@ -17,7 +17,7 @@ export function createVehicleProvider(): VehicleDataProvider {
       if (TeslaVehicleProvider.isAvailable()) {
         return new TeslaVehicleProvider();
       }
-      return new MockVehicleProvider();
+      throw new Error("Tesla Fleet API credentials are not configured");
     case "mock":
     default:
       return new MockVehicleProvider();

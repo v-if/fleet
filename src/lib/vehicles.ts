@@ -1,6 +1,5 @@
-import type { VehicleSnapshot } from "@prisma/client";
-
 import { prisma } from "@/lib/prisma";
+import { activeVehicleWhere } from "@/lib/vehicle-query";
 import { isIdleVehicle } from "@/lib/vehicle-status";
 import { getSyncMetadata } from "@/lib/vehicle-sync";
 import { getVehicleProviderName } from "@/lib/vehicle-providers";
@@ -10,6 +9,7 @@ import type {
   VehicleListItemDto,
   VehiclesResponse,
 } from "@/lib/types/vehicle";
+import type { VehicleSnapshot } from "@prisma/client";
 
 function parseNearbyChargingSites(json: string | null): NearbyChargingSiteDto[] {
   if (!json) return [];
@@ -81,6 +81,7 @@ function toListItem(
 
 async function fetchVehiclesFromDb() {
   return prisma.vehicle.findMany({
+    where: activeVehicleWhere,
     include: {
       snapshots: {
         orderBy: { lastUpdatedAt: "desc" },
@@ -145,8 +146,11 @@ export async function getVehiclesResponse(): Promise<VehiclesResponse> {
 export async function getVehicleDetail(
   id: string,
 ): Promise<VehicleDetailDto | null> {
-  const vehicle = await prisma.vehicle.findUnique({
-    where: { id },
+  const vehicle = await prisma.vehicle.findFirst({
+    where: {
+      id,
+      ...activeVehicleWhere,
+    },
     include: {
       snapshots: {
         orderBy: { lastUpdatedAt: "desc" },

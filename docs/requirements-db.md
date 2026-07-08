@@ -5,7 +5,7 @@
 | 항목 | 내용 |
 |------|------|
 | 목적 | 로컬·배포(Vercel) 환경의 DB 전략, Vercel 배포 오류 분석, Supabase PostgreSQL 전환(Phase 3.6) 요구사항 정의 |
-| 관련 문서 | [requirements-tech-stack.md](./requirements-tech-stack.md), [development-checklist.md](./development-checklist.md), [setup-guide.md](./setup-guide.md), [requirements-tesla-api.md](./requirements-tesla-api.md) |
+| 관련 문서 | [requirements-tech-stack.md](./requirements-tech-stack.md), [development-checklist.md](./development-checklist.md), [setup-guide.md](./setup-guide.md), [requirements-tesla-api.md](./requirements-tesla-api.md), [requirements-user-db.md](./requirements-user-db.md) |
 | 적용 범위 | Phase 1(로컬 SQLite) ~ Phase 3.6(배포 DB) ~ Phase 4(인증·안정화) |
 
 ---
@@ -25,7 +25,7 @@
 ### 2.2 현재 구현 (2026-07-07)
 
 - Prisma `provider = "postgresql"`, Supabase dev `DATABASE_URL` + Session pooler `DIRECT_URL`
-- 차량·스냅샷·이벤트·Tesla OAuth 토큰·동기화 메타데이터를 **Supabase PostgreSQL**에 저장
+- 차량·스냅샷·이벤트·**TeslaAccount**(OAuth 토큰)·동기화 메타데이터를 **Supabase PostgreSQL**에 저장
 - 로컬: `pnpm db:setup` + `pnpm dev` → `/api/vehicles` **200**, Mock 12대
 - Vercel 배포(`https://fleet-tau.vercel.app`): UI·API **200**, mock·tesla 연동 검증 완료 (2026-07-07)
 
@@ -230,6 +230,8 @@ Phase 3.5   Partner Register    — Tesla 실데이터 (DB 선행 필요)
      ↓
 Phase 4     Supabase Auth       — 관리자 로그인·API 보호
      ↓
+Phase 3.9   User·TeslaAccount·Vehicle — 멀티 계정·연동 해제 스키마 ([requirements-user-db.md](./requirements-user-db.md))
+     ↓
 Phase 5     Production DB 분리  — 데모데이·운영
 ```
 
@@ -253,6 +255,7 @@ Phase 5     Production DB 분리  — 데모데이·운영
 - [x] `https://fleet-tau.vercel.app/api/vehicles` → **HTTP 200** + 차량 JSON (2026-07-07)
 - [x] 배포 대시보드에서 지도·KPI·목록 정상 표시 (mock·tesla, 2026-07-07)
 - [x] (Tesla 테스트 시) OAuth·sync가 DB에 토큰·스냅샷 저장 가능 (2026-07-07)
+- [x] Phase 3.9 — `TeslaAccount`·Vehicle soft-delete·마이그레이션 `20260708160000` (2026-07-08)
 
 ---
 
@@ -274,3 +277,5 @@ Phase 5     Production DB 분리  — 데모데이·운영
 | 2026-07-07 | 코드 반영 — Prisma postgresql, 마이그레이션, build/deploy/db:setup (Supabase 연결 대기) |
 | 2026-07-07 | 로컬 완료 — Supabase dev 연결, migrate·시드, API 200 / Vercel env·재배포 대기 |
 | 2026-07-07 | Vercel 배포 검증 완료 — env 등록·재배포, API 200, mock·tesla 연동 |
+| 2026-07-08 | Phase 3.9 연계 — User·TeslaAccount·Vehicle 계층 요구사항은 [requirements-user-db.md](./requirements-user-db.md) 참고 |
+| 2026-07-08 | Phase 3.9 구현 — `TeslaAccount` 테이블, `TeslaOAuthToken` 제거, unlink API |

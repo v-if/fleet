@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getCurrentSession } from "@/lib/auth-session";
 import { getSyncCronSecret } from "@/lib/tesla/config";
 import { syncVehiclesFromProvider } from "@/lib/vehicle-sync";
 
@@ -14,7 +15,8 @@ function isAuthorized(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
+  const session = await getCurrentSession();
+  if (!session && !isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

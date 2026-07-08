@@ -1,9 +1,9 @@
+import { getActiveTeslaAccount } from "@/lib/tesla/auth";
 import { prisma } from "@/lib/prisma";
+import { activeVehicleWhere } from "@/lib/vehicle-query";
 import {
   createVehicleProvider,
-  getMockVehicleEvents,
   getVehicleProviderName,
-  MockVehicleProvider,
 } from "@/lib/vehicle-providers";
 import type { VehicleEventData, VehicleSnapshotData } from "@/lib/vehicle-providers/types";
 import { TeslaVehicleProvider } from "@/lib/vehicle-providers/tesla-provider";
@@ -17,21 +17,57 @@ export type SyncVehiclesResult = {
   error?: string;
 };
 
-async function upsertSnapshot(snapshot: VehicleSnapshotData) {
-  const vehicle = await prisma.vehicle.upsert({
-    where: { plateNumber: snapshot.plateNumber },
-    update: {
-      model: snapshot.model,
-      year: snapshot.year,
-      oemVehicleId: snapshot.oemVehicleId,
-    },
-    create: {
-      plateNumber: snapshot.plateNumber,
-      model: snapshot.model,
-      year: snapshot.year,
-      oemVehicleId: snapshot.oemVehicleId,
-    },
-  });
+type UpsertSnapshotOptions = {
+  teslaAccountId?: string | null;
+};
+
+async function upsertSnapshot(
+  snapshot: VehicleSnapshotData,
+  options: UpsertSnapshotOptions = {},
+) {
+  const { teslaAccountId = null } = options;
+
+  const existing =
+    teslaAccountId && snapshot.oemVehicleId
+      ? await prisma.vehicle.findFirst({
+          where: {
+            teslaAccountId,
+            oemVehicleId: snapshot.oemVehicleId,
+          },
+        })
+      : null;
+
+  const vehicle = existing
+    ? await prisma.vehicle.update({
+        where: { id: existing.id },
+        data: {
+          plateNumber: snapshot.plateNumber,
+          model: snapshot.model,
+          year: snapshot.year,
+          oemVehicleId: snapshot.oemVehicleId,
+          teslaAccountId,
+          unlinkedAt: null,
+          isDeleted: false,
+        },
+      })
+    : await prisma.vehicle.upsert({
+        where: { plateNumber: snapshot.plateNumber },
+        update: {
+          model: snapshot.model,
+          year: snapshot.year,
+          oemVehicleId: snapshot.oemVehicleId,
+          teslaAccountId,
+          unlinkedAt: null,
+          isDeleted: false,
+        },
+        create: {
+          plateNumber: snapshot.plateNumber,
+          model: snapshot.model,
+          year: snapshot.year,
+          oemVehicleId: snapshot.oemVehicleId,
+          teslaAccountId,
+        },
+      });
 
   await prisma.vehicleSnapshot.create({
     data: {
@@ -68,11 +104,18 @@ async function upsertSnapshot(snapshot: VehicleSnapshotData) {
 }
 
 async function replaceEvents(events: VehicleEventData[]) {
-  await prisma.vehicleEvent.deleteMany();
+  await prisma.vehicleEvent.deleteMany({
+    where: {
+      vehicle: activeVehicleWhere,
+    },
+  });
 
   for (const event of events) {
-    const vehicle = await prisma.vehicle.findUnique({
-      where: { plateNumber: event.plateNumber },
+    const vehicle = await prisma.vehicle.findFirst({
+      where: {
+        plateNumber: event.plateNumber,
+        ...activeVehicleWhere,
+      },
     });
     if (!vehicle) continue;
 
@@ -92,13 +135,87 @@ async function fetchProviderEvents(providerName: string) {
     const teslaProvider = new TeslaVehicleProvider();
     return teslaProvider.fetchVehicleEvents();
   }
-  return getMockVehicleEvents();
+  return [];
+}
+
+async function resetMockFleet() {
+  await prisma.vehicle.deleteMany({
+    where: {
+      teslaAccountId: null,
+      ...activeVehicleWhere,
+    },
+  });
+}
+
+async function softUnlinkMissingTeslaVehicles(
+  teslaAccountId: string,
+  activeVins: Set<string>,
+) {
+  const linkedVehicles = await prisma.vehicle.findMany({
+    where: {
+      teslaAccountId,
+      ...activeVehicleWhere,
+      oemVehicleId: { not: null },
+    },
+  });
+
+  const now = new Date();
+
+  for (const vehicle of linkedVehicles) {
+    if (vehicle.oemVehicleId && !activeVins.has(vehicle.oemVehicleId)) {
+      await prisma.vehicle.update({
+        where: { id: vehicle.id },
+        data: {
+          unlinkedAt: now,
+          isDeleted: true,
+        },
+      });
+    }
+  }
 }
 
 export async function syncVehiclesFromProvider(): Promise<SyncVehiclesResult> {
   const requestedProvider = getVehicleProviderName();
-  let provider = createVehicleProvider();
-  let usedFallback = false;
+  const lastSyncedAt = new Date();
+
+  if (requestedProvider === "tesla") {
+    const account = await getActiveTeslaAccount();
+    if (!account) {
+      await resetMockFleet();
+      await prisma.vehicleEvent.deleteMany({
+        where: {
+          vehicle: activeVehicleWhere,
+        },
+      });
+      await prisma.syncMetadata.upsert({
+        where: { id: "default" },
+        update: {
+          lastSyncedAt,
+          provider: "tesla",
+          usedFallback: false,
+          lastError: null,
+        },
+        create: {
+          id: "default",
+          lastSyncedAt,
+          provider: "tesla",
+          usedFallback: false,
+          lastError: null,
+        },
+      });
+
+      return {
+        provider: "tesla",
+        usedFallback: false,
+        vehicleCount: 0,
+        eventCount: 0,
+        lastSyncedAt: lastSyncedAt.toISOString(),
+      };
+    }
+  }
+
+  const provider = createVehicleProvider();
+  const usedFallback = false;
   let errorMessage: string | undefined;
 
   let snapshots: VehicleSnapshotData[] = [];
@@ -107,57 +224,69 @@ export async function syncVehiclesFromProvider(): Promise<SyncVehiclesResult> {
     snapshots = await provider.fetchVehicles();
   } catch (error) {
     errorMessage = error instanceof Error ? error.message : "Unknown sync error";
-
-    if (requestedProvider === "tesla") {
-      usedFallback = true;
-      provider = new MockVehicleProvider();
-      snapshots = await provider.fetchVehicles();
-    } else {
-      throw error;
-    }
+    throw error;
   }
 
-  // Replace the current fleet snapshot set entirely so stale mock/Tesla vehicles
-  // do not remain visible after switching providers or completing a real sync.
-  await prisma.vehicle.deleteMany();
+  const effectiveProvider = provider.name;
+
+  if (effectiveProvider === "mock") {
+    await resetMockFleet();
+  }
+
+  const teslaAccount =
+    effectiveProvider === "tesla" ? await getActiveTeslaAccount() : null;
+  const teslaAccountId = teslaAccount?.id ?? null;
 
   for (const snapshot of snapshots) {
-    await upsertSnapshot(snapshot);
+    await upsertSnapshot(snapshot, {
+      teslaAccountId: effectiveProvider === "tesla" ? teslaAccountId : null,
+    });
+  }
+
+  if (effectiveProvider === "tesla" && teslaAccountId) {
+    const activeVins = new Set(
+      snapshots
+        .map((snapshot) => snapshot.oemVehicleId)
+        .filter((vin): vin is string => Boolean(vin)),
+    );
+    await softUnlinkMissingTeslaVehicles(teslaAccountId, activeVins);
   }
 
   let events: VehicleEventData[] = [];
   try {
-    events = await fetchProviderEvents(usedFallback ? "mock" : provider.name);
+    events = await fetchProviderEvents(effectiveProvider);
   } catch (error) {
     console.warn("Failed to fetch provider events:", error);
-    events = getMockVehicleEvents();
+    events = [];
   }
 
   await replaceEvents(events);
-
-  const lastSyncedAt = new Date();
 
   await prisma.syncMetadata.upsert({
     where: { id: "default" },
     update: {
       lastSyncedAt,
-      provider: usedFallback ? "mock" : provider.name,
+      provider: effectiveProvider,
       usedFallback,
       lastError: errorMessage ?? null,
     },
     create: {
       id: "default",
       lastSyncedAt,
-      provider: usedFallback ? "mock" : provider.name,
+      provider: effectiveProvider,
       usedFallback,
       lastError: errorMessage ?? null,
     },
   });
 
+  const activeCount = await prisma.vehicle.count({
+    where: activeVehicleWhere,
+  });
+
   return {
-    provider: usedFallback ? "mock" : provider.name,
+    provider: effectiveProvider,
     usedFallback,
-    vehicleCount: snapshots.length,
+    vehicleCount: activeCount,
     eventCount: events.length,
     lastSyncedAt: lastSyncedAt.toISOString(),
     error: errorMessage,

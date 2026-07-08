@@ -662,6 +662,8 @@ vercel
 | 2026-07-08 | Phase 3.8 P1 충전 현황 — 차량 모델 nowrap, 배터리 `120px` |
 | 2026-07-08 | Phase 3.8 P1 컬럼 폭 — 충전 축소·배터리 expanded 프로그래스바 |
 | 2026-07-08 | Phase 3.8 P1 최근 차량 — nowrap·배터리 max-width로 배지 줄바꿈 해소 |
+| 2026-07-08 | Phase 3.9 — User·TeslaAccount·Vehicle DB 요구사항 [requirements-user-db.md](./requirements-user-db.md) (코드 미착수) |
+| 2026-07-08 | Phase 3.9 완료 — TeslaAccount 마이그레이션, `DELETE /api/vehicles/[id]/unlink` |
 | 2026-07-07 | Tesla 연동 검증 반영 — `fleet_status` 파싱 오류·API 캐시 수정, `usedFallback=false` 확인 |
 | 2026-07-07 | Tesla UI 보정 반영 — 식별명/위치 데이터 없음 처리, 좌표 0 안내 |
 | 2026-07-07 | Tesla TPMS 보정 반영 — 차량 상세에 PSI 환산 표시 적용 |

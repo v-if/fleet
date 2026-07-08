@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { requireApiSession } from "@/lib/auth-session";
 import { disconnectTeslaAccount, getStoredTeslaToken, isTeslaConnected } from "@/lib/tesla/auth";
 import { isTeslaConfigured } from "@/lib/tesla/config";
 import { getSyncMetadata } from "@/lib/vehicle-sync";
@@ -8,6 +9,11 @@ import { getVehicleProviderName } from "@/lib/vehicle-providers";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const session = await requireApiSession();
+  if (session instanceof NextResponse) {
+    return session;
+  }
+
   const [connected, token, syncMetadata] = await Promise.all([
     isTeslaConnected(),
     getStoredTeslaToken(),
@@ -32,6 +38,11 @@ export async function GET() {
 }
 
 export async function DELETE() {
+  const session = await requireApiSession();
+  if (session instanceof NextResponse) {
+    return session;
+  }
+
   await disconnectTeslaAccount();
   return NextResponse.json({ connected: false });
 }

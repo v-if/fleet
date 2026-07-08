@@ -2,12 +2,18 @@ import { randomBytes } from "crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { requireApiSession } from "@/lib/auth-session";
 import { buildTeslaAuthorizeUrl } from "@/lib/tesla/auth";
 import { isTeslaConfigured } from "@/lib/tesla/config";
 
 const STATE_COOKIE = "tesla_oauth_state";
 
 export async function GET() {
+  const session = await requireApiSession();
+  if (session instanceof NextResponse) {
+    return session;
+  }
+
   if (!isTeslaConfigured()) {
     return NextResponse.json(
       { error: "Tesla Fleet API credentials are not configured" },

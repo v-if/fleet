@@ -35,75 +35,99 @@ enum EventType {
   OFFLINE
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum TeslaAccountRole {
+  OWNER
+  DRIVER
 }
 
-model TeslaOAuthToken {
-  id           String   @id @default(cuid())
-  accountKey   String   @unique @default("default")
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  teslaAccounts TeslaAccount[]
+}
+
+model TeslaAccount {
+  id           String            @id @default(cuid())
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teslaEmail   String            @default("linked@tesla.local")
+  region       String            @default("na")
   accessToken  String
   refreshToken String
   expiresAt    DateTime
   scope        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         TeslaAccountRole?
+  linkedAt     DateTime          @default(now())
+  unlinkedAt   DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  vehicles     Vehicle[]
+
+  @@unique([userId, teslaEmail])
+  @@index([userId])
+  @@index([unlinkedAt])
 }
 
 model SyncMetadata {
-  id           String   @id @default("default")
+  id           String    @id @default("default")
   lastSyncedAt DateTime?
   provider     String?
-  usedFallback Boolean  @default(false)
+  usedFallback Boolean   @default(false)
   lastError    String?
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime  @updatedAt
 }
 
 model Vehicle {
-  id           String   @id @default(cuid())
-  plateNumber  String   @unique
-  model        String
-  year         Int
-  oemVehicleId String?  @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String           @id @default(cuid())
+  plateNumber    String           @unique
+  model          String
+  year           Int
+  oemVehicleId   String?
+  teslaAccountId String?
+  teslaAccount   TeslaAccount?    @relation(fields: [teslaAccountId], references: [id], onDelete: SetNull)
+  unlinkedAt     DateTime?
+  isDeleted      Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  snapshots      VehicleSnapshot[]
+  events         VehicleEvent[]
 
-  snapshots VehicleSnapshot[]
-  events    VehicleEvent[]
+  @@unique([teslaAccountId, oemVehicleId])
+  @@index([teslaAccountId])
+  @@index([unlinkedAt])
 }
 
 model VehicleSnapshot {
-  id             String          @id @default(cuid())
-  vehicleId      String
-  vehicle        Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  latitude       Float
-  longitude      Float
-  batteryPercent Float?
-  rangeKm        Float?
-  ignitionOn     Boolean         @default(false)
-  status         VehicleStatus   @default(OFFLINE)
-  chargingStatus ChargingStatus  @default(DISCONNECTED)
-  odometerKm     Float?
-  locked         Boolean         @default(true)
-  doorsOpen      Boolean         @default(false)
-  windowsOpen    Boolean         @default(false)
-  insideTempC    Float?
-  outsideTempC   Float?
-  climateOn      Boolean         @default(false)
-  tpmsFrontLeft  Float?
-  tpmsFrontRight Float?
-  tpmsRearLeft   Float?
-  tpmsRearRight  Float?
-  sentryMode     Boolean         @default(false)
-  serviceStatus  ServiceStatus   @default(OK)
-  softwareVersion String?
+  id                  String         @id @default(cuid())
+  vehicleId           String
+  vehicle             Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  latitude            Float
+  longitude           Float
+  batteryPercent      Float?
+  rangeKm             Float?
+  ignitionOn          Boolean        @default(false)
+  status              VehicleStatus  @default(OFFLINE)
+  chargingStatus      ChargingStatus @default(DISCONNECTED)
+  odometerKm          Float?
+  locked              Boolean        @default(true)
+  doorsOpen           Boolean        @default(false)
+  windowsOpen         Boolean        @default(false)
+  insideTempC         Float?
+  outsideTempC        Float?
+  climateOn           Boolean        @default(false)
+  tpmsFrontLeft       Float?
+  tpmsFrontRight      Float?
+  tpmsRearLeft        Float?
+  tpmsRearRight       Float?
+  sentryMode          Boolean        @default(false)
+  serviceStatus       ServiceStatus  @default(OK)
+  softwareVersion     String?
   nearbyChargingSites String?
-  lastUpdatedAt  DateTime        @default(now())
-  createdAt      DateTime        @default(now())
+  lastUpdatedAt       DateTime       @default(now())
+  createdAt           DateTime       @default(now())
 
   @@index([vehicleId])
   @@index([lastUpdatedAt])

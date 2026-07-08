@@ -10,6 +10,8 @@
 | [requirements-benchmarking.md](./requirements-benchmarking.md) | UMOS ONE Pleos Fleet 벤치마킹, 기능 우선순위·화면·차별화 | 기능·화면 설계 참고할 때 |
 | [requirements-tech-stack.md](./requirements-tech-stack.md) | 기술스택 정의 (Next.js+Supabase), 아키텍처·수집전략·보안 | 어떻게 만들지 정할 때 |
 | [requirements-db.md](./requirements-db.md) | DB 전략, Vercel 배포 오류 분석, Phase 3.6 Supabase PostgreSQL 요구사항 | DB 전환·배포 DB 이슈 해결할 때 |
+| [requirements-user-db.md](./requirements-user-db.md) | User·TeslaAccount·Vehicle 계층 DB, 연동 해제(Soft Delete)·Telemetry 요구사항 | 멀티 계정·차량 스키마 설계할 때 |
+| [auth-user-mapping.md](./auth-user-mapping.md) | Phase 4 Supabase Auth ↔ FMS User 매핑 설계 메모 | 인증·다테넌시 구현 전 |
 | [requirements-tesla-api.md](./requirements-tesla-api.md) | 테슬라 Fleet API 조회/제어 기능 정리, FMS 화면 적용안 | 데이터 연동·제어 기능 설계할 때 |
 | [requirements-front-design.md](./requirements-front-design.md) | Pleos Fleet UI 벤치마킹, 프론트 구성·디자인 개선 요구사항 | 화면 UI/UX 개선할 때 |
 | [requirements-dashboard-design.md](./requirements-dashboard-design.md) | TailAdmin 템플릿 벤치마킹, 디자인 토큰·컴포넌트 마감 개선 요구사항 (Phase 3.7) · **전면 템플릿 적용** (Phase 3.8) | 대시보드·목록·상세 디자인 다듬을 때 |
@@ -74,3 +76,10 @@
 | 2026-07-08 | Phase 3.8 P1 KPI — 전체 차량 Fleet 아이콘 배지 복구 |
 | 2026-07-08 | Phase 3.8 P1 사이드바 — Fleet 브랜딩(자동차 아이콘 + 텍스트) |
 | 2026-07-08 | Phase 3.8 P1 차량 목록 — 컬럼 폭 균형 재조정 |
+| 2026-07-08 | requirements-user-db.md — User·TeslaAccount·Vehicle DB 요구사항 정의 (Phase 3.9) |
+| 2026-07-08 | Phase 3.9 완료 — TeslaAccount·unlink API·active vehicle 필터 |
+| 2026-07-08 | Phase 3.9 로그인 플로우 — `/signin`, 세션 쿠키, 차량 0대 초기 대시보드 |
+| 2026-07-08 | 로그인 UI 정리 — 안내 문구 제거, `회원가입` 링크 `/signup` 연결 |
+| 2026-07-08 | 차량 목록 UX 정리 — 설명 문구 제거, `차량 추가` 버튼 + 안내 모달 |
+| 2026-07-08 | 차량 추가 모달 보강 — 확인 시 Tesla OAuth 이동, 배경 투명도 완화 |
+| 2026-07-08 | 차량 추가 모달 미세 조정 — 배경 오버레이 추가 완화 |

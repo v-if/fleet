@@ -2,7 +2,10 @@
 
 import { FleetToolbar } from "@/components/fms/FleetToolbar";
 import { FleetVehicleTable } from "@/components/fms/FleetVehicleTable";
+import Button from "@/components/ui/button/Button";
+import { Modal } from "@/components/ui/modal";
 import { useVehicles, useVehicleRefresh } from "@/hooks/use-vehicles";
+import { useModal } from "@/hooks/useModal";
 import { formatProviderTime, providerLabel } from "@/lib/fms-badge-utils";
 import { useState } from "react";
 
@@ -10,6 +13,8 @@ export function FleetVehiclesListView() {
   const { data, isLoading, isError, error, isFetching } = useVehicles();
   const refreshVehicles = useVehicleRefresh();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const { isOpen, openModal, closeModal } = useModal();
 
   async function handleRefresh() {
     setIsRefreshing(true);
@@ -18,6 +23,11 @@ export function FleetVehiclesListView() {
     } finally {
       setIsRefreshing(false);
     }
+  }
+
+  function handleConnectTesla() {
+    setIsConnecting(true);
+    window.location.href = "/api/auth/tesla";
   }
 
   if (isLoading) {
@@ -36,13 +46,56 @@ export function FleetVehiclesListView() {
     <>
       <FleetToolbar
         title="차량 목록"
-        description="플릿 전체 차량 상태를 TailAdmin 테이블로 확인합니다."
         provider={providerLabel(data.provider)}
         lastUpdatedAt={formatProviderTime(data.lastUpdatedAt)}
         onRefresh={() => void handleRefresh()}
         isRefreshing={isRefreshing || isFetching}
+        actions={
+          <Button size="sm" onClick={openModal}>
+            차량 추가
+          </Button>
+        }
       />
       <FleetVehicleTable vehicles={data.vehicles} />
+      <Modal
+        isOpen={isOpen}
+        onClose={closeModal}
+        className="max-w-[520px] p-6 sm:p-8"
+        overlayClassName="bg-gray-400/12 backdrop-blur-[16px]"
+      >
+        <div className="pr-8">
+          <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-500 dark:bg-brand-500/10 dark:text-brand-400">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 5V19M5 12H19"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-white/90">
+            새로운 테슬라 계정의 차량을 추가하시겠습니까?
+          </h3>
+          <p className="mt-3 text-sm leading-6 text-gray-500 dark:text-gray-400">
+            테슬라 공홈에 로그인 후 Fleet 연동을 해주시기 바랍니다.
+          </p>
+          <div className="mt-8 flex justify-end gap-3">
+            <Button size="sm" variant="outline" onClick={closeModal}>
+              닫기
+            </Button>
+            <Button size="sm" onClick={handleConnectTesla} disabled={isConnecting}>
+              {isConnecting ? "이동 중..." : "확인"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }
