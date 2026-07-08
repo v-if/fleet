@@ -120,7 +120,8 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
   const chargingStatus = snapshot?.chargingStatus ?? "DISCONNECTED";
   const issueTags = collectIssueTags(vehicle);
 
-  const mapVehicle: MapVehicle[] = snapshot
+  const mapVehicle: MapVehicle[] =
+    snapshot?.status != null && snapshot.latitude != null && snapshot.longitude != null
     ? [
         {
           id: vehicle.id,
@@ -223,11 +224,11 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               <InfoField label="미운행" value={vehicle.isIdle ? "예" : "아니오"} />
               <InfoField
                 label="시동"
-                value={snapshot?.ignitionOn ? "ON" : "OFF"}
+                value={snapshot?.ignitionOn == null ? "-" : snapshot.ignitionOn ? "ON" : "OFF"}
               />
               <InfoField
                 label="정비"
-                value={snapshot ? SERVICE_STATUS_LABEL[snapshot.serviceStatus] : "-"}
+                value={snapshot?.serviceStatus ? SERVICE_STATUS_LABEL[snapshot.serviceStatus] : "-"}
               />
             </div>
           </div>
@@ -260,10 +261,24 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               잠금 · 개폐
             </h4>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <InfoField label="잠금" value={snapshot?.locked ? "잠김" : "해제"} />
-              <InfoField label="문" value={snapshot?.doorsOpen ? "개방" : "닫힘"} />
-              <InfoField label="창문" value={snapshot?.windowsOpen ? "개방" : "닫힘"} />
-              <InfoField label="센트리" value={snapshot?.sentryMode ? "활성" : "비활성"} />
+              <InfoField
+                label="잠금"
+                value={snapshot?.locked == null ? "-" : snapshot.locked ? "잠김" : "해제"}
+              />
+              <InfoField
+                label="문"
+                value={snapshot?.doorsOpen == null ? "-" : snapshot.doorsOpen ? "개방" : "닫힘"}
+              />
+              <InfoField
+                label="창문"
+                value={
+                  snapshot?.windowsOpen == null ? "-" : snapshot.windowsOpen ? "개방" : "닫힘"
+                }
+              />
+              <InfoField
+                label="센트리"
+                value={snapshot?.sentryMode == null ? "-" : snapshot.sentryMode ? "활성" : "비활성"}
+              />
             </div>
           </div>
 
@@ -272,7 +287,10 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               공조 · 온도
             </h4>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <InfoField label="공조" value={snapshot?.climateOn ? "ON" : "OFF"} />
+              <InfoField
+                label="공조"
+                value={snapshot?.climateOn == null ? "-" : snapshot.climateOn ? "ON" : "OFF"}
+              />
               <InfoField label="실내" value={formatTempC(snapshot?.insideTempC ?? null)} />
               <InfoField label="실외" value={formatTempC(snapshot?.outsideTempC ?? null)} />
               <InfoField label="SW 버전" value={snapshot?.softwareVersion ?? "-"} />

@@ -148,7 +148,8 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
   const chargingStatus = snapshot?.chargingStatus ?? "DISCONNECTED";
   const issueTags = collectIssueTags(vehicle);
 
-  const mapVehicle: MapVehicle[] = snapshot
+  const mapVehicle: MapVehicle[] =
+    snapshot?.status != null && snapshot.latitude != null && snapshot.longitude != null
     ? [
         {
           id: vehicle.id,
@@ -215,7 +216,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
               <span className="text-theme-sm text-gray-500">
                 시동{" "}
                 <strong className="text-foreground">
-                  {snapshot?.ignitionOn ? "ON" : "OFF"}
+                  {snapshot?.ignitionOn == null ? "-" : snapshot.ignitionOn ? "ON" : "OFF"}
                 </strong>
               </span>
             </div>
@@ -313,12 +314,25 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
                   <CardTitle>잠금 · 개폐</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-3 sm:grid-cols-2">
-                  <InfoItem label="잠금" value={snapshot?.locked ? "잠김" : "해제"} />
-                  <InfoItem label="문" value={snapshot?.doorsOpen ? "개방" : "닫힘"} />
-                  <InfoItem label="창문" value={snapshot?.windowsOpen ? "개방" : "닫힘"} />
+                  <InfoItem
+                    label="잠금"
+                    value={snapshot?.locked == null ? "-" : snapshot.locked ? "잠김" : "해제"}
+                  />
+                  <InfoItem
+                    label="문"
+                    value={snapshot?.doorsOpen == null ? "-" : snapshot.doorsOpen ? "개방" : "닫힘"}
+                  />
+                  <InfoItem
+                    label="창문"
+                    value={
+                      snapshot?.windowsOpen == null ? "-" : snapshot.windowsOpen ? "개방" : "닫힘"
+                    }
+                  />
                   <InfoItem
                     label="센트리"
-                    value={snapshot?.sentryMode ? "활성" : "비활성"}
+                    value={
+                      snapshot?.sentryMode == null ? "-" : snapshot.sentryMode ? "활성" : "비활성"
+                    }
                   />
                 </CardContent>
               </Card>
@@ -328,7 +342,10 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
                   <CardTitle>공조 · 온도</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-3 sm:grid-cols-2">
-                  <InfoItem label="공조" value={snapshot?.climateOn ? "ON" : "OFF"} />
+                  <InfoItem
+                    label="공조"
+                    value={snapshot?.climateOn == null ? "-" : snapshot.climateOn ? "ON" : "OFF"}
+                  />
                   <InfoItem
                     label="실내"
                     value={formatTempC(snapshot?.insideTempC ?? null)}
@@ -371,7 +388,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
                 </CardHeader>
                 <CardContent className="grid gap-3 sm:grid-cols-2">
                   <InfoItem label="서비스">
-                    {snapshot ? (
+                    {snapshot?.serviceStatus ? (
                       <Badge variant={SERVICE_STATUS_BADGE_VARIANT[snapshot.serviceStatus]}>
                         {SERVICE_STATUS_LABEL[snapshot.serviceStatus]}
                       </Badge>

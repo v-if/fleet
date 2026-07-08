@@ -546,6 +546,8 @@
 - [x] 차량 추가 모달 — `확인` 시 `/api/auth/tesla` 이동, 오버레이 투명도 완화
 - [x] Tesla OAuth·토큰·동기화 — **로그인 세션 User**에 `TeslaAccount` 귀속 (`tesla_oauth_user` 쿠키)
 - [x] `getOrCreateDefaultUser()` / `admin@fleet.local` 자동 생성 제거 (seed·OAuth)
+- [x] Tesla OAuth callback — `returnTo` 기준 원래 화면 복귀 (`/vehicles` → `/vehicles`)
+- [x] Tesla 저장 정책 — 응답에 없는 값은 `null`, placeholder/default(`linked@tesla.local`, `OWNER`, `OK`, `0/false`) 저장 금지
 
 ### 인증 연동 (P1) — Phase 4 선행 설계
 - [x] Supabase Auth `auth.users.id` ↔ FMS `User.id` 매핑 방안 ([auth-user-mapping.md](./auth-user-mapping.md))
@@ -559,6 +561,8 @@
 - **API**: `DELETE /api/vehicles/[id]/unlink` — Telemetry stub + soft delete + 계정 정리
 - **인증**: `/signin` → `/api/auth/login` → 세션 쿠키 → 보호 레이아웃(`/`, `/vehicles`, `/map`, `/settings`)
 - **Tesla 귀속**: OAuth callback이 `session.userId`로 `TeslaAccount` upsert — 레거시 `admin@fleet.local` 경로 제거
+- **복귀 경로**: `tesla_oauth_return_to` 쿠키로 OAuth 시작 화면 복귀 (`/vehicles`에서 시작 시 `/vehicles`로 복귀)
+- **저장 정책**: `id_token`에 email이 있으면 `TeslaAccount.teslaEmail` 저장, 없으면 `null`; `Vehicle.teslaAccountId`는 `User.id`가 아니라 `TeslaAccount.id`
 - **로그인 UI**: 상단 보조 문구·테스트 계정 박스 제거, `회원가입` 링크는 `/signup` 템플릿 그대로 연결
 - **차량 추가 UX**: `/vehicles` 툴바에 `차량 추가` 버튼, 안내 모달 확인 후 `/api/auth/tesla`로 이동
 - **모달 오버레이**: 차량 추가 팝업 배경을 더 투명하게 조정 (`12%`, blur 완화)
@@ -664,5 +668,6 @@
 | 2026-07-08 | Phase 3.8 P1 차량 목록 — 컬럼 폭 균형 재조정 (차량·배터리·갱신 등) |
 | 2026-07-08 | Phase 3.9 추가 — User·TeslaAccount·Vehicle DB 요구사항 정의 ([requirements-user-db.md](./requirements-user-db.md), 코드 미착수) |
 | 2026-07-08 | Phase 3.9 완료 — TeslaAccount 스키마·마이그레이션·unlink API·active 필터 |
+| 2026-07-08 | Phase 3.9 보강 — OAuth callback 원위치 복귀, placeholder/default 값 `null` 정책, `teslaAccountId` 매핑 명확화 |
 | 2026-07-08 | Phase 3.9 보강 — Tesla OAuth를 세션 User에 귀속, `admin@fleet.local` 자동 생성 제거 |
 

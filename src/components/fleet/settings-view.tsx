@@ -134,7 +134,7 @@ export function SettingsView() {
                 <div className="flex flex-wrap gap-2">
                   {!status?.connected ? (
                     <Link
-                      href="/api/auth/tesla"
+                      href="/api/auth/tesla?returnTo=/fleet/settings"
                       className={cn(buttonVariants(), "inline-flex items-center gap-2")}
                     >
                       <Link2 className="size-4" />

@@ -1,4 +1,4 @@
-import type { ChargingStatus, EventType, ServiceStatus, VehicleStatus } from "@prisma/client";
+import type { ChargingStatus, EventType, VehicleStatus } from "@prisma/client";
 
 import { getValidTeslaAccessToken } from "./auth";
 import { getTeslaRegionConfig } from "./config";
@@ -80,8 +80,8 @@ function deriveYearFromVin(vin: string) {
   return mapping[yearCode] ?? new Date().getFullYear();
 }
 
-function hasUsableCoordinates(lat: number, lng: number) {
-  return !(lat === 0 && lng === 0);
+function hasUsableCoordinates(lat?: number | null, lng?: number | null) {
+  return lat != null && lng != null && !(lat === 0 && lng === 0);
 }
 
 export function mapTeslaVehicleToSnapshot(
@@ -99,31 +99,41 @@ export function mapTeslaVehicleToSnapshot(
 
   const batteryPercent = charge?.battery_level;
   const rangeKm = charge?.est_battery_range ?? charge?.battery_range;
-  const latitude = drive?.latitude ?? 0;
-  const longitude = drive?.longitude ?? 0;
+  const latitude = hasUsableCoordinates(drive?.latitude, drive?.longitude)
+    ? drive?.latitude ?? null
+    : null;
+  const longitude = hasUsableCoordinates(drive?.latitude, drive?.longitude)
+    ? drive?.longitude ?? null
+    : null;
   const hasTelemetry =
     batteryPercent !== undefined ||
     charge?.charging_state !== undefined ||
     drive?.shift_state !== undefined ||
     hasUsableCoordinates(latitude, longitude);
-  const doorsOpen = Boolean(
-    vehicle?.df || vehicle?.dr || vehicle?.pf || vehicle?.pr || closures?.door_open,
-  );
-  const windowsOpen = Boolean(vehicle?.ft || vehicle?.rt || closures?.window_open);
+  const hasDoorState =
+    vehicle?.df != null ||
+    vehicle?.dr != null ||
+    vehicle?.pf != null ||
+    vehicle?.pr != null ||
+    closures?.door_open != null;
+  const doorsOpen = hasDoorState
+    ? Boolean(vehicle?.df || vehicle?.dr || vehicle?.pf || vehicle?.pr || closures?.door_open)
+    : null;
+  const hasWindowState =
+    vehicle?.ft != null || vehicle?.rt != null || closures?.window_open != null;
+  const windowsOpen = hasWindowState
+    ? Boolean(vehicle?.ft || vehicle?.rt || closures?.window_open)
+    : null;
 
-  let status = mapVehicleStatus(state);
+  let status: VehicleStatus | null = state ? mapVehicleStatus(state) : null;
   if (!hasTelemetry) {
-    status = "OFFLINE";
+    status = state ? "OFFLINE" : null;
   }
   if (batteryPercent !== undefined && batteryPercent < 15) {
     status = "ALERT";
-  } else if (batteryPercent !== undefined && batteryPercent < 25) {
+  } else if (batteryPercent !== undefined && batteryPercent < 25 && status === "ONLINE") {
     status = status === "ONLINE" ? "WARNING" : status;
   }
-
-  const serviceStatus: ServiceStatus = fleetStatus?.discounted_device_data
-    ? "OK"
-    : "OK";
 
   return {
     plateNumber: derivePlateNumber(vin, data.display_name ?? listItem.display_name),
@@ -134,22 +144,22 @@ export function mapTeslaVehicleToSnapshot(
     longitude,
     batteryPercent,
     rangeKm: rangeKm ? Math.round(rangeKm * 1.60934) : undefined,
-    ignitionOn: drive?.shift_state != null && drive.shift_state !== "P",
+    ignitionOn: drive?.shift_state != null ? drive.shift_state !== "P" : null,
     status,
-    chargingStatus: mapChargingStatus(charge?.charging_state),
+    chargingStatus: charge?.charging_state ? mapChargingStatus(charge.charging_state) : null,
     odometerKm: vehicle?.odometer ? Math.round(vehicle.odometer * 1.60934) : undefined,
-    locked: vehicle?.locked ?? true,
+    locked: vehicle?.locked ?? null,
     doorsOpen,
     windowsOpen,
     insideTempC: climate?.inside_temp,
     outsideTempC: climate?.outside_temp,
-    climateOn: climate?.is_climate_on ?? false,
+    climateOn: climate?.is_climate_on ?? null,
     tpmsFrontLeft: vehicle?.tpms_pressure_fl,
     tpmsFrontRight: vehicle?.tpms_pressure_fr,
     tpmsRearLeft: vehicle?.tpms_pressure_rl,
     tpmsRearRight: vehicle?.tpms_pressure_rr,
-    sentryMode: vehicle?.sentry_mode ?? false,
-    serviceStatus,
+    sentryMode: vehicle?.sentry_mode ?? null,
+    serviceStatus: null,
     softwareVersion: vehicle?.car_version ?? fleetStatus?.firmware_version,
     nearbyChargingSites: [] as NearbyChargingSite[],
     lastUpdatedAt: new Date(),

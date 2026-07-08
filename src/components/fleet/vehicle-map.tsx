@@ -16,6 +16,12 @@ type VehicleMapProps = {
   hero?: boolean;
 };
 
+type PositionedMapVehicle = MapVehicle & {
+  status: NonNullable<MapVehicle["status"]>;
+  latitude: number;
+  longitude: number;
+};
+
 type KakaoMaps = {
   maps: {
     load: (callback: () => void) => void;
@@ -99,11 +105,11 @@ function loadKakaoMaps(appKey: string) {
   });
 }
 
-function markerHtml(vehicle: MapVehicle, selected: boolean) {
+function markerHtml(vehicle: PositionedMapVehicle, selected: boolean) {
   const shortPlate = vehicle.plateNumber.replace(/\s/g, "").slice(-4);
   const battery =
     vehicle.batteryPercent != null ? `${Math.round(vehicle.batteryPercent)}%` : "-";
-  const ringColors: Record<MapVehicle["status"], string> = {
+  const ringColors: Record<NonNullable<MapVehicle["status"]>, string> = {
     ONLINE: "#10b981",
     OFFLINE: "#a1a1aa",
     WARNING: "#f59e0b",
@@ -139,14 +145,18 @@ export function VehicleMap({
 }: VehicleMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY?.trim();
   const validVehicles = useMemo(
-    () => vehicles.filter((vehicle) => hasValidCoordinates(vehicle.latitude, vehicle.longitude)),
+    () =>
+      vehicles.filter(
+        (vehicle): vehicle is PositionedMapVehicle =>
+          vehicle.status != null && hasValidCoordinates(vehicle.latitude, vehicle.longitude),
+      ),
     [vehicles],
   );
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<InstanceType<KakaoMaps["maps"]["Map"]> | null>(null);
   const overlaysRef = useRef<InstanceType<KakaoMaps["maps"]["CustomOverlay"]>[]>([]);
   const onSelectRef = useRef(onSelect);
-  const vehiclesRef = useRef(vehicles);
+  const vehiclesRef = useRef<PositionedMapVehicle[]>([]);
   const [ready, setReady] = useState(false);
   const [useFallback, setUseFallback] = useState(false);
 
@@ -289,7 +299,7 @@ function SelectedVehicleLink({
         <div>
           <p className="font-medium">{vehicle.plateNumber}</p>
           <p className="text-sm text-muted-foreground">
-            {vehicle.model} · {STATUS_LABEL[vehicle.status]}
+            {vehicle.model} · {vehicle.status ? STATUS_LABEL[vehicle.status] : "상태 정보 없음"}
           </p>
         </div>
         <Link href={`/fleet/vehicles/${vehicle.id}`} className="text-sm text-primary hover:underline">

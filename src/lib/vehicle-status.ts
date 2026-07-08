@@ -73,7 +73,7 @@ export const STATUS_GLOW_CLASS: Record<VehicleStatus, string> = {
 };
 
 export function isIdleForDays(
-  status: VehicleStatus,
+  status: VehicleStatus | null | undefined,
   lastUpdatedAt: Date | string | null,
   days: number,
 ): boolean {
@@ -87,7 +87,7 @@ export function isIdleForDays(
 }
 
 export function isIdleVehicle(
-  status: VehicleStatus,
+  status: VehicleStatus | null | undefined,
   lastUpdatedAt: Date | string | null,
 ): boolean {
   return isIdleForDays(status, lastUpdatedAt, IDLE_DAYS_THRESHOLD);
@@ -113,11 +113,11 @@ export function formatTempC(temp: number | null | undefined) {
   return `${temp.toFixed(1)}°C`;
 }
 
-export function formatLocationSummary(lat: number, lng: number) {
+export function formatLocationSummary(lat: number | null | undefined, lng: number | null | undefined) {
   if (!hasValidCoordinates(lat, lng)) {
     return "위치 데이터 없음";
   }
-  return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  return `${lat!.toFixed(4)}, ${lng!.toFixed(4)}`;
 }
 
 export function hasValidCoordinates(lat: number | null | undefined, lng: number | null | undefined) {
@@ -142,12 +142,12 @@ export function getIdleDurationLabel(lastUpdatedAt: Date | string | null) {
 export function getAttentionReason(vehicle: {
   isIdle: boolean;
   snapshot: {
-    status: VehicleStatus;
+    status: VehicleStatus | null;
     batteryPercent: number | null;
-    sentryMode: boolean;
-    locked: boolean;
-    doorsOpen: boolean;
-    windowsOpen: boolean;
+    sentryMode: boolean | null;
+    locked: boolean | null;
+    doorsOpen: boolean | null;
+    windowsOpen: boolean | null;
     tpmsFrontLeft: number | null;
     tpmsFrontRight: number | null;
     tpmsRearLeft: number | null;
@@ -163,7 +163,7 @@ export function getAttentionReason(vehicle: {
     return "배터리 잔량 20% 미만";
   }
   if (snapshot.sentryMode) return "센트리 모드 활성";
-  if (!snapshot.locked) return "차량 잠금 해제";
+  if (snapshot.locked === false) return "차량 잠금 해제";
   if (snapshot.doorsOpen) return "차량 문 개방";
   if (snapshot.windowsOpen) return "창문 개방";
   if (

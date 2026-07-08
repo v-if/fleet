@@ -1,5 +1,3 @@
-import { TeslaAccountRole } from "@prisma/client";
-
 import { prisma } from "@/lib/prisma";
 import { unlinkAllVehiclesForAccount } from "@/lib/vehicle-unlink";
 import { activeTeslaAccountWhere } from "@/lib/vehicle-query";
@@ -8,15 +6,12 @@ import {
   getTeslaClientId,
   getTeslaClientSecret,
   getTeslaRedirectUri,
-  getTeslaRegion,
   getTeslaRegionConfig,
   TESLA_AUTH_AUTHORIZE_URL,
   TESLA_AUTH_TOKEN_URL,
   TESLA_OAUTH_SCOPES,
 } from "./config";
 import type { TeslaTokenResponse } from "./types";
-
-const PLACEHOLDER_TESLA_EMAIL = "linked@tesla.local";
 
 function buildFormBody(params: Record<string, string>) {
   return new URLSearchParams(params).toString();
@@ -39,40 +34,75 @@ async function requestToken(body: Record<string, string>): Promise<TeslaTokenRes
   return (await response.json()) as TeslaTokenResponse;
 }
 
+function decodeJwtPayload(token: string) {
+  const [, payload] = token.split(".");
+  if (!payload) return null;
+
+  try {
+    return JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as {
+      email?: string;
+    };
+  } catch {
+    return null;
+  }
+}
+
+function getTeslaEmailFromToken(token: TeslaTokenResponse) {
+  const email = token.id_token ? decodeJwtPayload(token.id_token)?.email : undefined;
+  return email?.trim().toLowerCase() || null;
+}
+
 async function persistTokenForUser(
   userId: string,
   token: TeslaTokenResponse,
-  teslaEmail = PLACEHOLDER_TESLA_EMAIL,
+  accountId?: string,
 ) {
   const expiresAt = new Date(Date.now() + token.expires_in * 1000);
   const scope = token.scope ?? TESLA_OAUTH_SCOPES.join(" ");
-  const region = getTeslaRegion();
+  const teslaEmail = getTeslaEmailFromToken(token);
+  const existingAccount =
+    accountId != null
+      ? await prisma.teslaAccount.findUnique({ where: { id: accountId } })
+      : teslaEmail
+        ? await prisma.teslaAccount.findFirst({
+            where: { userId, teslaEmail },
+            orderBy: { linkedAt: "desc" },
+          })
+        : await prisma.teslaAccount.findFirst({
+            where: {
+              userId,
+              teslaEmail: null,
+              unlinkedAt: null,
+            },
+            orderBy: { linkedAt: "desc" },
+          });
 
-  return prisma.teslaAccount.upsert({
-    where: {
-      userId_teslaEmail: {
-        userId,
+  if (existingAccount) {
+    return prisma.teslaAccount.update({
+      where: { id: existingAccount.id },
+      data: {
         teslaEmail,
+        accessToken: token.access_token,
+        refreshToken: token.refresh_token,
+        expiresAt,
+        scope,
+        region: null,
+        role: null,
+        unlinkedAt: null,
       },
-    },
-    update: {
-      accessToken: token.access_token,
-      refreshToken: token.refresh_token,
-      expiresAt,
-      scope,
-      region,
-      role: TeslaAccountRole.OWNER,
-      unlinkedAt: null,
-    },
-    create: {
+    });
+  }
+
+  return prisma.teslaAccount.create({
+    data: {
       userId,
       teslaEmail,
       accessToken: token.access_token,
       refreshToken: token.refresh_token,
       expiresAt,
       scope,
-      region,
-      role: TeslaAccountRole.OWNER,
+      region: null,
+      role: null,
     },
   });
 }
@@ -109,7 +139,7 @@ export async function exchangeAuthorizationCode(code: string, userId: string) {
 export async function refreshAccessTokenForAccount(
   userId: string,
   refreshToken: string,
-  teslaEmail = PLACEHOLDER_TESLA_EMAIL,
+  accountId?: string,
 ) {
   const token = await requestToken({
     grant_type: "refresh_token",
@@ -118,7 +148,7 @@ export async function refreshAccessTokenForAccount(
     refresh_token: refreshToken,
   });
 
-  return persistTokenForUser(userId, token, teslaEmail);
+  return persistTokenForUser(userId, token, accountId);
 }
 
 export async function getActiveTeslaAccountForUser(userId: string) {
@@ -157,7 +187,7 @@ export async function getValidTeslaAccessToken(userId: string) {
   const refreshed = await refreshAccessTokenForAccount(
     userId,
     stored.refreshToken,
-    stored.teslaEmail,
+    stored.id,
   );
   return refreshed.accessToken;
 }

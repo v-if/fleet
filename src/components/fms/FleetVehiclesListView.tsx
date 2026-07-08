@@ -27,7 +27,7 @@ export function FleetVehiclesListView() {
 
   function handleConnectTesla() {
     setIsConnecting(true);
-    window.location.href = "/api/auth/tesla";
+    window.location.href = "/api/auth/tesla?returnTo=/vehicles";
   }
 
   if (isLoading) {

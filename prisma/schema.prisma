@@ -53,8 +53,8 @@ model TeslaAccount {
   id           String            @id @default(cuid())
   userId       String
   user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  teslaEmail   String            @default("linked@tesla.local")
-  region       String            @default("na")
+  teslaEmail   String?
+  region       String?
   accessToken  String
   refreshToken String
   expiresAt    DateTime
@@ -104,26 +104,26 @@ model VehicleSnapshot {
   id                  String         @id @default(cuid())
   vehicleId           String
   vehicle             Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  latitude            Float
-  longitude           Float
+  latitude            Float?
+  longitude           Float?
   batteryPercent      Float?
   rangeKm             Float?
-  ignitionOn          Boolean        @default(false)
-  status              VehicleStatus  @default(OFFLINE)
-  chargingStatus      ChargingStatus @default(DISCONNECTED)
+  ignitionOn          Boolean?
+  status              VehicleStatus?
+  chargingStatus      ChargingStatus?
   odometerKm          Float?
-  locked              Boolean        @default(true)
-  doorsOpen           Boolean        @default(false)
-  windowsOpen         Boolean        @default(false)
+  locked              Boolean?
+  doorsOpen           Boolean?
+  windowsOpen         Boolean?
   insideTempC         Float?
   outsideTempC        Float?
-  climateOn           Boolean        @default(false)
+  climateOn           Boolean?
   tpmsFrontLeft       Float?
   tpmsFrontRight      Float?
   tpmsRearLeft        Float?
   tpmsRearRight       Float?
-  sentryMode          Boolean        @default(false)
-  serviceStatus       ServiceStatus  @default(OK)
+  sentryMode          Boolean?
+  serviceStatus       ServiceStatus?
   softwareVersion     String?
   nearbyChargingSites String?
   lastUpdatedAt       DateTime       @default(now())

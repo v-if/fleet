@@ -15,8 +15,9 @@
 
 - `admin@fleet.local` / `getOrCreateDefaultUser()` **사용 중단** — seed·OAuth도 더 이상 기본 관리자를 만들지 않음
 - 로그인은 `auth.users` + public `User` 조합으로 검증하고, 세션 쿠키(`fleet_session`)를 발급
-- Tesla OAuth 시작 시 `tesla_oauth_user` 쿠키에 `session.userId`를 저장하고, callback에서 해당 User에 `TeslaAccount` upsert
+- Tesla OAuth 시작 시 `tesla_oauth_user` + `tesla_oauth_return_to` 쿠키를 저장하고, callback에서 해당 User에 `TeslaAccount` upsert 후 원래 화면으로 복귀
 - 차량 동기화·disconnect·status API는 **세션 User** 소속 계정만 사용
+- `Vehicle.teslaAccountId`는 **`User.id`가 아니라 `TeslaAccount.id`** 를 가리키며, 실제 User 매핑은 `TeslaAccount.userId`를 통해 연결된다
 - Phase 4에서 Supabase Auth 세션으로 교체·API 전체 다테넌시 강화
 
 ## 참고

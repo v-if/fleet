@@ -95,8 +95,8 @@ User (FMS 고객)
 |----------|------|:---:|------|
 | `id` | String | ✅ | PK |
 | `userId` | String (FK → User) | ✅ | 소속 FMS 고객 |
-| `teslaEmail` | String? | | 테슬라 계정 식별(가능 시 OAuth 프로필에서 수집) |
-| `region` | String | ✅ | Fleet API 리전 (`na` / `eu` / `cn`) |
+| `teslaEmail` | String? | | 테슬라 계정 식별(가능 시 OAuth `id_token`/프로필에서 수집, 없으면 `null`) |
+| `region` | String? | | 앱 연결 메타데이터가 필요할 때만 사용. Tesla 응답에 없으면 `null` |
 | `accessToken` | String | ✅ | 암호화 저장 권장 |
 | `refreshToken` | String | ✅ | 암호화 저장 권장 |
 | `expiresAt` | DateTime | ✅ | Access 토큰 만료 |
@@ -121,7 +121,7 @@ User (FMS 고객)
 
 | 필드(안) | 타입 | 필수 | 설명 |
 |----------|------|:---:|------|
-| `teslaAccountId` | String (FK → TeslaAccount) | ✅* | 소속 테슬라 계정 (*Mock 차량은 nullable 허용) |
+| `teslaAccountId` | String (FK → TeslaAccount.id) | ✅* | 소속 테슬라 계정 PK. **User.id가 아님** (*Mock 차량은 nullable 허용) |
 | `oemVehicleId` | String? | | Tesla VIN 등 OEM 식별자 (기존 유지) |
 | `unlinkedAt` | DateTime? | | FMS 연동 해제 시각 — **소프트 삭제 핵심** |
 | `isDeleted` | Boolean | | `unlinkedAt IS NOT NULL`과 동기화 가능 — 쿼리 편의용 |
@@ -233,7 +233,8 @@ erDiagram
 | 보안 | Access/Refresh 토큰은 애플리케이션 레벨 암호화 또는 Supabase Vault 검토 |
 | 인덱스 | `Vehicle(teslaAccountId)`, `Vehicle(unlinkedAt)`, `TeslaAccount(userId)` |
 | 다테넌시 | Tesla OAuth·토큰·동기화는 **세션 User**에 귀속. 목록/상세 등 나머지 API 쿼리 스코프는 Phase 4에서 강화 |
-| Tesla 귀속 | `/api/auth/tesla` → `tesla_oauth_user` 쿠키 → callback에서 `userId`로 `TeslaAccount` upsert. `admin@fleet.local` 기본 사용자 경로 없음 |
+| Tesla 귀속 | `/api/auth/tesla` → `tesla_oauth_user` + `tesla_oauth_return_to` 쿠키 → callback에서 `userId`로 `TeslaAccount` upsert 후 원래 화면으로 복귀 |
+| 저장 정책 | Tesla OAuth/token/Fleet API 응답에 **없는 값은 placeholder 대신 `null` 저장**. `linked@tesla.local`, `OWNER`, `OK`, `0/false` 기본값 저장 금지 |
 | 인증 UX | 로그인 성공 시 세션 쿠키 발급, `/signin` 외 주요 화면은 인증 필요. 로그인 화면은 최소 문구만 유지하고 `회원가입` 링크는 `/signup` 템플릿으로 연결 |
 | 초기 상태 | 최초 로그인 후 등록 차량 0대면 KPI·목록은 `0`/empty, 지도는 렌더링하되 마커 없음 |
 | 차량 등록 UX | `/vehicles`의 `차량 추가`는 **Tesla Fleet 연동 안내 모달**을 먼저 표시하고, 확인 후 `/api/auth/tesla`로 이동 |
@@ -296,3 +297,4 @@ Phase 4+   연동 해제 UI·Telemetry API·멀티 계정 설정 화면
 | 2026-07-08 | 차량 추가 모달 보강 — 확인 시 Tesla OAuth 시작, 배경 오버레이 투명도 완화 |
 | 2026-07-08 | 차량 추가 모달 미세 조정 — 오버레이 투명도 추가 완화 |
 | 2026-07-08 | TeslaAccount 세션 귀속 — OAuth·동기화를 로그인 User에 연결, `admin@fleet.local` 자동 생성 제거 |
+| 2026-07-08 | Tesla 데이터 저장 정책 정리 — callback 원위치 복귀, placeholder/default 값 대신 `null` 저장, `Vehicle.teslaAccountId`는 `TeslaAccount.id` 명시 |

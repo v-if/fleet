@@ -84,3 +84,4 @@
 | 2026-07-08 | 차량 추가 모달 보강 — 확인 시 Tesla OAuth 이동, 배경 투명도 완화 |
 | 2026-07-08 | 차량 추가 모달 미세 조정 — 배경 오버레이 추가 완화 |
 | 2026-07-08 | TeslaAccount 세션 귀속 — OAuth·동기화 = 로그인 User, 레거시 admin 자동 생성 제거 |
+| 2026-07-08 | Tesla 저장 정책 보강 — OAuth callback 원위치 복귀, placeholder/default 값 대신 `null` 저장 |

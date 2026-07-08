@@ -128,7 +128,7 @@ export function FleetSettingsView() {
 
               <div className="flex flex-wrap gap-3">
                 {!status?.connected ? (
-                  <Link href="/api/auth/tesla">
+                  <Link href="/api/auth/tesla?returnTo=/settings">
                     <Button size="sm">Tesla 계정 연결</Button>
                   </Link>
                 ) : (

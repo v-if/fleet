@@ -15,6 +15,12 @@ type SimpleMapFallbackProps = {
   hero?: boolean;
 };
 
+type PositionedMapVehicle = MapVehicle & {
+  status: NonNullable<MapVehicle["status"]>;
+  latitude: number;
+  longitude: number;
+};
+
 const BOUNDS = {
   minLat: 37.35,
   maxLat: 37.58,
@@ -37,7 +43,10 @@ export function SimpleMapFallback({
 }: SimpleMapFallbackProps) {
   const markers = useMemo(
     () =>
-      vehicles.filter((vehicle) => hasValidCoordinates(vehicle.latitude, vehicle.longitude)),
+      vehicles.filter(
+        (vehicle): vehicle is PositionedMapVehicle =>
+          vehicle.status != null && hasValidCoordinates(vehicle.latitude, vehicle.longitude),
+      ),
     [vehicles],
   );
 
@@ -131,7 +140,7 @@ function SelectedVehicleSummary({
         <div>
           <p className="font-medium">{vehicle.plateNumber}</p>
           <p className="text-sm text-muted-foreground">
-            {vehicle.model} · {STATUS_LABEL[vehicle.status]}
+            {vehicle.model} · {vehicle.status ? STATUS_LABEL[vehicle.status] : "상태 정보 없음"}
             {vehicle.batteryPercent != null
               ? ` · ${Math.round(vehicle.batteryPercent)}%`
               : ""}
