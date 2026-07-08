@@ -102,96 +102,110 @@ export async function createVirtualTeslaAccountWithVehicles(input: CreateVirtual
   const vehicleCount = randomInt(1, 5);
   const teslaEmail = randomEmail();
   const seedTimestamp = Date.now();
-
-  const result = await prisma.$transaction(async (tx) => {
-    const account = await tx.teslaAccount.create({
-      data: {
-        userId: input.userId,
-        teslaEmail,
-        region: "na",
-        accessToken: `virtual-access-${seedTimestamp}-${randomInt(1000, 9999)}`,
-        refreshToken: `virtual-refresh-${seedTimestamp}-${randomInt(1000, 9999)}`,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
-        scope: "virtual vehicle_device_data vehicle_location",
-        role: TeslaAccountRole.OWNER,
-      },
-    });
-
-    const createdVehicles: Array<{ id: string; plateNumber: string }> = [];
-
-    for (let index = 0; index < vehicleCount; index += 1) {
-      const modelOption = pickOne(MODEL_OPTIONS);
-      const batteryPercent = randomInt(10, 95);
-      const chargingStatus = randomChargingStatus(batteryPercent);
-      const status = randomStatus(batteryPercent);
-      const coordinates = randomCoordinates();
-      const locked = pickOne([true, true, true, false]);
-      const doorsOpen = locked ? false : pickOne([true, false]);
-      const windowsOpen = pickOne([false, false, true]);
-      const climateOn = pickOne([true, false]);
-      const sentryMode = pickOne([true, false, false]);
-      const vehicle = await tx.vehicle.create({
-        data: {
-          plateNumber: randomPlateNumber(),
-          model: modelOption.label,
-          year: randomInt(2021, 2026),
-          oemVehicleId: randomVin(index + 1),
-          teslaAccountId: account.id,
-        },
-      });
-
-      createdVehicles.push({ id: vehicle.id, plateNumber: vehicle.plateNumber });
-
-      await tx.vehicleSnapshot.create({
-        data: {
-          vehicleId: vehicle.id,
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude,
-          batteryPercent,
-          rangeKm: randomInt(90, 520),
-          ignitionOn: pickOne([true, false, false]),
-          status,
-          chargingStatus,
-          odometerKm: randomInt(3000, 45000),
-          locked,
-          doorsOpen,
-          windowsOpen,
-          insideTempC: randomFloat(18, 38, 1),
-          outsideTempC: randomFloat(15, 36, 1),
-          climateOn,
-          tpmsFrontLeft: randomFloat(2.8, 3.2, 2),
-          tpmsFrontRight: randomFloat(2.8, 3.2, 2),
-          tpmsRearLeft: randomFloat(2.8, 3.2, 2),
-          tpmsRearRight: randomFloat(2.8, 3.2, 2),
-          sentryMode,
-          serviceStatus: randomServiceStatus(),
-          softwareVersion: pickOne(SOFTWARE_VERSIONS),
-          nearbyChargingSites: JSON.stringify(randomNearbyChargingSites()),
-          lastUpdatedAt: new Date(),
-        },
-      });
-
-      const eventCount = randomInt(0, 2);
-      for (let eventIndex = 0; eventIndex < eventCount; eventIndex += 1) {
-        const alert = pickOne(ALERT_MESSAGES);
-        await tx.vehicleEvent.create({
-          data: {
-            vehicleId: vehicle.id,
-            type: alert.type,
-            message: alert.message,
-            occurredAt: new Date(Date.now() - randomInt(5, 120) * 60 * 1000),
-          },
-        });
-      }
-    }
+  const vehicleSeeds = Array.from({ length: vehicleCount }, (_, index) => {
+    const modelOption = pickOne(MODEL_OPTIONS);
+    const batteryPercent = randomInt(10, 95);
+    const chargingStatus = randomChargingStatus(batteryPercent);
+    const status = randomStatus(batteryPercent);
+    const coordinates = randomCoordinates();
+    const locked = pickOne([true, true, true, false]);
+    const doorsOpen = locked ? false : pickOne([true, false]);
+    const windowsOpen = pickOne([false, false, true]);
+    const climateOn = pickOne([true, false]);
+    const sentryMode = pickOne([true, false, false]);
+    const eventCount = randomInt(0, 2);
 
     return {
-      accountId: account.id,
-      teslaEmail: account.teslaEmail,
-      vehicleCount,
-      vehicles: createdVehicles,
+      plateNumber: randomPlateNumber(),
+      model: modelOption.label,
+      year: randomInt(2021, 2026),
+      oemVehicleId: randomVin(index + 1),
+      snapshot: {
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        batteryPercent,
+        rangeKm: randomInt(90, 520),
+        ignitionOn: pickOne([true, false, false]),
+        status,
+        chargingStatus,
+        odometerKm: randomInt(3000, 45000),
+        locked,
+        doorsOpen,
+        windowsOpen,
+        insideTempC: randomFloat(18, 38, 1),
+        outsideTempC: randomFloat(15, 36, 1),
+        climateOn,
+        tpmsFrontLeft: randomFloat(2.8, 3.2, 2),
+        tpmsFrontRight: randomFloat(2.8, 3.2, 2),
+        tpmsRearLeft: randomFloat(2.8, 3.2, 2),
+        tpmsRearRight: randomFloat(2.8, 3.2, 2),
+        sentryMode,
+        serviceStatus: randomServiceStatus(),
+        softwareVersion: pickOne(SOFTWARE_VERSIONS),
+        nearbyChargingSites: JSON.stringify(randomNearbyChargingSites()),
+        lastUpdatedAt: new Date(),
+      },
+      events: Array.from({ length: eventCount }, () => {
+        const alert = pickOne(ALERT_MESSAGES);
+        return {
+          type: alert.type,
+          message: alert.message,
+          occurredAt: new Date(Date.now() - randomInt(5, 120) * 60 * 1000),
+        };
+      }),
     };
   });
+
+  const account = await prisma.teslaAccount.create({
+    data: {
+      userId: input.userId,
+      teslaEmail,
+      region: "na",
+      accessToken: `virtual-access-${seedTimestamp}-${randomInt(1000, 9999)}`,
+      refreshToken: `virtual-refresh-${seedTimestamp}-${randomInt(1000, 9999)}`,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
+      scope: "virtual vehicle_device_data vehicle_location",
+      role: TeslaAccountRole.OWNER,
+      vehicles: {
+        create: vehicleSeeds.map((vehicleSeed) => ({
+          plateNumber: vehicleSeed.plateNumber,
+          model: vehicleSeed.model,
+          year: vehicleSeed.year,
+          oemVehicleId: vehicleSeed.oemVehicleId,
+          snapshots: {
+            create: [vehicleSeed.snapshot],
+          },
+          events: {
+            create: vehicleSeed.events,
+          },
+        })),
+      },
+    },
+    select: {
+      id: true,
+      teslaEmail: true,
+    },
+  });
+
+  const createdVehicles = await prisma.vehicle.findMany({
+    where: {
+      teslaAccountId: account.id,
+    },
+    select: {
+      id: true,
+      plateNumber: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+
+  const result = {
+    accountId: account.id,
+    teslaEmail: account.teslaEmail,
+    vehicleCount,
+    vehicles: createdVehicles,
+  };
 
   await createAuditLogWithApiCall(
     {

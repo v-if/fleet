@@ -616,6 +616,8 @@
 > **구현 메모 (2026-07-08)**: `/api/vehicles/virtual` 추가, 가상 TeslaAccount 1건 + Vehicle 1~5대 + VehicleSnapshot/VehicleEvent 생성, `virtual.tesla.local` 이메일·`virtual` scope 패턴으로 실 Tesla sync 대상에서 제외.
 >
 > **추가 메모 (2026-07-08)**: PostgreSQL `DateTime` 컬럼을 `timestamptz(3)`로 전환하고 DB timezone을 `Asia/Seoul`로 맞춰, 테이블 저장 시각과 한국시간 표시 차이(UTC 9시간 오차)를 해소.
+>
+> **배포 메모 (2026-07-08)**: Vercel/Supabase pooler에서 `Transaction not found`가 발생해 가상 차량 생성 로직을 interactive transaction에서 nested create 기반으로 변경.
 
 ---
 

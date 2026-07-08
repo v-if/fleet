@@ -297,6 +297,7 @@
 
 - 생성 중 일부만 들어가는 반쪽 상태를 피해야 함
 - `TeslaAccount`만 생기고 `Vehicle`이 없는 상태는 예외적으로만 허용
+- Vercel/Supabase pooler 환경에서는 장시간 interactive transaction(`$transaction(async (tx) => ...)`) 의존을 피하고, nested write 또는 짧은 쿼리 단위로 구성해야 함
 
 ### 10.3 보안
 
@@ -327,3 +328,4 @@
 |------|------|
 | 2026-07-08 | 초안 작성 — sleep 상태 대안으로 가상 차량 추가 요구사항 정리 |
 | 2026-07-08 | 구현 반영 — `/api/vehicles/virtual`, UI 버튼, 랜덤 시드/감사 로그/sync guard 정책 확정 |
+| 2026-07-08 | 배포 보정 — Vercel `Transaction not found` 대응을 위해 interactive transaction 제거, nested create 기반으로 변경 |
