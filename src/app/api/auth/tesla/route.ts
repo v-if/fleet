@@ -7,6 +7,7 @@ import { buildTeslaAuthorizeUrl } from "@/lib/tesla/auth";
 import { isTeslaConfigured } from "@/lib/tesla/config";
 
 const STATE_COOKIE = "tesla_oauth_state";
+const USER_COOKIE = "tesla_oauth_user";
 
 export async function GET() {
   const session = await requireApiSession();
@@ -25,6 +26,13 @@ export async function GET() {
   const cookieStore = await cookies();
 
   cookieStore.set(STATE_COOKIE, state, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 600,
+    path: "/",
+  });
+  cookieStore.set(USER_COOKIE, session.userId, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

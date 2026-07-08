@@ -1,4 +1,7 @@
-import { getActiveTeslaAccount } from "@/lib/tesla/auth";
+import {
+  getActiveTeslaAccountForUser,
+  getAnyActiveTeslaAccount,
+} from "@/lib/tesla/auth";
 import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
 import {
@@ -130,9 +133,9 @@ async function replaceEvents(events: VehicleEventData[]) {
   }
 }
 
-async function fetchProviderEvents(providerName: string) {
+async function fetchProviderEvents(providerName: string, userId?: string) {
   if (providerName === "tesla") {
-    const teslaProvider = new TeslaVehicleProvider();
+    const teslaProvider = new TeslaVehicleProvider(userId);
     return teslaProvider.fetchVehicleEvents();
   }
   return [];
@@ -174,12 +177,17 @@ async function softUnlinkMissingTeslaVehicles(
   }
 }
 
-export async function syncVehiclesFromProvider(): Promise<SyncVehiclesResult> {
+export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVehiclesResult> {
   const requestedProvider = getVehicleProviderName();
   const lastSyncedAt = new Date();
 
+  let resolvedUserId = userId;
+  let teslaAccountId: string | null = null;
+
   if (requestedProvider === "tesla") {
-    const account = await getActiveTeslaAccount();
+    const account = userId
+      ? await getActiveTeslaAccountForUser(userId)
+      : await getAnyActiveTeslaAccount();
     if (!account) {
       await resetMockFleet();
       await prisma.vehicleEvent.deleteMany({
@@ -212,9 +220,15 @@ export async function syncVehiclesFromProvider(): Promise<SyncVehiclesResult> {
         lastSyncedAt: lastSyncedAt.toISOString(),
       };
     }
+
+    resolvedUserId = account.userId;
+    teslaAccountId = account.id;
   }
 
-  const provider = createVehicleProvider();
+  const provider =
+    requestedProvider === "tesla"
+      ? new TeslaVehicleProvider(resolvedUserId)
+      : createVehicleProvider();
   const usedFallback = false;
   let errorMessage: string | undefined;
 
@@ -233,10 +247,6 @@ export async function syncVehiclesFromProvider(): Promise<SyncVehiclesResult> {
     await resetMockFleet();
   }
 
-  const teslaAccount =
-    effectiveProvider === "tesla" ? await getActiveTeslaAccount() : null;
-  const teslaAccountId = teslaAccount?.id ?? null;
-
   for (const snapshot of snapshots) {
     await upsertSnapshot(snapshot, {
       teslaAccountId: effectiveProvider === "tesla" ? teslaAccountId : null,
@@ -254,7 +264,7 @@ export async function syncVehiclesFromProvider(): Promise<SyncVehiclesResult> {
 
   let events: VehicleEventData[] = [];
   try {
-    events = await fetchProviderEvents(effectiveProvider);
+    events = await fetchProviderEvents(effectiveProvider, resolvedUserId);
   } catch (error) {
     console.warn("Failed to fetch provider events:", error);
     events = [];

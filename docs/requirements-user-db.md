@@ -7,7 +7,7 @@
 | 목적 | FMS 고객(사용자) · 테슬라 계정 · 차량 간 **계층형 1:N 관계** DB 설계 요구사항 정의 |
 | 관련 문서 | [requirements.md](./requirements.md), [requirements-db.md](./requirements-db.md), [requirements-tech-stack.md](./requirements-tech-stack.md), [requirements-tesla-api.md](./requirements-tesla-api.md), [development-checklist.md](./development-checklist.md) |
 | 적용 범위 | **Phase 3.9** (스키마·비즈니스 규칙) → Phase 4(인증) · 이후 멀티 계정·연동 해제 UI |
-| 구현 상태 | **Phase 3.9 구현 완료** — Prisma·API·unlink (2026-07-08). Telemetry API는 stub. Phase 4 Auth 다테넌시 대기 |
+| 구현 상태 | **Phase 3.9 구현 완료** — Prisma·API·unlink·**세션 User 귀속 TeslaAccount** (2026-07-08). Telemetry API는 stub. Phase 4 Auth 다테넌시 대기 |
 
 ---
 
@@ -232,7 +232,8 @@ erDiagram
 |------|------|
 | 보안 | Access/Refresh 토큰은 애플리케이션 레벨 암호화 또는 Supabase Vault 검토 |
 | 인덱스 | `Vehicle(teslaAccountId)`, `Vehicle(unlinkedAt)`, `TeslaAccount(userId)` |
-| 다테넌시 | 모든 API는 **인증된 User** 소속 TeslaAccount·Vehicle만 접근 (Phase 4 Auth 연동) |
+| 다테넌시 | Tesla OAuth·토큰·동기화는 **세션 User**에 귀속. 목록/상세 등 나머지 API 쿼리 스코프는 Phase 4에서 강화 |
+| Tesla 귀속 | `/api/auth/tesla` → `tesla_oauth_user` 쿠키 → callback에서 `userId`로 `TeslaAccount` upsert. `admin@fleet.local` 기본 사용자 경로 없음 |
 | 인증 UX | 로그인 성공 시 세션 쿠키 발급, `/signin` 외 주요 화면은 인증 필요. 로그인 화면은 최소 문구만 유지하고 `회원가입` 링크는 `/signup` 템플릿으로 연결 |
 | 초기 상태 | 최초 로그인 후 등록 차량 0대면 KPI·목록은 `0`/empty, 지도는 렌더링하되 마커 없음 |
 | 차량 등록 UX | `/vehicles`의 `차량 추가`는 **Tesla Fleet 연동 안내 모달**을 먼저 표시하고, 확인 후 `/api/auth/tesla`로 이동 |
@@ -294,3 +295,4 @@ Phase 4+   연동 해제 UI·Telemetry API·멀티 계정 설정 화면
 | 2026-07-08 | 차량 목록 UX 정리 — `차량 추가` 버튼, Tesla Fleet 연동 안내 모달 |
 | 2026-07-08 | 차량 추가 모달 보강 — 확인 시 Tesla OAuth 시작, 배경 오버레이 투명도 완화 |
 | 2026-07-08 | 차량 추가 모달 미세 조정 — 오버레이 투명도 추가 완화 |
+| 2026-07-08 | TeslaAccount 세션 귀속 — OAuth·동기화를 로그인 User에 연결, `admin@fleet.local` 자동 생성 제거 |

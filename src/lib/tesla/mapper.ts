@@ -170,13 +170,19 @@ export function mapTeslaAlertsToEvents(
 
 export class TeslaFleetClient {
   private readonly baseUrl: string;
+  private readonly userId?: string;
 
-  constructor() {
+  constructor(userId?: string) {
     this.baseUrl = getTeslaRegionConfig().fleetApiBase;
+    this.userId = userId;
   }
 
   private async request<T>(path: string, init?: RequestInit): Promise<T> {
-    const accessToken = await getValidTeslaAccessToken();
+    if (!this.userId) {
+      throw new Error("Tesla user context is missing");
+    }
+
+    const accessToken = await getValidTeslaAccessToken(this.userId);
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...init,
       headers: {

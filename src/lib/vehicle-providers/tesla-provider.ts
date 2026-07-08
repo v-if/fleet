@@ -14,7 +14,13 @@ import type {
 
 export class TeslaVehicleProvider implements VehicleDataProvider {
   readonly name = "tesla";
-  private readonly client = new TeslaFleetClient();
+  private readonly userId?: string;
+  private readonly client: TeslaFleetClient;
+
+  constructor(userId?: string) {
+    this.userId = userId;
+    this.client = new TeslaFleetClient(userId);
+  }
 
   static isAvailable() {
     return isTeslaConfigured();
@@ -25,7 +31,11 @@ export class TeslaVehicleProvider implements VehicleDataProvider {
       throw new Error("Tesla Fleet API credentials are not configured");
     }
 
-    const connected = await isTeslaConnected();
+    if (!this.userId) {
+      throw new Error("Tesla user context is missing");
+    }
+
+    const connected = await isTeslaConnected(this.userId);
     if (!connected) {
       throw new Error("Tesla account is not connected");
     }

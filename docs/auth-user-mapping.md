@@ -8,15 +8,16 @@
 |------|----------|
 | FMS `User.id` | Supabase `auth.users.id`와 **동일 UUID** 사용 (`User.id` = `auth.users.id`) |
 | 최초 로그인 | `auth.users` 생성 시 `User` 행 upsert (`email`, `name`) |
-| TeslaAccount | `userId` = 로그인한 FMS User — 멀티 계정은 User 1:N TeslaAccount 유지 |
+| TeslaAccount | `userId` = **현재 로그인 세션** FMS User — 멀티 계정은 User 1:N TeslaAccount 유지 |
 | API 다테넌시 | 인증 미들웨어에서 `session.user.id` → 해당 User의 TeslaAccount·Vehicle만 조회 |
 
 ## Phase 3.9 과도기 (현재)
 
-- `getOrCreateDefaultUser()` — `admin@fleet.local` 단일 관리자 (데모)
-- 로그인은 `auth.users` + public `User` 조합으로 검증하고, 세션 쿠키를 발급
-- Tesla OAuth·sync·unlink는 현재 로그인한 단일 테스트 사용자 흐름을 기준으로 동작
-- Phase 4에서 세션 기반 User로 교체
+- `admin@fleet.local` / `getOrCreateDefaultUser()` **사용 중단** — seed·OAuth도 더 이상 기본 관리자를 만들지 않음
+- 로그인은 `auth.users` + public `User` 조합으로 검증하고, 세션 쿠키(`fleet_session`)를 발급
+- Tesla OAuth 시작 시 `tesla_oauth_user` 쿠키에 `session.userId`를 저장하고, callback에서 해당 User에 `TeslaAccount` upsert
+- 차량 동기화·disconnect·status API는 **세션 User** 소속 계정만 사용
+- Phase 4에서 Supabase Auth 세션으로 교체·API 전체 다테넌시 강화
 
 ## 참고
 

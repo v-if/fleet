@@ -15,8 +15,8 @@ export async function GET() {
   }
 
   const [connected, token, syncMetadata] = await Promise.all([
-    isTeslaConnected(),
-    getStoredTeslaToken(),
+    isTeslaConnected(session.userId),
+    getStoredTeslaToken(session.userId),
     getSyncMetadata(),
   ]);
 
@@ -43,6 +43,6 @@ export async function DELETE() {
     return session;
   }
 
-  await disconnectTeslaAccount();
+  await disconnectTeslaAccount(session.userId);
   return NextResponse.json({ connected: false });
 }

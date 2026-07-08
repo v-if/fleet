@@ -1,6 +1,5 @@
 import { TeslaAccountRole } from "@prisma/client";
 
-import { getOrCreateDefaultUser } from "@/lib/fms-user";
 import { prisma } from "@/lib/prisma";
 import { unlinkAllVehiclesForAccount } from "@/lib/vehicle-unlink";
 import { activeTeslaAccountWhere } from "@/lib/vehicle-query";
@@ -40,8 +39,11 @@ async function requestToken(body: Record<string, string>): Promise<TeslaTokenRes
   return (await response.json()) as TeslaTokenResponse;
 }
 
-async function persistToken(token: TeslaTokenResponse, teslaEmail = PLACEHOLDER_TESLA_EMAIL) {
-  const user = await getOrCreateDefaultUser();
+async function persistTokenForUser(
+  userId: string,
+  token: TeslaTokenResponse,
+  teslaEmail = PLACEHOLDER_TESLA_EMAIL,
+) {
   const expiresAt = new Date(Date.now() + token.expires_in * 1000);
   const scope = token.scope ?? TESLA_OAUTH_SCOPES.join(" ");
   const region = getTeslaRegion();
@@ -49,7 +51,7 @@ async function persistToken(token: TeslaTokenResponse, teslaEmail = PLACEHOLDER_
   return prisma.teslaAccount.upsert({
     where: {
       userId_teslaEmail: {
-        userId: user.id,
+        userId,
         teslaEmail,
       },
     },
@@ -63,7 +65,7 @@ async function persistToken(token: TeslaTokenResponse, teslaEmail = PLACEHOLDER_
       unlinkedAt: null,
     },
     create: {
-      userId: user.id,
+      userId,
       teslaEmail,
       accessToken: token.access_token,
       refreshToken: token.refresh_token,
@@ -90,7 +92,7 @@ export function buildTeslaAuthorizeUrl(state: string) {
   return `${TESLA_AUTH_AUTHORIZE_URL}?${params.toString()}`;
 }
 
-export async function exchangeAuthorizationCode(code: string) {
+export async function exchangeAuthorizationCode(code: string, userId: string) {
   const { audience } = getTeslaRegionConfig();
   const token = await requestToken({
     grant_type: "authorization_code",
@@ -101,10 +103,14 @@ export async function exchangeAuthorizationCode(code: string) {
     audience,
   });
 
-  return persistToken(token);
+  return persistTokenForUser(userId, token);
 }
 
-export async function refreshAccessToken(refreshToken: string) {
+export async function refreshAccessTokenForAccount(
+  userId: string,
+  refreshToken: string,
+  teslaEmail = PLACEHOLDER_TESLA_EMAIL,
+) {
   const token = await requestToken({
     grant_type: "refresh_token",
     client_id: getTeslaClientId(),
@@ -112,29 +118,33 @@ export async function refreshAccessToken(refreshToken: string) {
     refresh_token: refreshToken,
   });
 
-  const account = await getActiveTeslaAccount();
-  return persistToken(token, account?.teslaEmail ?? PLACEHOLDER_TESLA_EMAIL);
+  return persistTokenForUser(userId, token, teslaEmail);
 }
 
-export async function getActiveTeslaAccount() {
-  const user = await getOrCreateDefaultUser();
-
+export async function getActiveTeslaAccountForUser(userId: string) {
   return prisma.teslaAccount.findFirst({
     where: {
-      userId: user.id,
+      userId,
       ...activeTeslaAccountWhere,
     },
     orderBy: { linkedAt: "desc" },
   });
 }
 
-/** @deprecated Use getActiveTeslaAccount — kept for status API compatibility */
-export async function getStoredTeslaToken() {
-  return getActiveTeslaAccount();
+export async function getAnyActiveTeslaAccount() {
+  return prisma.teslaAccount.findFirst({
+    where: activeTeslaAccountWhere,
+    orderBy: { linkedAt: "desc" },
+  });
 }
 
-export async function getValidTeslaAccessToken() {
-  const stored = await getActiveTeslaAccount();
+/** @deprecated Use getActiveTeslaAccount — kept for status API compatibility */
+export async function getStoredTeslaToken(userId: string) {
+  return getActiveTeslaAccountForUser(userId);
+}
+
+export async function getValidTeslaAccessToken(userId: string) {
+  const stored = await getActiveTeslaAccountForUser(userId);
   if (!stored || !stored.refreshToken) {
     throw new Error("Tesla account is not connected. Visit /api/auth/tesla to authorize.");
   }
@@ -144,17 +154,21 @@ export async function getValidTeslaAccessToken() {
     return stored.accessToken;
   }
 
-  const refreshed = await refreshAccessToken(stored.refreshToken);
+  const refreshed = await refreshAccessTokenForAccount(
+    userId,
+    stored.refreshToken,
+    stored.teslaEmail,
+  );
   return refreshed.accessToken;
 }
 
-export async function isTeslaConnected() {
-  const stored = await getActiveTeslaAccount();
+export async function isTeslaConnected(userId: string) {
+  const stored = await getActiveTeslaAccountForUser(userId);
   return Boolean(stored?.refreshToken);
 }
 
-export async function disconnectTeslaAccount() {
-  const account = await getActiveTeslaAccount();
+export async function disconnectTeslaAccount(userId: string) {
+  const account = await getActiveTeslaAccountForUser(userId);
   if (!account) return;
 
   await unlinkAllVehiclesForAccount(account.id);

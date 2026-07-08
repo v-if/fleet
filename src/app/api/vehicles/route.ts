@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
   if (forceRefresh || (await shouldAutoSync())) {
     try {
-      await syncVehiclesFromProvider();
+      await syncVehiclesFromProvider(session.userId);
     } catch (error) {
       console.error("Vehicle sync failed:", error);
     }

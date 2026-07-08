@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await syncVehiclesFromProvider();
+    const result = await syncVehiclesFromProvider(session?.userId);
     return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Sync failed";

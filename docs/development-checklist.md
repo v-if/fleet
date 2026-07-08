@@ -544,23 +544,26 @@
 - [x] Tesla 미연결 시 **mock 폴백 없이** 빈 데이터 유지
 - [x] 차량 목록 헤더 — 설명 문구 제거, `차량 추가` 버튼 + Tesla Fleet 연동 안내 모달
 - [x] 차량 추가 모달 — `확인` 시 `/api/auth/tesla` 이동, 오버레이 투명도 완화
+- [x] Tesla OAuth·토큰·동기화 — **로그인 세션 User**에 `TeslaAccount` 귀속 (`tesla_oauth_user` 쿠키)
+- [x] `getOrCreateDefaultUser()` / `admin@fleet.local` 자동 생성 제거 (seed·OAuth)
 
 ### 인증 연동 (P1) — Phase 4 선행 설계
 - [x] Supabase Auth `auth.users.id` ↔ FMS `User.id` 매핑 방안 ([auth-user-mapping.md](./auth-user-mapping.md))
-- [ ] 인증된 User 소속 TeslaAccount·Vehicle만 API 접근 (다테넌시) — Phase 4
+- [ ] 인증된 User 소속 TeslaAccount·Vehicle만 API 접근 (다테넌시) — Phase 4 (목록/상세 쿼리 스코프 강화)
 
 **완료 기준 (구현)**: Prisma 마이그레이션·API 필터·unlink 파이프라인 ✅
 
 ### Phase 3.9 실행 메모
 - **스키마**: `TeslaAccount` 신설, `TeslaOAuthToken` 제거, `Vehicle` soft-delete 필드
-- **라이브러리**: `fms-user.ts`, `vehicle-query.ts`, `vehicle-unlink.ts`, `tesla/auth.ts` → TeslaAccount
+- **라이브러리**: `vehicle-query.ts`, `vehicle-unlink.ts`, `tesla/auth.ts` → 세션 User 기준 TeslaAccount
 - **API**: `DELETE /api/vehicles/[id]/unlink` — Telemetry stub + soft delete + 계정 정리
 - **인증**: `/signin` → `/api/auth/login` → 세션 쿠키 → 보호 레이아웃(`/`, `/vehicles`, `/map`, `/settings`)
+- **Tesla 귀속**: OAuth callback이 `session.userId`로 `TeslaAccount` upsert — 레거시 `admin@fleet.local` 경로 제거
 - **로그인 UI**: 상단 보조 문구·테스트 계정 박스 제거, `회원가입` 링크는 `/signup` 템플릿 그대로 연결
 - **차량 추가 UX**: `/vehicles` 툴바에 `차량 추가` 버튼, 안내 모달 확인 후 `/api/auth/tesla`로 이동
 - **모달 오버레이**: 차량 추가 팝업 배경을 더 투명하게 조정 (`12%`, blur 완화)
 - **동기화**: **mock 미사용**, Tesla 미연결 시 0대 유지 / 계정별 upsert·누락 VIN soft unlink
-- **검증**: `prisma migrate deploy`, `pnpm lint`, `pnpm exec next build` (2026-07-08)
+- **검증**: 귀속 이관·legacy admin 삭제, `pnpm lint`, `pnpm exec next build` (2026-07-08)
 
 ---
 
@@ -661,3 +664,5 @@
 | 2026-07-08 | Phase 3.8 P1 차량 목록 — 컬럼 폭 균형 재조정 (차량·배터리·갱신 등) |
 | 2026-07-08 | Phase 3.9 추가 — User·TeslaAccount·Vehicle DB 요구사항 정의 ([requirements-user-db.md](./requirements-user-db.md), 코드 미착수) |
 | 2026-07-08 | Phase 3.9 완료 — TeslaAccount 스키마·마이그레이션·unlink API·active 필터 |
+| 2026-07-08 | Phase 3.9 보강 — Tesla OAuth를 세션 User에 귀속, `admin@fleet.local` 자동 생성 제거 |
+
