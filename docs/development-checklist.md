@@ -653,13 +653,19 @@
 - [x] Production FMS webhook smoke 200 (idempotency 포함)
 - [x] VIN allowlist — FMS `GET /api/internal/telemetry/status` 연동
 - [x] 실차 `fleet_telemetry_config` synced + WebSocket `socket_connected`
-- [ ] 실차 `txtype=V` → FMS `TelemetryIngress` PROCESSED (E2E 보류)
-- [ ] `VehicleSnapshot.telemetrySource=TELEMETRY` · 대시보드 실시간 반영
-- [ ] unlink → allowlist 제거 · 시연 체크리스트
+- [x] 실차 `txtype=V` → FMS `TelemetryIngress` PROCESSED (E2E) — VIN `LRWYGCFJ7SC214742`, 2026-07-10 실측
+- [x] `VehicleSnapshot.telemetrySource=TELEMETRY` · `lastTelemetryAt` 갱신 (동일 VIN, battery ~82%)
+- [x] FMS mapper `Gear` 필드 인식 · VIN 대소문자 무시 매칭
+- [ ] unlink → allowlist 제거 · 시연 체크리스트 (P1)
+- [x] 로컬 `.env` webhook secret = Vercel/Fly 동일 값 (`pnpm telemetry:check` 200 확인, 2026-07-10)
+- [ ] `/settings`·대시보드·지도 **화면 육안 확인** (시연 리허설 — **사용자**)
+- [ ] (권장) `TESLA_SYNC_CRON_SECRET` / Fly `FMS_CRON_SECRET` 설정 — status API 보호 (현재 빈 값이면 공개 조회 가능)
 
 **완료 기준**: 실차 V 스트림이 FMS snapshot까지 반영되고, Telemetry primary 모드로 데모 시연 가능
 
 > **인수인계 메모 (2026-07-10)**: Telemetry 서버 M0~M2·M4 완료. M3는 WS 연결까지 확인, V→FMS E2E는 시연 전 공동 재검증. Secrets는 Vercel↔Fly 동일 값 유지.
+>
+> **P0 검증 메모 (2026-07-10)**: Supabase 실측 — 실차 VIN ingress 다건 `PROCESSED`, `telemetrySource=TELEMETRY`. Fly→FMS secret Production 정상. 로컬 `TESLA_TELEMETRY_WEBHOOK_SECRET` 동기화 후 `pnpm telemetry:check` **200** 확인. `TESLA_SYNC_CRON_SECRET`/`FMS_CRON_SECRET`은 빈 값(기존) — status API 인증 없음. 시연 전 https://bori-fleet.shop UI 육안 확인.
 
 ---
 
@@ -672,7 +678,7 @@
 - [ ] Supabase production 설정 (dev → production 프로젝트 분리)
 - [x] production 배포 및 도메인 확인 — **`https://bori-fleet.shop`** (커스텀 도메인, 이전 `*.vercel.app`)
 - [x] Telemetry 도메인 — **`https://telemetry.bori-fleet.shop`** (Fly.io)
-- [ ] 배포 환경 데모 시나리오 최종 점검 (실차 V E2E 포함)
+- [ ] 배포 환경 데모 시나리오 최종 점검 (로그인 → 차량 → 지도 → `/settings` Telemetry 패널 — **사용자 리허설**)
 - [ ] 데모데이 시연 및 피드백 수집
 
 ---
@@ -743,4 +749,5 @@
 | 2026-07-10 | Telemetry primary 운영 — REST 자동 폴링 중지, registry-only sync, webhook 전용 VehicleSnapshot 갱신 |
 | 2026-07-10 | 커스텀 도메인 — FMS `bori-fleet.shop`, Telemetry `telemetry.bori-fleet.shop` |
 | 2026-07-10 | Phase 4.3 추가 — Fleet Telemetry 서버 연동 (M0~M2·M4 완료, M3 V→FMS E2E 보류) |
+| 2026-07-10 | Phase 4.3 P0 검증 — 실차 V→ingress PROCESSED·`telemetrySource=TELEMETRY` 실측, mapper Gear·VIN insensitive, 로컬 secret 동기화는 사용자 작업 |
 

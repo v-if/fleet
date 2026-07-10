@@ -8,7 +8,7 @@
 | 관련 문서 | [requirements.md](./requirements.md), [requirements-tesla-api.md](./requirements-tesla-api.md), [requirements-user-db.md](./requirements-user-db.md), [requirements-log-db.md](./requirements-log-db.md), [development-checklist.md](./development-checklist.md) |
 | 적용 범위 | **Phase 4.2** 실시간성·비용 최적화·Telemetry 운영 안정화 |
 | 현재 상태 | Phase 4.2 구현 완료 — webhook ingress + 비동기 처리 + ASLEEP 추론 + polling fallback (2026-07-10) |
-| Telemetry 서버 | Fly.io `telemetry.bori-fleet.shop` — [requirements-fleet-telemetry-completed.md](./requirements-fleet-telemetry-completed.md) (M0~M2·M4 완료, 실차 V E2E 보류) |
+| Telemetry 서버 | Fly.io `telemetry.bori-fleet.shop` — [requirements-fleet-telemetry-completed.md](./requirements-fleet-telemetry-completed.md) (**실차 V E2E 확인**, UI 리허설·로컬 secret 잔여) |
 | FMS Production | `https://bori-fleet.shop` |
 
 ---
@@ -332,4 +332,5 @@ Telemetry는 비용·운영 영향이 있으므로 감사 로그 대상이다.
 | 2026-07-09 | 초안 메모를 정식 요구사항 문서로 확장 — Fleet Telemetry 전환 배경, webhook/비동기 처리, Asleep 상태, polling fallback 요구사항 정리 |
 | 2026-07-10 | Phase 4.2 구현 반영 — ingress/비동기 처리/ASLEEP 추론/polling fallback/unlink 해제/설정 UI |
 | 2026-07-10 | Telemetry 서버 연동·커스텀 도메인 반영 — `bori-fleet.shop` / `telemetry.bori-fleet.shop` |
+| 2026-07-10 | P0 E2E 실측 — 실차 V→PROCESSED·TELEMETRY 스냅샷 확인 |
 | 2026-07-10 | Telemetry primary 운영 — REST 자동 폴링 중지, registry sync, webhook 전용 VehicleSnapshot |

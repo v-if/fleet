@@ -413,6 +413,37 @@ x-idempotency-key: {vin}:{eventId}
 > 실차 config 필드: **Gear** 사용 (`ShiftState` 아님).  
 > 상세: [requirements-fleet-telemetry-completed.md](./requirements-fleet-telemetry-completed.md), [requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md)
 
+#### 5.4.1.3 P0 시연 전 — 사용자 작업 (필수)
+
+**이미 확인된 것 (2026-07-10 Supabase 실측)**
+
+- 실차 VIN `LRWYGCFJ7SC214742` → `TelemetryIngress` **PROCESSED** 다건
+- `VehicleSnapshot.telemetrySource=TELEMETRY`, battery≈82%
+- Fly → FMS Production webhook 인증 **정상**
+
+**당신이 할 일**
+
+1. **로컬 secret 동기화** — ✅ `TESLA_TELEMETRY_WEBHOOK_SECRET` 반영, `pnpm telemetry:check` 200 (2026-07-10)  
+   - `TESLA_SYNC_CRON_SECRET` / Fly `FMS_CRON_SECRET`은 **원래 빈 값** → status API는 인증 없이 동작. 공개 보호가 필요하면 나중에 동일 난수 값을 양쪽에 넣으면 됨.
+
+2. **화면 리허설** (https://bori-fleet.shop)
+   - [ ] 로그인
+   - [ ] `/` 대시보드 — `TESLA-214742` 배터리·상태 표시
+   - [ ] `/map` — 좌표 있으면 마커 (없으면 “위치 데이터 없음” 정상일 수 있음)
+   - [ ] `/settings` — Fleet Telemetry 패널: 최근 수신/처리 시각, Telemetry 활성·primary
+   - [ ] 차량이 잠들면 ASLEEP로 바뀔 수 있음 — 시연 전 차량 wake 또는 REST fallback:
+     ```
+     POST /api/sync/vehicles?fallback=1
+     ```
+     (설정 화면 “REST fallback 동기화” 버튼)
+
+3. **시연 직전 Fly 상태**
+   ```powershell
+   fly status -a bori-telemetry
+   fly checks list -a bori-telemetry
+   ```
+   `min_machines_running=1`, suspended 아님 확인.
+
 ### 5.5 Tesla Partner Register (Phase 3.5) — 412 해결
 
 Phase 3에서 OAuth “계정 연결됨”이어도, Fleet API 조회 시 아래 오류가 나면 **Partner Register**가 필요하다.
@@ -791,3 +822,4 @@ vercel
 | 2026-07-07 | Tesla TPMS 보정 반영 — 차량 상세에 PSI 환산 표시 적용 |
 | 2026-07-10 | 커스텀 도메인 — FMS `bori-fleet.shop`, Telemetry `telemetry.bori-fleet.shop` |
 | 2026-07-10 | §5.4.1 Telemetry 서버 연동·완료 현황 문서 링크 반영 |
+| 2026-07-10 | §5.4.1.3 P0 사용자 작업 — secret 동기화·화면 리허설·Fly 상태 점검 |

@@ -100,3 +100,4 @@
 | 2026-07-10 | requirements-fleet-telemetry.md — 신규 Fleet Telemetry 서버 Fly.io 단독 구성 인수인계서 작성 |
 | 2026-07-10 | 커스텀 도메인 — FMS `bori-fleet.shop`, Telemetry `telemetry.bori-fleet.shop` |
 | 2026-07-10 | requirements-fleet-telemetry-completed.md — Telemetry 서버 개발 완료·보류 현황 FMS 인수인계 반영 |
+| 2026-07-10 | P0 Telemetry E2E 실측 — 실차 V→PROCESSED·TELEMETRY, 사용자 잔여=로컬 secret·UI 리허설 |

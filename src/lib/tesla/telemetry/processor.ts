@@ -9,9 +9,10 @@ import { extractTelemetryMessages, parseTelemetryMessage } from "./mapper";
 import type { ParsedTelemetryFields } from "./types";
 
 async function findVehicleByVin(vin: string) {
+  const normalized = vin.trim();
   return prisma.vehicle.findFirst({
     where: {
-      oemVehicleId: vin,
+      oemVehicleId: { equals: normalized, mode: "insensitive" },
       ...activeVehicleWhere,
     },
     include: {

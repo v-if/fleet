@@ -16,7 +16,8 @@
     "db:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-db.ps1",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "telemetry:check": "powershell -ExecutionPolicy Bypass -File scripts/telemetry-webhook-check.ps1"
+    "telemetry:check": "powershell -ExecutionPolicy Bypass -File scripts/telemetry-webhook-check.ps1",
+    "telemetry:db": "node --env-file=.env scripts/telemetry-db-check.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

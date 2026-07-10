@@ -585,14 +585,15 @@ GET /api/1/vehicles/{vin}/fleet_telemetry_errors   → 오류 없음
 | M0 | repo + Docker Compose 로컬 기동 | 1일 | — | ✅ 완료 |
 | M1 | relay smoke → FMS webhook 직접 POST | 1일 | `pnpm telemetry:check` 200 | ✅ 완료 |
 | M2 | Fly 배포 + TLS 검증 | 1~2일 | — | ✅ 완료 |
-| M3 | `fleet_telemetry_config` + 실차 1대 | 2~4일 | `TelemetryIngress` PROCESSED | ⏳ 부분 — WS 연결·synced / **V→FMS E2E 보류** |
+| M3 | `fleet_telemetry_config` + 실차 1대 | 2~4일 | `TelemetryIngress` PROCESSED | ✅ V→FMS E2E 확인 (2026-07-10) |
 | M4 | allowlist + 재시도 + `/health` | 1일 | allowlist size·stats | ✅ 완료 |
-| M5 | Production 안정화·데모 시연 | 1일 | 대시보드 실시간 반영 | ⏸ 추후 (V E2E 이후) |
+| M5 | Production 안정화·데모 시연 | 1일 | 대시보드 실시간 반영 | ⏸ UI 리허설·로컬 secret (**사용자**) |
 
 **합계: 약 5~8일** (M3 실차 변수 제외 시 7~10일)
 
 > 상세 완료·보류 항목: [requirements-fleet-telemetry-completed.md](./requirements-fleet-telemetry-completed.md)  
-> M1은 **Fly 없이** 로컬에서 FMS webhook만 검증 가능.
+> M1은 **Fly 없이** 로컬에서 FMS webhook만 검증 가능.  
+> **P0 (2026-07-10)**: 실차 VIN `LRWYGCFJ7SC214742` → ingress `PROCESSED` · `telemetrySource=TELEMETRY` 실측 완료.
 
 ---
 
@@ -601,8 +602,8 @@ GET /api/1/vehicles/{vin}/fleet_telemetry_errors   → 오류 없음
 ### 10.1 Relay smoke (M1, Fly 없이)
 
 - [x] `relay-smoke.ps1` → FMS 200
-- [x] FMS `pnpm telemetry:check` 통과 (Production smoke)
-- [ ] `TelemetryIngress` PROCESSED — **실차 V 기준 미확인** (수동 smoke는 가능)
+- [x] FMS Production smoke (실차 relay) — 로컬 `pnpm telemetry:check`는 secret 동기화 후
+- [x] `TelemetryIngress` PROCESSED — 실차 VIN `LRWYGCFJ7SC214742`
 
 ### 10.2 Fly + mTLS (M2~M3)
 
@@ -610,23 +611,23 @@ GET /api/1/vehicles/{vin}/fleet_telemetry_errors   → 오류 없음
 - [x] TLS / DNS (`telemetry.bori-fleet.shop`, ownership TXT)
 - [x] `fleet_telemetry_config` synced=true
 - [x] 실차 WebSocket `socket_connected`
-- [ ] `fly logs` — `txtype=V` record 수신 (connectivity 위주만 확인)
-- [ ] FMS webhook POST 200 반복 (`fms post ack`) — **보류**
+- [x] `txtype=V` → FMS webhook POST 200 (`PROCESSED` 다건 실측)
 
 ### 10.3 FMS end-to-end
 
-- [ ] `VehicleSnapshot.lastTelemetryAt` 갱신 — V E2E 이후
-- [ ] `telemetrySource = TELEMETRY`
-- [ ] FMS `/settings` Telemetry 패널 갱신
-- [ ] 대시보드·지도 반영
+- [x] `VehicleSnapshot.lastTelemetryAt` 갱신
+- [x] `telemetrySource = TELEMETRY`
+- [ ] FMS `/settings` Telemetry 패널 갱신 — **사용자 육안**
+- [ ] 대시보드·지도 반영 — **사용자 육안**
 
 ### 10.4 운영
 
 - [x] VIN allowlist (FMS status API, size 확인)
 - [x] 재시도·401/400/503 재시도 금지
 - [x] `/health` allowlist+stats
-- [ ] unlink → config 삭제 + allowlist 제거 (시연 전)
-- [ ] FMS 5xx 시 Fly 재시도 실측
+- [ ] unlink → config 삭제 + allowlist 제거 (시연 전 · P1)
+- [ ] FMS 5xx 시 Fly 재시도 실측 (P1)
+- [ ] 로컬 `.env` secret = Vercel/Fly (**사용자**)
 
 ---
 
@@ -684,3 +685,4 @@ GET /api/1/vehicles/{vin}/fleet_telemetry_errors   → 오류 없음
 | 2026-07-10 | **Fly.io 단독 (권장 — 단순 데모)** 으로 전면 개편 — mTLS·relay·재시도를 Fly 1앱에 통합 |
 | 2026-07-10 | 커스텀 도메인 반영 — FMS `bori-fleet.shop`, Telemetry `telemetry.bori-fleet.shop` |
 | 2026-07-10 | Telemetry 서버 개발 완료 현황 반영 — [requirements-fleet-telemetry-completed.md](./requirements-fleet-telemetry-completed.md) |
+| 2026-07-10 | P0 E2E 실측 반영 — 실차 V→PROCESSED·TELEMETRY, 잔여=로컬 secret·UI 리허설 |

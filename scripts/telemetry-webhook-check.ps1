@@ -15,7 +15,12 @@ function Read-DotEnvValue([string]$name) {
     if (-not (Test-Path ".env")) { return $null }
     $line = Select-String -Path ".env" -Pattern "^$name=" -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $line) { return $null }
-    return ($line.Line -replace "^$name=", "").Trim().Trim('"')
+    $raw = ($line.Line -replace "^$name=", "").Trim().Trim('"').Trim("'")
+    # inline comment 제거: VALUE # comment
+    if ($raw -match "^\s*#") { return $null }
+    $value = ($raw -split "\s+#", 2)[0].Trim()
+    if ([string]::IsNullOrWhiteSpace($value)) { return $null }
+    return $value
 }
 
 Push-Location $PSScriptRoot\..
@@ -47,6 +52,10 @@ try {
         $headers = @{ "Content-Type" = "application/json" }
         if ($webhookSecret) {
             $headers["Authorization"] = "Bearer $webhookSecret"
+            Write-Host "    Auth: Bearer (TESLA_TELEMETRY_WEBHOOK_SECRET)"
+        } else {
+            Write-Host "    Auth: (none) — Production에 secret이 있으면 401 납니다."
+            Write-Host "    Vercel/Fly와 동일한 TESLA_TELEMETRY_WEBHOOK_SECRET 을 .env에 넣으세요."
         }
 
         $body = @{
@@ -61,6 +70,7 @@ try {
                     }
                 }
                 ChargeState = @{ stringValue = "Disconnected" }
+                Gear = @{ stringValue = "P" }
             }
         } | ConvertTo-Json -Depth 6
 
