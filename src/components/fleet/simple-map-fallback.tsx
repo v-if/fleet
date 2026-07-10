@@ -113,7 +113,7 @@ export function SimpleMapFallback({
             <>
               Kakao Maps SDK를 불러오지 못해 간이 지도로 표시 중입니다. Kakao Developers 앱의{" "}
               <strong>Web 플랫폼 사이트 도메인</strong>에 현재 배포 URL(예:{" "}
-              <code className="rounded bg-muted px-1 py-0.5">bori-fleet.vercel.app</code>)이
+              <code className="rounded bg-muted px-1 py-0.5">bori-fleet.shop</code>)이
               등록되어 있는지 확인하세요.
             </>
           ) : (

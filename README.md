@@ -26,7 +26,10 @@ Phase 3.5에서 Partner Register와 Tesla sync 검증을 진행했습니다. 현
 Tesla 실데이터는 Tesla API 한계에 따라 실제 번호판 대신 VIN suffix 식별명(`TESLA-xxxxxx`)으로 표시될 수 있고, 좌표가 `0,0`이면 지도 대신 `위치 데이터 없음` 안내가 보입니다.
 차량 상세 TPMS는 Tesla 원본 atm(≈bar) 값을 `1 atm ≒ 14.7 PSI` 기준으로 환산해 표시합니다.
 
-**배포 URL**: https://bori-fleet.vercel.app/ — Vercel에 `DATABASE_URL`·`DIRECT_URL`(Session pooler) 등록 및 재배포 필요 (현재 API 500)
+**배포 URL**: https://bori-fleet.shop/  
+**Telemetry**: https://telemetry.bori-fleet.shop/ (Fly.io · 별도 `fleet-telemetry` 저장소)
+
+문서: [`docs/`](./docs/README.md) · Telemetry 완료 현황: [`docs/requirements-fleet-telemetry-completed.md`](./docs/requirements-fleet-telemetry-completed.md)
 
 ## 주요 스크립트
 

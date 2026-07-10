@@ -155,7 +155,7 @@ export function parseTelemetryMessage(message: TelemetryMessage): ParsedTelemetr
     getDataField(data, ["EstBatteryRange", "RatedRange", "est_battery_range"]),
   );
   const chargingRaw = readString(getDataField(data, ["ChargeState", "charging_state"]));
-  const shiftState = readString(getDataField(data, ["ShiftState", "shift_state"]));
+  const shiftState = readString(getDataField(data, ["Gear", "ShiftState", "shift_state", "gear"]));
   const locked = readBoolean(getDataField(data, ["Locked", "locked"]));
   const doorsOpen = readBoolean(
     getDataField(data, ["DoorState", "door_open", "DoorsOpen"]),

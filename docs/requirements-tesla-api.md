@@ -88,17 +88,18 @@ OAuth(Third-party token)와 Partner Register는 **별개**다.
    Authorization: Bearer {partner_token}
    Content-Type: application/json
 
-   {"domain": "your-app.vercel.app"}
+   {"domain": "bori-fleet.shop"}
    ```
 5. **등록 확인**
    ```
-   GET https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/partner_accounts/public_key?domain=your-app.vercel.app
+   GET https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/partner_accounts/public_key?domain=bori-fleet.shop
    ```
 
 #### FMS 적용 결정
 - Phase 3: OAuth + Mock 폴백으로 **데모 파이프라인** 완성
 - Phase 3.5: Vercel 배포 + **Phase 3.6 Vercel API 200** + Register 후 **실차량 데이터** 연동 — **완료 (2026-07-07)**
-- 진행 현황(2026-07-07): EC 키 쌍 생성, `/.well-known/appspecific/com.tesla.3p.public-key.pem` 배포 확인, Partner token 발급, `bori-fleet.vercel.app` 도메인 Register 및 public key 조회 확인 완료
+- 진행 현황(2026-07-07): EC 키 쌍 생성, `/.well-known/appspecific/com.tesla.3p.public-key.pem` 배포 확인, Partner token 발급 완료  
+- **현재 Partner / Production 도메인**: `bori-fleet.shop` (apex 공개키 HTTP 200 필수) · Telemetry hostname: `telemetry.bori-fleet.shop`
 - Register 완료 전: `SyncMetadata.usedFallback=true`, 설정 화면에 412 오류 메시지 표시 가능
 - **배포 검증 (2026-07-07)**: 로컬·Vercel 모두 Partner Register 후 Tesla sync 성공, `usedFallback=false`, `provider=tesla` 확인. 차량 상태에 따라 `vehicle_data`의 배터리/위치 필드는 제한적으로 올 수 있다.
 - UI 적용 메모(2026-07-07): 실데이터 표시는 실제 번호판이 아닌 Tesla `display_name` 또는 VIN 기반 식별값을 써야 하므로, FMS 화면에서는 VIN suffix 기반 식별명(`TESLA-xxxxxx`)을 기본값으로 사용한다. 위치 좌표가 `0,0`이면 지도 대신 `위치 데이터 없음` 안내를 노출한다.

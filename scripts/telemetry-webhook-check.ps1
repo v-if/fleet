@@ -1,7 +1,7 @@
 # Fleet Telemetry webhook 점검 스크립트
 # Usage:
 #   powershell -ExecutionPolicy Bypass -File scripts/telemetry-webhook-check.ps1
-#   powershell -ExecutionPolicy Bypass -File scripts/telemetry-webhook-check.ps1 -BaseUrl https://bori-fleet.vercel.app -Vin YOURVIN17CHARS
+#   powershell -ExecutionPolicy Bypass -File scripts/telemetry-webhook-check.ps1 -BaseUrl https://bori-fleet.shop -Vin YOURVIN17CHARS
 
 param(
     [string]$BaseUrl = "",
