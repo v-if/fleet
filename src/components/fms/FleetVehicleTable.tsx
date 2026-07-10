@@ -26,7 +26,7 @@ import {
 } from "@/lib/vehicle-status";
 import type { VehicleListItemDto } from "@/lib/types/vehicle";
 
-type StatusFilter = "ALL" | "ONLINE" | "WARNING" | "ALERT" | "OFFLINE" | "IDLE" | "CHARGING" | "ABNORMAL";
+type StatusFilter = "ALL" | "ONLINE" | "WARNING" | "ALERT" | "OFFLINE" | "ASLEEP" | "IDLE" | "CHARGING" | "ABNORMAL";
 
 type FleetVehicleTableProps = {
   vehicles: VehicleListItemDto[];
@@ -42,6 +42,7 @@ const filterOptions: { value: StatusFilter; label: string }[] = [
   { value: "ALERT", label: "이상" },
   { value: "ABNORMAL", label: "이상상태" },
   { value: "OFFLINE", label: "오프라인" },
+  { value: "ASLEEP", label: "취침 중" },
   { value: "IDLE", label: "미운행" },
 ];
 
@@ -85,7 +86,7 @@ export function FleetVehicleTable({
       if (statusFilter === "CHARGING") return snapshot?.chargingStatus === "CHARGING";
       if (statusFilter === "ABNORMAL") {
         const status = snapshot?.status;
-        return status === "OFFLINE" || status === "WARNING" || status === "ALERT";
+        return status === "OFFLINE" || status === "ASLEEP" || status === "WARNING" || status === "ALERT";
       }
       return snapshot?.status === statusFilter;
     });

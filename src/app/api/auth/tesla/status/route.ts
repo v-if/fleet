@@ -9,6 +9,8 @@ import {
 import { requireApiSession } from "@/lib/auth-session";
 import { disconnectTeslaAccount, getStoredTeslaToken, isTeslaConnected } from "@/lib/tesla/auth";
 import { isTeslaConfigured } from "@/lib/tesla/config";
+import { getTelemetryMetadata } from "@/lib/tesla/telemetry/ingress";
+import { isTelemetryEnabled } from "@/lib/tesla/telemetry/config";
 import { getSyncMetadata } from "@/lib/vehicle-sync";
 import { getVehicleProviderName } from "@/lib/vehicle-providers";
 
@@ -20,10 +22,11 @@ export async function GET() {
     return session;
   }
 
-  const [connected, token, syncMetadata] = await Promise.all([
+  const [connected, token, syncMetadata, telemetryMetadata] = await Promise.all([
     isTeslaConnected(session.userId),
     getStoredTeslaToken(session.userId),
     getSyncMetadata(),
+    getTelemetryMetadata(),
   ]);
 
   return NextResponse.json({
@@ -40,6 +43,14 @@ export async function GET() {
           lastError: syncMetadata.lastError,
         }
       : null,
+    telemetry: {
+      enabled: isTelemetryEnabled(),
+      lastReceivedAt: telemetryMetadata?.lastReceivedAt?.toISOString() ?? null,
+      lastProcessedAt: telemetryMetadata?.lastProcessedAt?.toISOString() ?? null,
+      lastError: telemetryMetadata?.lastError ?? null,
+      pendingIngressCount: telemetryMetadata?.pendingIngressCount ?? 0,
+      subscriptionCount: telemetryMetadata?.subscriptionCount ?? 0,
+    },
   });
 }
 

@@ -23,7 +23,7 @@ function mapVehicleStatus(state: string | undefined): VehicleStatus {
     case "online":
       return "ONLINE";
     case "asleep":
-      return "OFFLINE";
+      return "ASLEEP";
     default:
       return "OFFLINE";
   }

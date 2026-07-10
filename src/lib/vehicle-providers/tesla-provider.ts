@@ -12,6 +12,15 @@ import type {
   VehicleSnapshotData,
 } from "./types";
 
+type FetchVehiclesOptions = {
+  skipVehicleData?: (vin: string) => Promise<boolean> | boolean;
+};
+
+type FetchVehiclesResult = {
+  snapshots: VehicleSnapshotData[];
+  skippedVehicleDataCount: number;
+};
+
 export class TeslaVehicleProvider implements VehicleDataProvider {
   readonly name = "tesla";
   private readonly userId?: string;
@@ -42,11 +51,18 @@ export class TeslaVehicleProvider implements VehicleDataProvider {
   }
 
   async fetchVehicles(): Promise<VehicleSnapshotData[]> {
+    const result = await this.fetchVehiclesWithMeta();
+    return result.snapshots;
+  }
+
+  async fetchVehiclesWithMeta(
+    options: FetchVehiclesOptions = {},
+  ): Promise<FetchVehiclesResult> {
     await this.ensureReady();
 
     const vehicles = await this.client.listVehicles();
     if (vehicles.length === 0) {
-      return [];
+      return { snapshots: [], skippedVehicleDataCount: 0 };
     }
 
     const vins = vehicles.map((vehicle) => vehicle.vin);
@@ -56,8 +72,29 @@ export class TeslaVehicleProvider implements VehicleDataProvider {
     );
 
     const snapshots: VehicleSnapshotData[] = [];
+    let skippedVehicleDataCount = 0;
 
     for (const vehicle of vehicles) {
+      const shouldSkipVehicleData = options.skipVehicleData
+        ? await options.skipVehicleData(vehicle.vin)
+        : false;
+
+      if (shouldSkipVehicleData) {
+        skippedVehicleDataCount += 1;
+        snapshots.push(
+          mapTeslaVehicleToSnapshot(
+            vehicle,
+            {
+              vin: vehicle.vin,
+              display_name: vehicle.display_name,
+              state: vehicle.state,
+            },
+            fleetStatusByVin.get(vehicle.vin),
+          ),
+        );
+        continue;
+      }
+
       try {
         const data = await this.client.getVehicleData(vehicle.vin);
         snapshots.push(
@@ -83,12 +120,12 @@ export class TeslaVehicleProvider implements VehicleDataProvider {
       }
     }
 
-    return snapshots;
+    return { snapshots, skippedVehicleDataCount };
   }
 
   async fetchVehicleDetail(plateNumber: string): Promise<VehicleSnapshotData | null> {
-    const vehicles = await this.fetchVehicles();
-    return vehicles.find((vehicle) => vehicle.plateNumber === plateNumber) ?? null;
+    const result = await this.fetchVehiclesWithMeta();
+    return result.snapshots.find((vehicle) => vehicle.plateNumber === plateNumber) ?? null;
   }
 
   async fetchVehicleEvents(): Promise<VehicleEventData[]> {

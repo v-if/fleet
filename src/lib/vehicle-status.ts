@@ -5,6 +5,7 @@ export const IDLE_DAYS_THRESHOLD = 7;
 export const STATUS_LABEL: Record<VehicleStatus, string> = {
   ONLINE: "정상",
   OFFLINE: "오프라인",
+  ASLEEP: "취침 중",
   WARNING: "주의",
   ALERT: "이상",
 };
@@ -22,6 +23,7 @@ export const STATUS_BADGE_VARIANT: Record<
 > = {
   ONLINE: "success",
   OFFLINE: "secondary",
+  ASLEEP: "secondary",
   WARNING: "warning",
   ALERT: "error",
 };
@@ -54,6 +56,7 @@ export const SERVICE_STATUS_BADGE_VARIANT: Record<
 export const STATUS_DOT_CLASS: Record<VehicleStatus, string> = {
   ONLINE: "bg-emerald-500",
   OFFLINE: "bg-zinc-400",
+  ASLEEP: "bg-sky-400",
   WARNING: "bg-amber-500",
   ALERT: "bg-red-500",
 };
@@ -61,6 +64,7 @@ export const STATUS_DOT_CLASS: Record<VehicleStatus, string> = {
 export const STATUS_RING_CLASS: Record<VehicleStatus, string> = {
   ONLINE: "ring-emerald-500",
   OFFLINE: "ring-zinc-400",
+  ASLEEP: "ring-sky-400",
   WARNING: "ring-amber-500",
   ALERT: "ring-red-500",
 };
@@ -68,6 +72,7 @@ export const STATUS_RING_CLASS: Record<VehicleStatus, string> = {
 export const STATUS_GLOW_CLASS: Record<VehicleStatus, string> = {
   ONLINE: "shadow-emerald-500/40",
   OFFLINE: "shadow-zinc-400/30",
+  ASLEEP: "shadow-sky-400/30",
   WARNING: "shadow-amber-500/40",
   ALERT: "shadow-red-500/50",
 };
@@ -77,7 +82,7 @@ export function isIdleForDays(
   lastUpdatedAt: Date | string | null,
   days: number,
 ): boolean {
-  if (status === "OFFLINE") return true;
+  if (status === "OFFLINE" || status === "ASLEEP") return true;
   if (!lastUpdatedAt) return false;
 
   const updated =

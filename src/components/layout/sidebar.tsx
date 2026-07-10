@@ -9,10 +9,11 @@ import {
   List,
   Map,
   Settings,
-  Zap,
 } from "lucide-react";
 
 import { useSidebar } from "@/components/providers/sidebar-provider";
+import { FmsLogo } from "@/components/common/FmsLogo";
+import { FMS_NAME } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -35,17 +36,14 @@ export function Sidebar() {
     >
       <div className="flex items-center justify-between border-b border-white/10 px-3 py-4">
         <div className={cn("flex items-center gap-2 overflow-hidden", collapsed && "justify-center")}>
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/20">
-            <Zap className="size-4 text-primary" />
-          </div>
-          {!collapsed ? (
+          {collapsed ? (
+            <FmsLogo width={32} height={32} />
+          ) : (
             <div className="min-w-0">
-              <p className="text-xs font-medium tracking-wider text-sidebar-muted uppercase">
-                Fleet FMS
-              </p>
-              <h1 className="truncate text-base font-semibold">EV 관제</h1>
+              <FmsLogo width={32} height={32} showName nameClassName="text-base" />
+              <p className="truncate text-xs text-sidebar-muted">EV 관제</p>
             </div>
-          ) : null}
+          )}
         </div>
         {!collapsed ? (
           <button
@@ -99,7 +97,7 @@ export function Sidebar() {
       </nav>
       {!collapsed ? (
         <div className="border-t border-white/10 p-4 text-xs text-sidebar-muted">
-          Tesla · Deviceless MVP
+          {FMS_NAME} · Tesla
         </div>
       ) : null}
     </aside>

@@ -22,6 +22,14 @@ type TeslaStatus = {
     usedFallback: boolean;
     lastError: string | null;
   } | null;
+  telemetry: {
+    enabled: boolean;
+    lastReceivedAt: string | null;
+    lastProcessedAt: string | null;
+    lastError: string | null;
+    pendingIngressCount: number;
+    subscriptionCount: number;
+  };
 };
 
 async function fetchTeslaStatus(): Promise<TeslaStatus> {
@@ -142,8 +150,60 @@ export function FleetSettingsView() {
               </div>
 
               <p className="text-theme-xs text-gray-400 dark:text-gray-500">
-                `VEHICLE_DATA_PROVIDER=tesla`일 때 OAuth 연결 후 실데이터를 수집합니다. 연결
-                실패 시 Mock 데이터로 자동 폴백됩니다.
+                `VEHICLE_DATA_PROVIDER=tesla`일 때 OAuth 연결 후 실데이터를 수집합니다. Telemetry가
+                활성화되면 webhook 수신을 우선하고 REST `vehicle_data` 호출은 fallback으로 축소됩니다.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+          <h4 className="mb-6 text-lg font-semibold text-gray-800 dark:text-white/90">
+            Fleet Telemetry
+          </h4>
+
+          {isLoading ? (
+            <p className="text-theme-sm text-gray-500">상태를 불러오는 중...</p>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <Badge color={status?.telemetry.enabled ? "success" : "light"}>
+                  {status?.telemetry.enabled ? "Telemetry 활성" : "Telemetry 비활성"}
+                </Badge>
+                {(status?.telemetry.pendingIngressCount ?? 0) > 0 ? (
+                  <Badge color="warning">
+                    대기 {status?.telemetry.pendingIngressCount}건
+                  </Badge>
+                ) : null}
+                <Badge color="info">
+                  구독 {status?.telemetry.subscriptionCount ?? 0}대
+                </Badge>
+              </div>
+
+              {status?.telemetry.lastReceivedAt ? (
+                <p className="text-theme-sm text-gray-500 dark:text-gray-400">
+                  최근 수신:{" "}
+                  {new Date(status.telemetry.lastReceivedAt).toLocaleString("ko-KR")}
+                </p>
+              ) : (
+                <p className="text-theme-sm text-gray-500 dark:text-gray-400">
+                  최근 수신: 없음
+                </p>
+              )}
+
+              {status?.telemetry.lastProcessedAt ? (
+                <p className="text-theme-sm text-gray-500 dark:text-gray-400">
+                  최근 처리:{" "}
+                  {new Date(status.telemetry.lastProcessedAt).toLocaleString("ko-KR")}
+                </p>
+              ) : null}
+
+              {status?.telemetry.lastError ? (
+                <p className="text-theme-sm text-warning-600">{status.telemetry.lastError}</p>
+              ) : null}
+
+              <p className="text-theme-xs text-gray-400 dark:text-gray-500">
+                Webhook endpoint: `/api/tesla/telemetry` · 후처리 job: `/api/internal/telemetry/process`
               </p>
             </div>
           )}

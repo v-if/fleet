@@ -30,6 +30,11 @@ export type VehicleSnapshotDto = {
   serviceStatus: ServiceStatus | null;
   softwareVersion: string | null;
   nearbyChargingSites: NearbyChargingSiteDto[];
+  lastTelemetryAt: string | null;
+  lastRestSyncAt: string | null;
+  telemetrySource: "TELEMETRY" | "REST" | "MIXED" | null;
+  isAsleepInferred: boolean;
+  sleepInferredAt: string | null;
   lastUpdatedAt: string;
   createdAt: string;
 };
@@ -71,6 +76,7 @@ export type VehiclesResponse = {
     warning: number;
     alert: number;
     offline: number;
+    asleep: number;
     idle: number;
     charging: number;
   };

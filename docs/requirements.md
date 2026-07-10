@@ -209,3 +209,4 @@
 | 2026-07-08 | 데모 안정화 요구사항 추가 — `차량 추가(가상)` 기반 가상 차량 시드 정책 [requirements-virtual-vehicle-seeding.md](./requirements-virtual-vehicle-seeding.md) |
 | 2026-07-08 | Phase 4.1 구현 반영 — `/vehicles` 가상 차량 시드 UI/API 및 sync guard 적용 |
 | 2026-07-08 | DB 시간대 정책 반영 — PostgreSQL `DateTime`을 `timestamptz(3)` + `Asia/Seoul` 기준으로 통일 |
+| 2026-07-09 | Fleet Telemetry 전환 요구사항 추가 — polling 기반 Tesla 조회에서 webhook/스트리밍 구조로 확장 ([requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md)) |

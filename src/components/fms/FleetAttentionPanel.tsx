@@ -20,17 +20,19 @@ type FleetAttentionPanelProps = {
 
 function countAbnormal(vehicles: VehicleListItemDto[]) {
   let offline = 0;
+  let asleep = 0;
   let warning = 0;
   let alert = 0;
 
   for (const vehicle of vehicles) {
     const status = vehicle.snapshot?.status;
     if (status === "OFFLINE") offline++;
+    else if (status === "ASLEEP") asleep++;
     else if (status === "WARNING") warning++;
     else if (status === "ALERT") alert++;
   }
 
-  return { offline, warning, alert };
+  return { offline, asleep, warning, alert };
 }
 
 export function FleetAttentionPanel({
@@ -41,7 +43,7 @@ export function FleetAttentionPanel({
   const counts = countAbnormal(vehicles);
   const abnormal = vehicles.filter((vehicle) => {
     const status = vehicle.snapshot?.status;
-    return status === "OFFLINE" || status === "WARNING" || status === "ALERT";
+    return status === "OFFLINE" || status === "ASLEEP" || status === "WARNING" || status === "ALERT";
   });
   const idle = vehicles.filter((vehicle) => vehicle.isIdle).slice(0, 5);
 
@@ -54,7 +56,7 @@ export function FleetAttentionPanel({
               이상 상태 차량
             </h3>
             <p className="text-theme-sm text-gray-500 dark:text-gray-400">
-              오프라인 {counts.offline} · 주의 {counts.warning} · 이상 {counts.alert}
+              오프라인 {counts.offline} · 취침 {counts.asleep} · 주의 {counts.warning} · 이상 {counts.alert}
             </p>
           </div>
           <Link

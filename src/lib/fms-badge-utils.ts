@@ -18,6 +18,9 @@ export function vehicleStatusBadgeColor(status: VehicleStatus): TailAdminBadgeCo
     case "ALERT":
       return "error";
     case "OFFLINE":
+      return "light";
+    case "ASLEEP":
+      return "info";
     default:
       return "light";
   }

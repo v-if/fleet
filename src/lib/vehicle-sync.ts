@@ -2,6 +2,8 @@ import {
   getActiveTeslaAccountForUser,
   getAnyActiveTeslaAccount,
 } from "@/lib/tesla/auth";
+import { isTelemetryEnabled } from "@/lib/tesla/telemetry/config";
+import { isTelemetryFresh } from "@/lib/tesla/telemetry/processor";
 import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
 import {
@@ -17,18 +19,49 @@ export type SyncVehiclesResult = {
   vehicleCount: number;
   eventCount: number;
   lastSyncedAt: string;
+  skippedVehicleDataCount?: number;
   error?: string;
 };
 
 type UpsertSnapshotOptions = {
   teslaAccountId?: string | null;
+  telemetrySource?: "REST" | "MIXED" | "TELEMETRY";
+  lastRestSyncAt?: Date;
+  preserveTelemetryFields?: boolean;
+  existingLastTelemetryAt?: Date | null;
 };
+
+async function getLatestTelemetryAt(
+  teslaAccountId: string | null,
+  oemVehicleId: string | undefined,
+) {
+  if (!teslaAccountId || !oemVehicleId) return null;
+
+  const vehicle = await prisma.vehicle.findFirst({
+    where: { teslaAccountId, oemVehicleId },
+    include: {
+      snapshots: {
+        orderBy: { lastUpdatedAt: "desc" },
+        take: 1,
+        select: { lastTelemetryAt: true },
+      },
+    },
+  });
+
+  return vehicle?.snapshots[0]?.lastTelemetryAt ?? null;
+}
 
 async function upsertSnapshot(
   snapshot: VehicleSnapshotData,
   options: UpsertSnapshotOptions = {},
 ) {
-  const { teslaAccountId = null } = options;
+  const {
+    teslaAccountId = null,
+    telemetrySource = "REST",
+    lastRestSyncAt = new Date(),
+    preserveTelemetryFields = false,
+    existingLastTelemetryAt = null,
+  } = options;
 
   const existing =
     teslaAccountId && snapshot.oemVehicleId
@@ -37,8 +70,16 @@ async function upsertSnapshot(
             teslaAccountId,
             oemVehicleId: snapshot.oemVehicleId,
           },
+          include: {
+            snapshots: {
+              orderBy: { lastUpdatedAt: "desc" },
+              take: 1,
+            },
+          },
         })
       : null;
+
+  const previousSnapshot = existing?.snapshots[0];
 
   const vehicle = existing
     ? await prisma.vehicle.update({
@@ -72,6 +113,11 @@ async function upsertSnapshot(
         },
       });
 
+  const resolvedTelemetrySource =
+    preserveTelemetryFields && previousSnapshot?.telemetrySource === "TELEMETRY"
+      ? "MIXED"
+      : telemetrySource;
+
   await prisma.vehicleSnapshot.create({
     data: {
       vehicleId: vehicle.id,
@@ -98,6 +144,17 @@ async function upsertSnapshot(
       softwareVersion: snapshot.softwareVersion,
       nearbyChargingSites: snapshot.nearbyChargingSites
         ? JSON.stringify(snapshot.nearbyChargingSites)
+        : null,
+      lastTelemetryAt: preserveTelemetryFields
+        ? (existingLastTelemetryAt ?? previousSnapshot?.lastTelemetryAt ?? null)
+        : null,
+      lastRestSyncAt,
+      telemetrySource: resolvedTelemetrySource,
+      isAsleepInferred: preserveTelemetryFields
+        ? (previousSnapshot?.isAsleepInferred ?? false)
+        : false,
+      sleepInferredAt: preserveTelemetryFields
+        ? (previousSnapshot?.sleepInferredAt ?? null)
         : null,
       lastUpdatedAt: snapshot.lastUpdatedAt,
     },
@@ -243,9 +300,24 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
   let errorMessage: string | undefined;
 
   let snapshots: VehicleSnapshotData[] = [];
+  let skippedVehicleDataCount = 0;
 
   try {
-    snapshots = await provider.fetchVehicles();
+    const telemetryEnabled = isTelemetryEnabled();
+    const skipVehicleData = telemetryEnabled
+      ? async (vin: string) => {
+          const lastTelemetryAt = await getLatestTelemetryAt(teslaAccountId, vin);
+          return isTelemetryFresh(lastTelemetryAt);
+        }
+      : undefined;
+
+    if (provider instanceof TeslaVehicleProvider) {
+      const result = await provider.fetchVehiclesWithMeta({ skipVehicleData });
+      snapshots = result.snapshots;
+      skippedVehicleDataCount = result.skippedVehicleDataCount;
+    } else {
+      snapshots = await provider.fetchVehicles();
+    }
   } catch (error) {
     errorMessage = error instanceof Error ? error.message : "Unknown sync error";
     throw error;
@@ -258,8 +330,20 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
   }
 
   for (const snapshot of snapshots) {
+    const lastTelemetryAt = await getLatestTelemetryAt(
+      effectiveProvider === "tesla" ? teslaAccountId : null,
+      snapshot.oemVehicleId,
+    );
+    const preserveTelemetryFields = Boolean(
+      isTelemetryEnabled() && isTelemetryFresh(lastTelemetryAt),
+    );
+
     await upsertSnapshot(snapshot, {
       teslaAccountId: effectiveProvider === "tesla" ? teslaAccountId : null,
+      telemetrySource: "REST",
+      lastRestSyncAt: lastSyncedAt,
+      preserveTelemetryFields,
+      existingLastTelemetryAt: lastTelemetryAt,
     });
   }
 
@@ -311,6 +395,7 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
     vehicleCount: activeCount,
     eventCount: events.length,
     lastSyncedAt: lastSyncedAt.toISOString(),
+    skippedVehicleDataCount,
     error: errorMessage,
   };
 }

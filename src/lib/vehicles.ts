@@ -47,6 +47,11 @@ function serializeSnapshot(snapshot: VehicleSnapshot) {
     serviceStatus: snapshot.serviceStatus,
     softwareVersion: snapshot.softwareVersion,
     nearbyChargingSites: parseNearbyChargingSites(snapshot.nearbyChargingSites),
+    lastTelemetryAt: snapshot.lastTelemetryAt?.toISOString() ?? null,
+    lastRestSyncAt: snapshot.lastRestSyncAt?.toISOString() ?? null,
+    telemetrySource: snapshot.telemetrySource,
+    isAsleepInferred: snapshot.isAsleepInferred,
+    sleepInferredAt: snapshot.sleepInferredAt?.toISOString() ?? null,
     lastUpdatedAt: snapshot.lastUpdatedAt.toISOString(),
     createdAt: snapshot.createdAt.toISOString(),
   };
@@ -135,6 +140,7 @@ export async function getVehiclesResponse(): Promise<VehiclesResponse> {
       warning: snapshots.filter((snapshot) => snapshot.status === "WARNING").length,
       alert: snapshots.filter((snapshot) => snapshot.status === "ALERT").length,
       offline: snapshots.filter((snapshot) => snapshot.status === "OFFLINE").length,
+      asleep: snapshots.filter((snapshot) => snapshot.status === "ASLEEP").length,
       idle: items.filter((item) => item.isIdle).length,
       charging: snapshots.filter((snapshot) => snapshot.chargingStatus === "CHARGING")
         .length,

@@ -1,16 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
-
-/**
- * Fleet Telemetry 구독 해제 — Phase 3.9 stub.
- * 실제 Tesla Fleet Telemetry API 연동은 후속 Phase에서 구현한다.
- */
-export async function unsubscribeVehicleTelemetry(vin: string | null | undefined) {
-  if (!vin) return { ok: true as const, stub: true };
-
-  console.info(`[telemetry] unsubscribe stub for VIN ${vin}`);
-  return { ok: true as const, stub: true };
-}
+import { unsubscribeVehicleTelemetry } from "@/lib/tesla/telemetry/subscription";
 
 async function countActiveVehiclesForAccount(teslaAccountId: string) {
   return prisma.vehicle.count({
@@ -37,7 +27,7 @@ async function softUnlinkTeslaAccount(teslaAccountId: string) {
 export type UnlinkVehicleResult = {
   vehicleId: string;
   accountUnlinked: boolean;
-  telemetry: { ok: boolean; stub?: boolean };
+  telemetry: { ok: boolean; stub?: boolean; skipped?: boolean; error?: string };
 };
 
 export async function unlinkVehicle(vehicleId: string): Promise<UnlinkVehicleResult | null> {
@@ -50,7 +40,10 @@ export async function unlinkVehicle(vehicleId: string): Promise<UnlinkVehicleRes
 
   if (!vehicle) return null;
 
-  const telemetry = await unsubscribeVehicleTelemetry(vehicle.oemVehicleId);
+  const telemetry = await unsubscribeVehicleTelemetry(vehicle.oemVehicleId, {
+    vehicleId: vehicle.id,
+    teslaAccountId: vehicle.teslaAccountId,
+  });
   const now = new Date();
 
   await prisma.vehicle.update({
@@ -87,7 +80,10 @@ export async function unlinkAllVehiclesForAccount(teslaAccountId: string) {
   });
 
   for (const vehicle of vehicles) {
-    await unsubscribeVehicleTelemetry(vehicle.oemVehicleId);
+    await unsubscribeVehicleTelemetry(vehicle.oemVehicleId, {
+      vehicleId: vehicle.id,
+      teslaAccountId,
+    });
   }
 
   const now = new Date();

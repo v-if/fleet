@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useRef, useState,useCallback } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { FmsLogo } from "@/components/common/FmsLogo";
 import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
@@ -288,18 +288,12 @@ const AppSidebar: React.FC = () => {
         }`}
       >
         <Link href="/" className="flex items-center gap-3">
-          <Image
-            src="/images/logo/fleet-car-icon.svg"
-            alt="Fleet"
+          <FmsLogo
             width={32}
             height={32}
-            className="shrink-0"
+            showName={isExpanded || isHovered || isMobileOpen}
+            nameClassName="text-xl"
           />
-          {(isExpanded || isHovered || isMobileOpen) && (
-            <span className="text-xl font-semibold text-gray-800 dark:text-white/90">
-              Fleet
-            </span>
-          )}
         </Link>
       </div>
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">

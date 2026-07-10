@@ -6,10 +6,11 @@ import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
 import StatisticsChart from "@/components/ecommerce/StatisticsChart";
 import RecentOrders from "@/components/ecommerce/RecentOrders";
 import DemographicCard from "@/components/ecommerce/DemographicCard";
+import { fmsPageTitle } from "@/lib/branding";
 
 export const metadata: Metadata = {
-  title: "TailAdmin E-commerce Demo | Fleet FMS",
-  description: "TailAdmin 원본 E-commerce 데모 (참고용)",
+  title: fmsPageTitle("E-commerce 데모"),
+  description: "보리차 UI 참고용 E-commerce 데모",
 };
 
 export default function EcommerceDemoPage() {

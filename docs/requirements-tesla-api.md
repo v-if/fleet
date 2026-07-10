@@ -150,6 +150,8 @@ OAuth(Third-party token)와 Partner Register는 **별개**다.
 - 펌웨어 요건: 직접 호출 2023.20+, 프록시 경유 2024.26+ 등.
 - **시사점**: MVP는 폴링으로 시작하되, 실시간성·비용 최적화가 필요하면 Telemetry로 전환.
 
+상세 전환 요구사항은 [requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md)를 따른다.
+
 ---
 
 ## 4. 제어 가능한 기능 (Commands)

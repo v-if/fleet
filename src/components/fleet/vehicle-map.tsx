@@ -112,6 +112,7 @@ function markerHtml(vehicle: PositionedMapVehicle, selected: boolean) {
   const ringColors: Record<NonNullable<MapVehicle["status"]>, string> = {
     ONLINE: "#10b981",
     OFFLINE: "#a1a1aa",
+    ASLEEP: "#38bdf8",
     WARNING: "#f59e0b",
     ALERT: "#ef4444",
   };

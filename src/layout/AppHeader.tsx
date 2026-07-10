@@ -1,9 +1,9 @@
 "use client";
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
+import { FmsLogo } from "@/components/common/FmsLogo";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
 import UserDropdown from "@/components/header/UserDropdown";
 import { useSidebar } from "@/context/SidebarContext";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useState ,useEffect,useRef} from "react";
 
@@ -84,15 +84,7 @@ const AppHeader: React.FC = () => {
           </button>
 
           <Link href="/" className="flex items-center gap-2 lg:hidden">
-            <Image
-              src="/images/logo/fleet-car-icon.svg"
-              alt="Fleet"
-              width={32}
-              height={32}
-            />
-            <span className="text-lg font-semibold text-gray-800 dark:text-white/90">
-              Fleet
-            </span>
+            <FmsLogo width={32} height={32} showName nameClassName="text-lg" />
           </Link>
 
           <button

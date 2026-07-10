@@ -621,6 +621,28 @@
 
 ---
 
+### Phase 4.2 Tesla Fleet Telemetry 전환 (P0)
+- [x] 요구사항 문서 확정 — [requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md)
+- [x] 기존 Tesla Polling → Fleet Telemetry 전환 범위 정의 (`vehicle_data` 고빈도 호출 축소)
+- [x] Tesla Telemetry webhook 수신 endpoint 설계
+- [x] 수신 즉시 `200 OK` 반환 + 비동기 적재/후처리 구조 설계
+- [x] 원본 payload ingress 저장소/큐 모델 정의
+- [x] 이벤트 중복 수신 대비 idempotency key 또는 dedupe 정책 정의
+- [x] Telemetry 기반 `VehicleSnapshot` 갱신 규칙 정의
+- [x] `Asleep` 추론용 필드/파생 상태 설계 (`lastTelemetryAt`, `isAsleepInferred` 등)
+- [x] polling fallback 정책 정의 (`GET /api/1/vehicles`, `fleet_status` 보조 유지)
+- [x] Telemetry 구독 등록/해제 운영 시나리오 정의 (unlink 과금 방지 포함)
+- [x] Telemetry 수신/실패/구독 변경 로그를 `AuditLog`/`ApiCallLog`에 포함
+- [x] 설정 화면/운영 화면에 Telemetry 상태 노출 요구사항 반영
+
+**완료 기준**: 온라인 차량은 Telemetry 우선 갱신, 취침 차량은 자연스럽게 `Asleep` 추론, polling은 fallback으로 축소
+
+> **설계 메모 (2026-07-09)**: MVP의 Tesla 실데이터는 polling 기반이지만, 비용·실시간성 문제를 줄이기 위해 Phase 4.2에서 webhook 수신 + 비동기 처리 구조로 전환한다.
+>
+> **구현 메모 (2026-07-10)**: `POST /api/tesla/telemetry` ingress 저장 후 `after()` 비동기 처리, `TelemetryIngress`/`TelemetryMetadata`/`TelemetrySubscription` 모델 추가, `VehicleSnapshot`에 `lastTelemetryAt`·`isAsleepInferred`·`ASLEEP` 상태 반영. REST sync는 Telemetry fresh 차량의 `vehicle_data` 호출을 건너뛰는 fallback 정책 적용. unlink 시 `DELETE /fleet_telemetry_config` + 감사 로그. 설정 화면 Telemetry 패널 추가.
+
+---
+
 ## Phase 5. 배포 및 데모 (M5)
 
 > 설치: [setup-guide.md](./setup-guide.md) §7
@@ -694,4 +716,6 @@
 | 2026-07-08 | Phase 4 선행 — API 로그·감사 DB 요구사항([requirements-log-db.md](./requirements-log-db.md)) 및 체크리스트 추가 |
 | 2026-07-08 | Phase 4 P0 1차 구현 — `AuditLog`·`ApiCallLog`, Tesla/FMS 변경 API 로그 적재, 민감정보 마스킹 |
 | 2026-07-08 | Phase 4.1 추가 — sleep 상태 대안용 가상 차량 시드 요구사항·체크리스트 ([requirements-virtual-vehicle-seeding.md](./requirements-virtual-vehicle-seeding.md)) |
+| 2026-07-09 | Phase 4.2 추가 — Tesla Fleet Telemetry webhook/비동기 처리/Asleep 추론 요구사항·체크리스트 ([requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md)) |
+| 2026-07-10 | Phase 4.2 완료 — Telemetry webhook/ingress/비동기 처리, ASLEEP 추론, polling fallback 축소, unlink 구독 해제, 설정 화면 Telemetry 상태 |
 

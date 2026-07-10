@@ -10,6 +10,7 @@ import { FleetMetrics } from "@/components/fms/FleetMetrics";
 import { FleetRecentVehicles } from "@/components/fms/FleetRecentVehicles";
 import { FleetToolbar } from "@/components/fms/FleetToolbar";
 import { useVehicles, useVehicleRefresh } from "@/hooks/use-vehicles";
+import { FMS_NAME } from "@/lib/branding";
 import { formatProviderTime, providerLabel } from "@/lib/fms-badge-utils";
 import { toMapVehicles } from "@/lib/map-utils";
 
@@ -31,7 +32,7 @@ export function FleetDashboardView() {
   if (isLoading) {
     return (
       <>
-        <PageBreadcrumb pageTitle="Fleet Dashboard" />
+        <PageBreadcrumb pageTitle={`${FMS_NAME} 대시보드`} />
         <p className="text-theme-sm text-gray-500 dark:text-gray-400">데이터를 불러오는 중...</p>
       </>
     );
@@ -40,7 +41,7 @@ export function FleetDashboardView() {
   if (isError || !data) {
     return (
       <>
-        <PageBreadcrumb pageTitle="Fleet Dashboard" />
+        <PageBreadcrumb pageTitle={`${FMS_NAME} 대시보드`} />
         <div className="rounded-2xl border border-error-200 bg-error-50 p-5 text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
           {error?.message ?? "대시보드 데이터를 불러오지 못했습니다."}
         </div>
@@ -53,8 +54,8 @@ export function FleetDashboardView() {
   return (
     <>
       <FleetToolbar
-        title="Fleet Dashboard"
-        description="전체 차량 현황을 TailAdmin 대시보드에서 확인합니다."
+        title={`${FMS_NAME} 대시보드`}
+        description="전체 차량 현황을 한눈에 확인합니다."
         provider={providerLabel(data.provider)}
         lastUpdatedAt={formatProviderTime(data.lastUpdatedAt)}
         onRefresh={() => void handleRefresh()}

@@ -7,6 +7,7 @@ import { Modal } from "@/components/ui/modal";
 import { useVehicles, useVehicleRefresh } from "@/hooks/use-vehicles";
 import { useModal } from "@/hooks/useModal";
 import { formatProviderTime, providerLabel } from "@/lib/fms-badge-utils";
+import { FMS_NAME } from "@/lib/branding";
 import { useState } from "react";
 
 export function FleetVehiclesListView() {
@@ -132,7 +133,7 @@ export function FleetVehiclesListView() {
             새로운 테슬라 계정의 차량을 추가하시겠습니까?
           </h3>
           <p className="mt-3 text-sm leading-6 text-gray-500 dark:text-gray-400">
-            테슬라 공홈에 로그인 후 Fleet 연동을 해주시기 바랍니다.
+            테슬라 공홈에 로그인 후 {FMS_NAME} 연동을 해주시기 바랍니다.
           </p>
           <div className="mt-8 flex justify-end gap-3">
             <Button size="sm" variant="outline" onClick={closeModal}>

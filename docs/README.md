@@ -13,6 +13,7 @@
 | [requirements-user-db.md](./requirements-user-db.md) | User·TeslaAccount·Vehicle 계층 DB, 연동 해제(Soft Delete)·Telemetry 요구사항 | 멀티 계정·차량 스키마 설계할 때 |
 | [requirements-log-db.md](./requirements-log-db.md) | Tesla/FMS API 감사 로그 DB, 마스킹, 인터셉터·AuditLog 설계 | 로그 적재·감사 추적 설계할 때 |
 | [requirements-virtual-vehicle-seeding.md](./requirements-virtual-vehicle-seeding.md) | `/vehicles`의 `차량 추가(가상)` 기반 데모용 차량/계정 랜덤 시드 요구사항 | sleep 상태 대안, 데모 차량 생성 설계할 때 |
+| [requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md) | Tesla Polling에서 Fleet Telemetry webhook/스트리밍 구조로 전환하기 위한 요구사항 | 실시간성·비용 최적화, Telemetry 설계할 때 |
 | [auth-user-mapping.md](./auth-user-mapping.md) | Phase 4 Supabase Auth ↔ FMS User 매핑 설계 메모 | 인증·다테넌시 구현 전 |
 | [requirements-tesla-api.md](./requirements-tesla-api.md) | 테슬라 Fleet API 조회/제어 기능 정리, FMS 화면 적용안 | 데이터 연동·제어 기능 설계할 때 |
 | [requirements-front-design.md](./requirements-front-design.md) | Pleos Fleet UI 벤치마킹, 프론트 구성·디자인 개선 요구사항 | 화면 UI/UX 개선할 때 |
@@ -90,3 +91,5 @@
 | 2026-07-08 | requirements-log-db.md — API 로그·감사 DB 요구사항 정의 |
 | 2026-07-08 | Phase 4 P0 로그 구현 — `AuditLog`·`ApiCallLog`, Tesla/FMS 변경 API 로그 적재, 마스킹 |
 | 2026-07-08 | requirements-virtual-vehicle-seeding.md — `차량 추가(가상)` 데모용 가상 차량 시드 요구사항 정의 |
+| 2026-07-09 | requirements-tesla-fleet-telemetry.md — Tesla Fleet Telemetry 전환 요구사항 문서 추가 |
+| 2026-07-10 | Phase 4.2 완료 — Telemetry webhook/ingress/비동기 처리, ASLEEP 추론, polling fallback, 설정 화면 Telemetry 상태 |

@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { FleetVehiclesListView } from "@/components/fms/FleetVehiclesListView";
+import { fmsPageTitle } from "@/lib/branding";
 
 export const metadata: Metadata = {
-  title: "차량 목록 | Fleet FMS",
-  description: "플릿 차량 목록",
+  title: fmsPageTitle("차량 목록"),
+  description: "보리차 플릿 차량 목록",
 };
 
 export default function VehiclesPage() {

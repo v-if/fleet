@@ -10,6 +10,7 @@ import {
   TimeIcon,
 } from "@/icons";
 import type { VehiclesResponse } from "@/lib/types/vehicle";
+import { FMS_NAME } from "@/lib/branding";
 
 type FleetMetricsProps = {
   summary: VehiclesResponse["summary"];
@@ -98,7 +99,7 @@ export function FleetMetrics({ summary, className }: FleetMetricsProps) {
               {metric.key === "total" ? (
                 <Badge color="info">
                   <BoxIconLine className="size-3" />
-                  Fleet
+                  {FMS_NAME}
                 </Badge>
               ) : (
                 <Badge color={metric.badgeColor}>{percent}%</Badge>

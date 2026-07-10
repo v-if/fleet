@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 
 import { FleetVehicleDetailView } from "@/components/fms/FleetVehicleDetailView";
+import { fmsPageTitle } from "@/lib/branding";
 
 export const metadata: Metadata = {
-  title: "차량 상세 | Fleet FMS",
-  description: "차량 상세 정보",
+  title: fmsPageTitle("차량 상세"),
+  description: "보리차 차량 상세 정보",
 };
 
 type PageProps = {

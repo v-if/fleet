@@ -252,6 +252,11 @@ TESLA_FLEET_API_REDIRECT_URI=http://localhost:3000/api/auth/tesla/callback
 TESLA_FLEET_API_REGION=na
 TESLA_SYNC_POLL_INTERVAL_MINUTES=3
 TESLA_SYNC_CRON_SECRET=
+TESLA_TELEMETRY_ENABLED=true
+TESLA_TELEMETRY_WEBHOOK_SECRET=
+TESLA_TELEMETRY_STALE_AFTER_SECONDS=300
+TESLA_TELEMETRY_FRESHNESS_SECONDS=120
+TESLA_PARTNER_TOKEN=
 ```
 
 > **리전(`TESLA_FLEET_API_REGION`)** — OAuth `audience`와 Fleet API base URL에 사용된다.
@@ -294,6 +299,18 @@ Invoke-RestMethod -Method POST http://localhost:3000/api/sync/vehicles
 ### 5.4 주기 폴링
 - 로컬: `GET /api/vehicles` 호출 시 `TESLA_SYNC_POLL_INTERVAL_MINUTES`(기본 3분) 경과하면 자동 sync
 - 배포(Vercel Cron 예시): `POST /api/sync/vehicles` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET`
+- Telemetry 활성 시 최근 수신 차량은 `vehicle_data` 호출을 건너뛰고 REST는 fallback으로만 사용
+
+### 5.4.1 Fleet Telemetry (Phase 4.2)
+
+| 항목 | 값 |
+|------|-----|
+| Webhook 수신 | `POST /api/tesla/telemetry` |
+| 인증(선택) | `Authorization: Bearer $TESLA_TELEMETRY_WEBHOOK_SECRET` 또는 `x-telemetry-secret` 헤더 |
+| 후처리 job | `POST /api/internal/telemetry/process` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET` |
+| 구독 해제 | unlink 시 `DELETE /api/1/vehicles/{vin}/fleet_telemetry_config` (`TESLA_PARTNER_TOKEN` 또는 사용자 토큰) |
+
+상세: [requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md)
 
 ### 5.5 Tesla Partner Register (Phase 3.5) — 412 해결
 
