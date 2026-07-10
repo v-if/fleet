@@ -6,6 +6,7 @@ import { getValidTeslaAccessToken } from "@/lib/tesla/auth";
 
 import { unsubscribeFleetTelemetryForVin } from "./client";
 import { isTelemetryEnabled } from "./config";
+import { refreshTelemetryMetadataCounts } from "./ingress";
 
 export type UnsubscribeTelemetryResult = {
   ok: boolean;
@@ -116,4 +117,77 @@ export async function unsubscribeVehicleTelemetry(
     stub: result.stub,
     error: result.error,
   };
+}
+
+export async function ensureTelemetrySubscriptionsForAccount(teslaAccountId: string) {
+  if (!isTelemetryEnabled()) {
+    return { ensured: 0 };
+  }
+
+  const vehicles = await prisma.vehicle.findMany({
+    where: {
+      teslaAccountId,
+      oemVehicleId: { not: null },
+      unlinkedAt: null,
+      isDeleted: false,
+    },
+    select: {
+      id: true,
+      oemVehicleId: true,
+    },
+  });
+
+  let ensured = 0;
+
+  for (const vehicle of vehicles) {
+    if (!vehicle.oemVehicleId) continue;
+
+    await prisma.telemetrySubscription.upsert({
+      where: { vehicleId: vehicle.id },
+      update: {
+        vin: vehicle.oemVehicleId,
+        teslaAccountId,
+        active: true,
+        unsubscribedAt: null,
+        lastError: null,
+      },
+      create: {
+        vehicleId: vehicle.id,
+        vin: vehicle.oemVehicleId,
+        teslaAccountId,
+        active: true,
+      },
+    });
+    ensured += 1;
+  }
+
+  await refreshTelemetryMetadataCounts();
+
+  await createAuditLogWithApiCall(
+    {
+      action: "TELEMETRY_SUBSCRIBE_ENSURE",
+      targetType: "TeslaAccount",
+      targetId: teslaAccountId,
+      teslaAccountId,
+      status: AuditLogStatus.SUCCESS,
+      summary: `Telemetry 구독 대상 등록: ${ensured}대 (webhook 수신 대기)`,
+      metadata: {
+        vehicleCount: ensured,
+        note: "Tesla fleet_telemetry_config는 Vehicle Command Proxy/텔레메트리 서버에서 별도 구성",
+      },
+    },
+    {
+      direction: ApiCallDirection.INBOUND,
+      system: "FMS",
+      teslaAccountId,
+      method: "INTERNAL",
+      url: "/internal/telemetry/subscribe",
+      path: "/internal/telemetry/subscribe",
+      statusCode: 200,
+      success: true,
+      responseBody: { ensured },
+    },
+  );
+
+  return { ensured };
 }

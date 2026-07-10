@@ -10,7 +10,12 @@ import { requireApiSession } from "@/lib/auth-session";
 import { disconnectTeslaAccount, getStoredTeslaToken, isTeslaConnected } from "@/lib/tesla/auth";
 import { isTeslaConfigured } from "@/lib/tesla/config";
 import { getTelemetryMetadata } from "@/lib/tesla/telemetry/ingress";
-import { isTelemetryEnabled } from "@/lib/tesla/telemetry/config";
+import {
+  getTelemetryWebhookUrl,
+  isRestAutoSyncEnabled,
+  isTelemetryEnabled,
+  isTelemetryPrimaryMode,
+} from "@/lib/tesla/telemetry/config";
 import { getSyncMetadata } from "@/lib/vehicle-sync";
 import { getVehicleProviderName } from "@/lib/vehicle-providers";
 
@@ -45,6 +50,9 @@ export async function GET() {
       : null,
     telemetry: {
       enabled: isTelemetryEnabled(),
+      primaryMode: isTelemetryPrimaryMode(),
+      restAutoSync: isRestAutoSyncEnabled(),
+      webhookUrl: getTelemetryWebhookUrl(),
       lastReceivedAt: telemetryMetadata?.lastReceivedAt?.toISOString() ?? null,
       lastProcessedAt: telemetryMetadata?.lastProcessedAt?.toISOString() ?? null,
       lastError: telemetryMetadata?.lastError ?? null,

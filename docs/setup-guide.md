@@ -156,8 +156,16 @@ pnpm add @tanstack/react-query
 - `src/hooks/use-vehicles.ts` — `/api/vehicles`, `/api/vehicles/[id]`
 
 ### 4.2 Kakao Maps
-- [Kakao Developers](https://developers.kakao.com)에서 앱 생성 → JavaScript 키 발급
-- `.env`에 `NEXT_PUBLIC_KAKAO_MAP_KEY` 설정
+- [Kakao Developers](https://developers.kakao.com)에서 앱 생성 → **JavaScript 키** 발급
+- `.env` / Vercel에 `NEXT_PUBLIC_KAKAO_MAP_KEY` 설정
+- **Web 플랫폼 사이트 도메인** 등록 (미등록 시 배포 환경에서 SDK `401 domain mismatched` → `script.onerror`)
+  1. [내 애플리케이션](https://developers.kakao.com/console/app) → 앱 선택
+  2. **앱 설정 → 플랫폼** → Web 플랫폼 추가
+  3. 사이트 도메인에 아래를 등록 (scheme 제외, 도메인만)
+     - `http://localhost:3000` (로컬)
+     - `bori-fleet.vercel.app` (Vercel Production)
+     - Preview 배포 URL을 쓸 경우 해당 `*.vercel.app` 도메인도 추가
+  4. Vercel **Production·Preview** 환경변수에 동일 JavaScript 키 설정 후 **Redeploy**
 - **키가 없으면** `SimpleMapFallback` 간이 지도로 자동 전환 (데모 가능)
 
 ### 4.3 주요 페이지
@@ -256,7 +264,9 @@ TESLA_TELEMETRY_ENABLED=true
 TESLA_TELEMETRY_WEBHOOK_SECRET=
 TESLA_TELEMETRY_STALE_AFTER_SECONDS=300
 TESLA_TELEMETRY_FRESHNESS_SECONDS=120
+TESLA_REST_AUTO_SYNC_ENABLED=false
 TESLA_PARTNER_TOKEN=
+NEXT_PUBLIC_APP_URL=https://bori-fleet.vercel.app
 ```
 
 > **리전(`TESLA_FLEET_API_REGION`)** — OAuth `audience`와 Fleet API base URL에 사용된다.
@@ -297,9 +307,10 @@ Invoke-RestMethod -Method POST http://localhost:3000/api/sync/vehicles
 전환 후 서버 재시작 → `pnpm db:seed` 또는 설정 화면에서 **지금 동기화**.
 
 ### 5.4 주기 폴링
-- 로컬: `GET /api/vehicles` 호출 시 `TESLA_SYNC_POLL_INTERVAL_MINUTES`(기본 3분) 경과하면 자동 sync
-- 배포(Vercel Cron 예시): `POST /api/sync/vehicles` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET`
-- Telemetry 활성 시 최근 수신 차량은 `vehicle_data` 호출을 건너뛰고 REST는 fallback으로만 사용
+- 로컬: `GET /api/vehicles` 호출 시 `TESLA_SYNC_POLL_INTERVAL_MINUTES`(기본 3분) 경과하면 자동 sync — **Telemetry primary 모드에서는 비활성**
+- 배포(Vercel Cron 예시): `POST /api/sync/vehicles` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET` — Telemetry primary 시 registry-only(차량 목록만)
+- REST full sync(폴링 fallback): `POST /api/sync/vehicles?fallback=1` 또는 `TESLA_REST_AUTO_SYNC_ENABLED=true`
+- Telemetry primary(`TESLA_TELEMETRY_ENABLED=true`, `TESLA_REST_AUTO_SYNC_ENABLED=false` 기본): `VehicleSnapshot`은 webhook `/api/tesla/telemetry` 수신으로만 갱신
 
 ### 5.4.1 Fleet Telemetry (Phase 4.2)
 
@@ -504,7 +515,7 @@ Vercel 대시보드 → **bori-fleet** 프로젝트 → **Settings → Environme
 | `VEHICLE_DATA_PROVIDER` | Production, Preview | `mock` 또는 `tesla` |
 | `TESLA_FLEET_API_*` | Production, Preview | Phase 3와 동일 |
 | `TESLA_FLEET_API_REDIRECT_URI` | Production | `https://bori-fleet.vercel.app/api/auth/tesla/callback` |
-| `NEXT_PUBLIC_KAKAO_MAP_KEY` | Production, Preview | Kakao JS 키 (배포 도메인 등록) |
+| `NEXT_PUBLIC_KAKAO_MAP_KEY` | Production, Preview | Kakao **JavaScript** 키 — Web 플랫폼에 `bori-fleet.vercel.app` 등록 필수 |
 
 1. 변수 저장 후 **Deployments → Redeploy** (최신 main)
 2. 빌드 로그에서 `prisma migrate deploy` 성공 확인

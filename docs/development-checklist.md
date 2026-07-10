@@ -639,7 +639,9 @@
 
 > **설계 메모 (2026-07-09)**: MVP의 Tesla 실데이터는 polling 기반이지만, 비용·실시간성 문제를 줄이기 위해 Phase 4.2에서 webhook 수신 + 비동기 처리 구조로 전환한다.
 >
-> **구현 메모 (2026-07-10)**: `POST /api/tesla/telemetry` ingress 저장 후 `after()` 비동기 처리, `TelemetryIngress`/`TelemetryMetadata`/`TelemetrySubscription` 모델 추가, `VehicleSnapshot`에 `lastTelemetryAt`·`isAsleepInferred`·`ASLEEP` 상태 반영. REST sync는 Telemetry fresh 차량의 `vehicle_data` 호출을 건너뛰는 fallback 정책 적용. unlink 시 `DELETE /fleet_telemetry_config` + 감사 로그. 설정 화면 Telemetry 패널 추가.
+> **구현 메모 (2026-07-10)**: `POST /api/tesla/telemetry` ingress 저장 후 `after()` 비동기 처리, `TelemetryIngress`/`TelemetryMetadata`/`TelemetrySubscription` 모델 추가, `VehicleSnapshot`에 `lastTelemetryAt`·`isAsleepInferred`·`ASLEEP` 상태 반영. unlink 시 `DELETE /fleet_telemetry_config` + 감사 로그. 설정 화면 Telemetry 패널 추가.
+>
+> **운영 메모 (2026-07-10)**: `TESLA_TELEMETRY_ENABLED=true` + `TESLA_REST_AUTO_SYNC_ENABLED=false`(기본)이면 REST 주기 폴링·`VehicleSnapshot` REST 적재 중지. Telemetry webhook만 스냅샷 갱신. 수동 REST 복구는 `/api/sync/vehicles?fallback=1`.
 
 ---
 
@@ -719,4 +721,5 @@
 | 2026-07-09 | Phase 4.2 추가 — Tesla Fleet Telemetry webhook/비동기 처리/Asleep 추론 요구사항·체크리스트 ([requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md)) |
 | 2026-07-10 | Phase 4.2 완료 — Telemetry webhook/ingress/비동기 처리, ASLEEP 추론, polling fallback 축소, unlink 구독 해제, 설정 화면 Telemetry 상태 |
 | 2026-07-10 | 배포 URL 변경 — `fleet-tau.vercel.app` → `bori-fleet.vercel.app` |
+| 2026-07-10 | Telemetry primary 운영 — REST 자동 폴링 중지, registry-only sync, webhook 전용 VehicleSnapshot 갱신 |
 

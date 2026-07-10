@@ -9,6 +9,7 @@ import {
   sanitizeHeaders,
 } from "@/lib/audit-log";
 import { exchangeAuthorizationCode } from "@/lib/tesla/auth";
+import { isTelemetryPrimaryMode } from "@/lib/tesla/telemetry/config";
 import { syncVehiclesFromProvider } from "@/lib/vehicle-sync";
 
 const STATE_COOKIE = "tesla_oauth_state";
@@ -161,7 +162,9 @@ export async function GET(request: Request) {
   const redirectBase = new URL(returnTo, request.url);
   try {
     await exchangeAuthorizationCode(code, userId);
-    await syncVehiclesFromProvider(userId);
+    await syncVehiclesFromProvider(userId, {
+      mode: isTelemetryPrimaryMode() ? "registry" : "auto",
+    });
     await createAuditLogWithApiCall(
       {
         actorUserId: userId,

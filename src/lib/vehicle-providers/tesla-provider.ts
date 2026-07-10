@@ -14,6 +14,8 @@ import type {
 
 type FetchVehiclesOptions = {
   skipVehicleData?: (vin: string) => Promise<boolean> | boolean;
+  /** Telemetry primary: list + fleet_status만 조회, vehicle_data 미호출 */
+  registryOnly?: boolean;
 };
 
 type FetchVehiclesResult = {
@@ -75,9 +77,9 @@ export class TeslaVehicleProvider implements VehicleDataProvider {
     let skippedVehicleDataCount = 0;
 
     for (const vehicle of vehicles) {
-      const shouldSkipVehicleData = options.skipVehicleData
-        ? await options.skipVehicleData(vehicle.vin)
-        : false;
+      const shouldSkipVehicleData =
+        options.registryOnly ||
+        (options.skipVehicleData ? await options.skipVehicleData(vehicle.vin) : false);
 
       if (shouldSkipVehicleData) {
         skippedVehicleDataCount += 1;

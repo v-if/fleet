@@ -13,6 +13,7 @@ type SimpleMapFallbackProps = {
   onSelect?: (id: string) => void;
   height?: number;
   hero?: boolean;
+  reason?: "no_key" | "load_failed" | "no_coords";
 };
 
 type PositionedMapVehicle = MapVehicle & {
@@ -40,6 +41,7 @@ export function SimpleMapFallback({
   onSelect,
   height = 420,
   hero = false,
+  reason = "no_key",
 }: SimpleMapFallbackProps) {
   const markers = useMemo(
     () =>
@@ -107,9 +109,20 @@ export function SimpleMapFallback({
       </div>
       {!hero ? (
         <p className="text-sm text-muted-foreground">
-          Kakao Maps API 키가 없어 간이 지도로 표시 중입니다.{" "}
-          <code className="rounded bg-muted px-1 py-0.5">NEXT_PUBLIC_KAKAO_MAP_KEY</code>를
-          설정하면 실제 지도로 전환됩니다.
+          {reason === "load_failed" ? (
+            <>
+              Kakao Maps SDK를 불러오지 못해 간이 지도로 표시 중입니다. Kakao Developers 앱의{" "}
+              <strong>Web 플랫폼 사이트 도메인</strong>에 현재 배포 URL(예:{" "}
+              <code className="rounded bg-muted px-1 py-0.5">bori-fleet.vercel.app</code>)이
+              등록되어 있는지 확인하세요.
+            </>
+          ) : (
+            <>
+              Kakao Maps API 키가 없어 간이 지도로 표시 중입니다.{" "}
+              <code className="rounded bg-muted px-1 py-0.5">NEXT_PUBLIC_KAKAO_MAP_KEY</code>를
+              설정하면 실제 지도로 전환됩니다.
+            </>
+          )}
         </p>
       ) : null}
       {vehicles.length > 0 && markers.length === 0 ? (

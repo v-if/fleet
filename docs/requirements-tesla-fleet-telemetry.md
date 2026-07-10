@@ -305,10 +305,9 @@ Telemetry는 비용·운영 영향이 있으므로 감사 로그 대상이다.
 | 후처리 job | `POST /api/internal/telemetry/process` (cron secret) |
 | Snapshot 확장 | `lastTelemetryAt`, `lastRestSyncAt`, `telemetrySource`, `isAsleepInferred`, `sleepInferredAt` |
 | 상태 | `VehicleStatus.ASLEEP` enum 추가, Telemetry 공백 시 추론 |
-| Polling fallback | Telemetry fresh 차량은 `vehicle_data` skip, `listVehicles`+`fleet_status` 유지 |
-| Unlink | `DELETE /api/1/vehicles/{vin}/fleet_telemetry_config` + `TelemetrySubscription` 비활성 |
-| UI | 설정 화면 Telemetry 패널, 목록/지도 `취침 중` 배지 |
-| 환경변수 | `TESLA_TELEMETRY_ENABLED`, `TESLA_TELEMETRY_WEBHOOK_SECRET`, `TESLA_TELEMETRY_STALE_AFTER_SECONDS`, `TESLA_PARTNER_TOKEN`(선택) |
+| Polling fallback | Telemetry primary 시 REST 자동 폴링 중지(`TESLA_REST_AUTO_SYNC_ENABLED=false` 기본), 수동 `?fallback=1`만 full REST |
+| Registry sync | Telemetry primary에서 `listVehicles`+`fleet_status`만 — **VehicleSnapshot 미생성** |
+| 환경변수 | `TESLA_TELEMETRY_ENABLED`, `TESLA_REST_AUTO_SYNC_ENABLED`, `NEXT_PUBLIC_APP_URL`, `TESLA_TELEMETRY_WEBHOOK_SECRET`, `TESLA_PARTNER_TOKEN`(선택) |
 
 ---
 
@@ -328,3 +327,4 @@ Telemetry는 비용·운영 영향이 있으므로 감사 로그 대상이다.
 |------|------|
 | 2026-07-09 | 초안 메모를 정식 요구사항 문서로 확장 — Fleet Telemetry 전환 배경, webhook/비동기 처리, Asleep 상태, polling fallback 요구사항 정리 |
 | 2026-07-10 | Phase 4.2 구현 반영 — ingress/비동기 처리/ASLEEP 추론/polling fallback/unlink 해제/설정 UI |
+| 2026-07-10 | Telemetry primary 운영 — REST 자동 폴링 중지, registry sync, webhook 전용 VehicleSnapshot |

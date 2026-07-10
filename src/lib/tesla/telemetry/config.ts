@@ -6,6 +6,55 @@ export function isTelemetryEnabled(): boolean {
   return true;
 }
 
+/** Telemetry 활성 시 REST 주기 폴링 자동 실행 여부 (기본: 비활성) */
+export function isRestAutoSyncEnabled(): boolean {
+  if (!isTelemetryEnabled()) {
+    return true;
+  }
+
+  const value = process.env.TESLA_REST_AUTO_SYNC_ENABLED;
+  if (value === "true" || value === "1") {
+    return true;
+  }
+  if (value === "false" || value === "0") {
+    return false;
+  }
+
+  return false;
+}
+
+/** Telemetry webhook이 실데이터 1차 소스인 운영 모드 */
+export function isTelemetryPrimaryMode(): boolean {
+  return isTelemetryEnabled() && !isRestAutoSyncEnabled();
+}
+
+export type VehicleSyncMode = "full" | "registry";
+
+export function resolveVehicleSyncMode(options?: {
+  forceFallback?: boolean;
+  mode?: VehicleSyncMode | "auto";
+}): VehicleSyncMode {
+  if (options?.forceFallback || options?.mode === "full") {
+    return "full";
+  }
+  if (options?.mode === "registry") {
+    return "registry";
+  }
+  return isTelemetryPrimaryMode() ? "registry" : "full";
+}
+
+export function getTelemetryWebhookUrl(): string | null {
+  const explicit = process.env.TESLA_TELEMETRY_WEBHOOK_URL?.trim();
+  if (explicit) return explicit;
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (appUrl) {
+    return `${appUrl.replace(/\/$/, "")}/api/tesla/telemetry`;
+  }
+
+  return null;
+}
+
 export function getTelemetryWebhookSecret(): string | null {
   return process.env.TESLA_TELEMETRY_WEBHOOK_SECRET ?? null;
 }

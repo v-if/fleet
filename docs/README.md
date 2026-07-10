@@ -93,4 +93,4 @@
 | 2026-07-08 | requirements-virtual-vehicle-seeding.md — `차량 추가(가상)` 데모용 가상 차량 시드 요구사항 정의 |
 | 2026-07-09 | requirements-tesla-fleet-telemetry.md — Tesla Fleet Telemetry 전환 요구사항 문서 추가 |
 | 2026-07-10 | Phase 4.2 완료 — Telemetry webhook/ingress/비동기 처리, ASLEEP 추론, polling fallback, 설정 화면 Telemetry 상태 |
-| 2026-07-10 | 배포 URL 변경 — `fleet-tau.vercel.app` → `bori-fleet.vercel.app` |
+| 2026-07-10 | Telemetry primary 운영 — REST 자동 폴링 중지, registry-only sync, webhook 전용 VehicleSnapshot 갱신 |

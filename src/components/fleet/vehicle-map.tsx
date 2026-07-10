@@ -160,6 +160,9 @@ export function VehicleMap({
   const vehiclesRef = useRef<PositionedMapVehicle[]>([]);
   const [ready, setReady] = useState(false);
   const [useFallback, setUseFallback] = useState(false);
+  const [fallbackReason, setFallbackReason] = useState<"no_key" | "load_failed" | "no_coords">(
+    "no_key",
+  );
 
   const vehicleSignature = useMemo(
     () =>
@@ -238,6 +241,7 @@ export function VehicleMap({
       .catch((error) => {
         console.warn("Kakao map unavailable, using fallback:", error);
         if (!cancelled) {
+          setFallbackReason("load_failed");
           setUseFallback(true);
           setReady(false);
         }
@@ -249,6 +253,12 @@ export function VehicleMap({
   }, [apiKey, centerOnSelected, hero, selectedId, vehicleSignature]);
 
   if (!apiKey || useFallback || validVehicles.length === 0) {
+    const reason = !apiKey
+      ? "no_key"
+      : validVehicles.length === 0
+        ? "no_coords"
+        : fallbackReason;
+
     return (
       <div className="space-y-3">
         <SimpleMapFallback
@@ -257,6 +267,7 @@ export function VehicleMap({
           onSelect={onSelect}
           height={height}
           hero={hero}
+          reason={reason}
         />
         {vehicles.length > 0 && validVehicles.length === 0 ? (
           <p className="text-sm text-muted-foreground">

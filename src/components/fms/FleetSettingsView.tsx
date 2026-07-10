@@ -24,6 +24,9 @@ type TeslaStatus = {
   } | null;
   telemetry: {
     enabled: boolean;
+    primaryMode: boolean;
+    restAutoSync: boolean;
+    webhookUrl: string | null;
     lastReceivedAt: string | null;
     lastProcessedAt: string | null;
     lastError: string | null;
@@ -47,10 +50,10 @@ export function FleetSettingsView() {
     queryFn: fetchTeslaStatus,
   });
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isFallbackSyncing, setIsFallbackSyncing] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
 
-  const teslaResult = searchParams.get("tesla");
-  const teslaMessage = searchParams.get("message");
+  const telemetryPrimary = status?.telemetry.primaryMode ?? false;
 
   async function handleSync() {
     setIsRefreshing(true);
@@ -62,6 +65,20 @@ export function FleetSettingsView() {
       setIsRefreshing(false);
     }
   }
+
+  async function handleFallbackSync() {
+    setIsFallbackSyncing(true);
+    try {
+      await fetch("/api/sync/vehicles?fallback=1", { method: "POST" });
+      await refreshVehicles();
+      await queryClient.invalidateQueries({ queryKey: ["tesla-status"] });
+    } finally {
+      setIsFallbackSyncing(false);
+    }
+  }
+
+  const teslaResult = searchParams.get("tesla");
+  const teslaMessage = searchParams.get("message");
 
   async function handleDisconnect() {
     setIsDisconnecting(true);
@@ -145,13 +162,28 @@ export function FleetSettingsView() {
                   </Button>
                 )}
                 <Button size="sm" variant="outline" onClick={() => void handleSync()} disabled={isRefreshing}>
-                  {isRefreshing ? "동기화 중..." : "지금 동기화"}
+                  {isRefreshing
+                    ? "동기화 중..."
+                    : telemetryPrimary
+                      ? "차량 목록 동기화"
+                      : "지금 동기화"}
                 </Button>
+                {telemetryPrimary ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void handleFallbackSync()}
+                    disabled={isFallbackSyncing}
+                  >
+                    {isFallbackSyncing ? "REST 동기화 중..." : "REST fallback 동기화"}
+                  </Button>
+                ) : null}
               </div>
 
               <p className="text-theme-xs text-gray-400 dark:text-gray-500">
-                `VEHICLE_DATA_PROVIDER=tesla`일 때 OAuth 연결 후 실데이터를 수집합니다. Telemetry가
-                활성화되면 webhook 수신을 우선하고 REST `vehicle_data` 호출은 fallback으로 축소됩니다.
+                {telemetryPrimary
+                  ? "Telemetry primary 모드: REST 주기 폴링은 중지되며 VehicleSnapshot은 webhook 수신으로만 갱신됩니다. 차량 목록 동기화는 Tesla 계정 차량 등록·해제만 반영합니다."
+                  : "`VEHICLE_DATA_PROVIDER=tesla`일 때 OAuth 연결 후 REST 폴링으로 실데이터를 수집합니다."}
               </p>
             </div>
           )}
@@ -170,6 +202,12 @@ export function FleetSettingsView() {
                 <Badge color={status?.telemetry.enabled ? "success" : "light"}>
                   {status?.telemetry.enabled ? "Telemetry 활성" : "Telemetry 비활성"}
                 </Badge>
+                {status?.telemetry.primaryMode ? (
+                  <Badge color="success">Telemetry Primary</Badge>
+                ) : null}
+                {!status?.telemetry.restAutoSync && status?.telemetry.enabled ? (
+                  <Badge color="info">REST 폴링 중지</Badge>
+                ) : null}
                 {(status?.telemetry.pendingIngressCount ?? 0) > 0 ? (
                   <Badge color="warning">
                     대기 {status?.telemetry.pendingIngressCount}건
@@ -203,7 +241,8 @@ export function FleetSettingsView() {
               ) : null}
 
               <p className="text-theme-xs text-gray-400 dark:text-gray-500">
-                Webhook endpoint: `/api/tesla/telemetry` · 후처리 job: `/api/internal/telemetry/process`
+                Webhook: {status?.telemetry.webhookUrl ?? "`/api/tesla/telemetry`"} · 후처리:{" "}
+                `/api/internal/telemetry/process`
               </p>
             </div>
           )}

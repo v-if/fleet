@@ -2,8 +2,13 @@ import {
   getActiveTeslaAccountForUser,
   getAnyActiveTeslaAccount,
 } from "@/lib/tesla/auth";
-import { isTelemetryEnabled } from "@/lib/tesla/telemetry/config";
+import {
+  isTelemetryEnabled,
+  resolveVehicleSyncMode,
+  type VehicleSyncMode,
+} from "@/lib/tesla/telemetry/config";
 import { isTelemetryFresh } from "@/lib/tesla/telemetry/processor";
+import { ensureTelemetrySubscriptionsForAccount } from "@/lib/tesla/telemetry/subscription";
 import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
 import {
@@ -19,8 +24,15 @@ export type SyncVehiclesResult = {
   vehicleCount: number;
   eventCount: number;
   lastSyncedAt: string;
+  syncMode?: VehicleSyncMode;
   skippedVehicleDataCount?: number;
+  snapshotsWritten?: number;
   error?: string;
+};
+
+export type SyncVehiclesOptions = {
+  forceFallback?: boolean;
+  mode?: VehicleSyncMode | "auto";
 };
 
 type UpsertSnapshotOptions = {
@@ -49,6 +61,55 @@ async function getLatestTelemetryAt(
   });
 
   return vehicle?.snapshots[0]?.lastTelemetryAt ?? null;
+}
+
+async function upsertVehicleRegistry(
+  snapshot: VehicleSnapshotData,
+  teslaAccountId: string | null,
+) {
+  const existing =
+    teslaAccountId && snapshot.oemVehicleId
+      ? await prisma.vehicle.findFirst({
+          where: {
+            teslaAccountId,
+            oemVehicleId: snapshot.oemVehicleId,
+          },
+        })
+      : null;
+
+  if (existing) {
+    return prisma.vehicle.update({
+      where: { id: existing.id },
+      data: {
+        plateNumber: snapshot.plateNumber,
+        model: snapshot.model,
+        year: snapshot.year,
+        oemVehicleId: snapshot.oemVehicleId,
+        teslaAccountId,
+        unlinkedAt: null,
+        isDeleted: false,
+      },
+    });
+  }
+
+  return prisma.vehicle.upsert({
+    where: { plateNumber: snapshot.plateNumber },
+    update: {
+      model: snapshot.model,
+      year: snapshot.year,
+      oemVehicleId: snapshot.oemVehicleId,
+      teslaAccountId,
+      unlinkedAt: null,
+      isDeleted: false,
+    },
+    create: {
+      plateNumber: snapshot.plateNumber,
+      model: snapshot.model,
+      year: snapshot.year,
+      oemVehicleId: snapshot.oemVehicleId,
+      teslaAccountId,
+    },
+  });
 }
 
 async function upsertSnapshot(
@@ -245,9 +306,14 @@ async function softUnlinkMissingTeslaVehicles(
   }
 }
 
-export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVehiclesResult> {
+export async function syncVehiclesFromProvider(
+  userId?: string,
+  options: SyncVehiclesOptions = {},
+): Promise<SyncVehiclesResult> {
   const requestedProvider = getVehicleProviderName();
   const lastSyncedAt = new Date();
+  const syncMode = resolveVehicleSyncMode(options);
+  const registryOnly = syncMode === "registry";
 
   let resolvedUserId = userId;
   let teslaAccountId: string | null = null;
@@ -285,6 +351,8 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
         vehicleCount: activeCount,
         eventCount: 0,
         lastSyncedAt: lastSyncedAt.toISOString(),
+        syncMode,
+        snapshotsWritten: 0,
       };
     }
 
@@ -312,7 +380,10 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
       : undefined;
 
     if (provider instanceof TeslaVehicleProvider) {
-      const result = await provider.fetchVehiclesWithMeta({ skipVehicleData });
+      const result = await provider.fetchVehiclesWithMeta({
+        registryOnly,
+        skipVehicleData: registryOnly ? undefined : skipVehicleData,
+      });
       snapshots = result.snapshots;
       skippedVehicleDataCount = result.skippedVehicleDataCount;
     } else {
@@ -329,7 +400,14 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
     await resetMockFleet();
   }
 
+  let snapshotsWritten = 0;
+
   for (const snapshot of snapshots) {
+    if (registryOnly && effectiveProvider === "tesla") {
+      await upsertVehicleRegistry(snapshot, teslaAccountId);
+      continue;
+    }
+
     const lastTelemetryAt = await getLatestTelemetryAt(
       effectiveProvider === "tesla" ? teslaAccountId : null,
       snapshot.oemVehicleId,
@@ -345,6 +423,11 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
       preserveTelemetryFields,
       existingLastTelemetryAt: lastTelemetryAt,
     });
+    snapshotsWritten += 1;
+  }
+
+  if (registryOnly && effectiveProvider === "tesla" && teslaAccountId) {
+    await ensureTelemetrySubscriptionsForAccount(teslaAccountId);
   }
 
   if (effectiveProvider === "tesla" && teslaAccountId) {
@@ -357,16 +440,18 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
   }
 
   let events: VehicleEventData[] = [];
-  try {
-    events = await fetchProviderEvents(effectiveProvider, resolvedUserId);
-  } catch (error) {
-    console.warn("Failed to fetch provider events:", error);
-    events = [];
-  }
+  if (!registryOnly) {
+    try {
+      events = await fetchProviderEvents(effectiveProvider, resolvedUserId);
+    } catch (error) {
+      console.warn("Failed to fetch provider events:", error);
+      events = [];
+    }
 
-  await replaceEvents(events, {
-    teslaAccountId: effectiveProvider === "tesla" ? teslaAccountId : null,
-  });
+    await replaceEvents(events, {
+      teslaAccountId: effectiveProvider === "tesla" ? teslaAccountId : null,
+    });
+  }
 
   await prisma.syncMetadata.upsert({
     where: { id: "default" },
@@ -395,7 +480,9 @@ export async function syncVehiclesFromProvider(userId?: string): Promise<SyncVeh
     vehicleCount: activeCount,
     eventCount: events.length,
     lastSyncedAt: lastSyncedAt.toISOString(),
+    syncMode,
     skippedVehicleDataCount,
+    snapshotsWritten,
     error: errorMessage,
   };
 }
@@ -407,6 +494,11 @@ export async function getSyncMetadata() {
 }
 
 export async function shouldAutoSync() {
+  const { isRestAutoSyncEnabled } = await import("@/lib/tesla/telemetry/config");
+  if (!isRestAutoSyncEnabled()) {
+    return false;
+  }
+
   const metadata = await getSyncMetadata();
   if (!metadata?.lastSyncedAt) {
     return true;

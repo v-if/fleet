@@ -50,7 +50,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await syncVehiclesFromProvider(session?.userId);
+    const { searchParams } = new URL(request.url);
+    const forceFallback = searchParams.get("fallback") === "1";
+    const result = await syncVehiclesFromProvider(session?.userId, {
+      forceFallback,
+      mode: forceFallback ? "full" : "auto",
+    });
     await createAuditLogWithApiCall(
       {
         actorUserId: session?.userId ?? null,
