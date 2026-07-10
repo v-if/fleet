@@ -323,10 +323,10 @@ Phase 3에서 OAuth “계정 연결됨”이어도, Fleet API 조회 시 아래
 > OAuth(사용자 동의)와 Register(앱 등록)는 **별개**다. Register 없이는 Mock 폴백만 동작한다.
 
 #### 5.5.1 사전 준비
-1. **Vercel 등에 배포**해 공개 HTTPS 도메인 확보 (예: `fleet-xxx.vercel.app`)
+1. **Vercel 등에 배포**해 공개 HTTPS 도메인 확보 (예: `bori-fleet.vercel.app`)
 2. Tesla 포털에 배포 도메인 추가
-   - 출처: `https://fleet-xxx.vercel.app`
-   - 리디렉션 URI: `https://fleet-xxx.vercel.app/api/auth/tesla/callback`
+   - 출처: `https://bori-fleet.vercel.app`
+   - 리디렉션 URI: `https://bori-fleet.vercel.app/api/auth/tesla/callback`
 3. 배포 환경변수에 `TESLA_FLEET_API_*`, `VEHICLE_DATA_PROVIDER=tesla` 설정
 
 #### 5.5.2 EC 키 쌍 생성
@@ -347,7 +347,7 @@ https://{domain}/.well-known/appspecific/com.tesla.3p.public-key.pem
 Vercel 예: `public/.well-known/appspecific/com.tesla.3p.public-key.pem` 에 파일 배치 후 배포.
 
 > 진행 상태 (2026-07-07): 프로젝트에 `public/.well-known/appspecific/com.tesla.3p.public-key.pem` 파일 배치 완료,  
-> `https://fleet-tau.vercel.app/.well-known/appspecific/com.tesla.3p.public-key.pem` 접근 확인 완료.
+> `https://bori-fleet.vercel.app/.well-known/appspecific/com.tesla.3p.public-key.pem` 접근 확인 완료.
 
 #### 5.5.4 Partner 토큰 발급 + Register (한국 → `na`)
 
@@ -371,7 +371,7 @@ $partnerToken = $token.access_token
 **2) Register**
 
 ```powershell
-$domain = "fleet-xxx.vercel.app"   # scheme 없이 도메인만
+$domain = "bori-fleet.vercel.app"   # scheme 없이 도메인만
 Invoke-RestMethod -Method POST `
   -Uri "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/partner_accounts" `
   -Headers @{ Authorization = "Bearer $partnerToken" } `
@@ -387,8 +387,8 @@ Invoke-RestMethod `
   -Headers @{ Authorization = "Bearer $partnerToken" }
 ```
 
-> 진행 상태 (2026-07-07): `fleet-tau.vercel.app` 기준 Partner token 발급, `POST /api/1/partner_accounts`,  
-> `GET /api/1/partner_accounts/public_key?domain=fleet-tau.vercel.app` 확인까지 완료.
+> 진행 상태 (2026-07-07): `bori-fleet.vercel.app` 기준 Partner token 발급, `POST /api/1/partner_accounts`,  
+> `GET /api/1/partner_accounts/public_key?domain=bori-fleet.vercel.app` 확인까지 완료.
 
 #### 5.5.5 연동 재검증
 1. 배포 URL `/settings` → Tesla 계정 연결
@@ -428,7 +428,7 @@ Phase 3.6은 **DB만** 전환한다. Supabase Auth는 Phase 4.
 
 **로컬 실행 완료 (2026-07-07)**: Supabase dev 연결, migrate·시드(Mock 12대), `localhost/api/vehicles` 200.
 
-**Vercel 배포 완료 (2026-07-07)**: env 등록·재배포, `fleet-tau.vercel.app/api/vehicles` 200, mock·tesla 대시보드 확인.
+**Vercel 배포 완료 (2026-07-07)**: env 등록·재배포, `bori-fleet.vercel.app/api/vehicles` 200, mock·tesla 대시보드 확인.
 
 #### 5.7.1 Supabase 프로젝트 생성 (처음부터)
 
@@ -480,7 +480,7 @@ pnpm dev
 Invoke-RestMethod http://localhost:3000/api/vehicles   # 200 + JSON 확인 ✅ (2026-07-07)
 ```
 
-> Vercel 배포 검증 완료 (2026-07-07): `https://fleet-tau.vercel.app/api/vehicles` → HTTP 200, mock·tesla 연동 확인.
+> Vercel 배포 검증 완료 (2026-07-07): `https://bori-fleet.vercel.app/api/vehicles` → HTTP 200, mock·tesla 연동 확인.
 
 #### 5.7.2 Prisma (코드 반영 완료)
 
@@ -495,7 +495,7 @@ pnpm db:seed     # 시드만
 
 #### 5.7.3 Vercel 환경 변수
 
-Vercel 대시보드 → **fleet-tau** 프로젝트 → **Settings → Environment Variables**:
+Vercel 대시보드 → **bori-fleet** 프로젝트 → **Settings → Environment Variables**:
 
 | 변수 | Environment | 값 |
 |------|-------------|-----|
@@ -503,7 +503,7 @@ Vercel 대시보드 → **fleet-tau** 프로젝트 → **Settings → Environmen
 | `DIRECT_URL` | Production, Preview | Supabase **direct** URL (5432) |
 | `VEHICLE_DATA_PROVIDER` | Production, Preview | `mock` 또는 `tesla` |
 | `TESLA_FLEET_API_*` | Production, Preview | Phase 3와 동일 |
-| `TESLA_FLEET_API_REDIRECT_URI` | Production | `https://fleet-tau.vercel.app/api/auth/tesla/callback` |
+| `TESLA_FLEET_API_REDIRECT_URI` | Production | `https://bori-fleet.vercel.app/api/auth/tesla/callback` |
 | `NEXT_PUBLIC_KAKAO_MAP_KEY` | Production, Preview | Kakao JS 키 (배포 도메인 등록) |
 
 1. 변수 저장 후 **Deployments → Redeploy** (최신 main)
@@ -512,7 +512,7 @@ Vercel 대시보드 → **fleet-tau** 프로젝트 → **Settings → Environmen
 
 재배포 후 확인:
 ```
-https://fleet-tau.vercel.app/api/vehicles  → HTTP 200
+https://bori-fleet.vercel.app/api/vehicles  → HTTP 200
 ```
 
 > **주의**: `DATABASE_URL=file:./dev.db`를 Vercel에 넣어도 해결되지 않는다.
@@ -525,7 +525,7 @@ pnpm build
 pnpm dev
 Invoke-RestMethod http://localhost:3000/api/vehicles
 # 배포 API (Vercel env 설정·재배포 후)
-Invoke-RestMethod https://fleet-tau.vercel.app/api/vehicles   # 200 + JSON 확인 ✅ (2026-07-07)
+Invoke-RestMethod https://bori-fleet.vercel.app/api/vehicles   # 200 + JSON 확인 ✅ (2026-07-07)
 ```
 
 > Windows에서 `prisma generate` EPERM 오류 시 `pnpm dev`를 중지한 뒤 재시도하세요.

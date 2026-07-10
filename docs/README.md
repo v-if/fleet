@@ -31,7 +31,7 @@
 | Tesla 실데이터 | Phase 3 OAuth + **Phase 3.6 DB** + **Phase 3.5 Partner Register** (`412` 해결) |
 | 기술 스택 | TypeScript · Next.js · Supabase(PostgreSQL) · Prisma · Vercel |
 | 로컬 DB (현재) | **Supabase PostgreSQL** — Phase 3.6 로컬·Vercel 연결·API 200 완료 (2026-07-07) |
-| 배포 상태 | `fleet-tau.vercel.app` — API 200, mock·tesla 연동 검증 완료 (dev Supabase 공유) |
+| 배포 상태 | `bori-fleet.vercel.app` — API 200, mock·tesla 연동 검증 완료 (dev Supabase 공유) |
 | 지도 | Kakao Maps API |
 | 방법론 | AI-assisted Lean MVP (Agile Lite) |
 | 1차 목표 | 데모데이 시연 → 이후 투자 시 확장 |
@@ -60,7 +60,7 @@
 | 2026-07-07 | Tesla 리전 정정 — 한국 계정 `na` (Invalid audience 해결) |
 | 2026-07-07 | Phase 3.5 — Tesla Partner Register(412) 체크리스트·가이드 추가 |
 | 2026-07-07 | Phase 3.5 일부 진행 — EC 키 생성, `.well-known` 공개키 파일 배치 |
-| 2026-07-07 | Phase 3.5 Register 진행 — 공개키 URL 확인, `fleet-tau.vercel.app` Partner Register 완료 |
+| 2026-07-07 | Phase 3.5 Register 진행 — 공개키 URL 확인, `bori-fleet.vercel.app` Partner Register 완료 |
 | 2026-07-07 | Phase 3.6 — requirements-db.md 추가, Prisma postgresql 전환·db:setup 스크립트 |
 | 2026-07-07 | Phase 3.6 로컬 완료 — Supabase migrate·시드·API 200 / Phase 3.5 Register·Vercel 배포 대기 |
 | 2026-07-07 | Phase 3.5·3.6 배포 검증 완료 — Vercel env·재배포, API 200, mock·tesla 연동, TPMS PSI 환산 |
@@ -93,3 +93,4 @@
 | 2026-07-08 | requirements-virtual-vehicle-seeding.md — `차량 추가(가상)` 데모용 가상 차량 시드 요구사항 정의 |
 | 2026-07-09 | requirements-tesla-fleet-telemetry.md — Tesla Fleet Telemetry 전환 요구사항 문서 추가 |
 | 2026-07-10 | Phase 4.2 완료 — Telemetry webhook/ingress/비동기 처리, ASLEEP 추론, polling fallback, 설정 화면 Telemetry 상태 |
+| 2026-07-10 | 배포 URL 변경 — `fleet-tau.vercel.app` → `bori-fleet.vercel.app` |

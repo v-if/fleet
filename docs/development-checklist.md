@@ -257,7 +257,7 @@
 > **배경**: Phase 3 OAuth는 사용자(Third-party) 토큰만 발급한다. Fleet API **데이터 조회**(`GET /api/1/vehicles` 등)는 앱이 해당 리전에 **Partner Register** 되어 있어야 한다. 미등록 시 `412` + `must be registered in the current region` 오류가 발생한다.
 
 ### 사전 조건 (인프라)
-- [x] **공개 HTTPS 도메인** 확보 — `fleet-tau.vercel.app` (Vercel 배포, UI 로드 확인)
+- [x] **공개 HTTPS 도메인** 확보 — `bori-fleet.vercel.app` (Vercel 배포, UI 로드 확인)
 - [x] Tesla 포털 `allowed_origins`에 배포 도메인 등록 (2026-07-07)
 - [x] OAuth `redirect_uri`를 배포 URL로 추가 (로컬 URI와 병행, 2026-07-07)
 - [x] EC 키 쌍 생성 (secp256r1 / prime256v1)
@@ -272,13 +272,13 @@
   https://{도메인}/.well-known/appspecific/com.tesla.3p.public-key.pem
   ```
 - [x] 프로젝트 경로 확인: `public/.well-known/appspecific/com.tesla.3p.public-key.pem`
-- [x] 브라우저/curl로 공개키 URL 접근 확인 (`fleet-tau.vercel.app`, 2026-07-07)
+- [x] 브라우저/curl로 공개키 URL 접근 확인 (`bori-fleet.vercel.app`, 2026-07-07)
 
 ### Partner Register (`na` 리전 — 한국)
 - [x] **Partner 토큰** 발급 (`grant_type=client_credentials`, OAuth 사용자 토큰과 별개)
 - [x] `POST https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/partner_accounts` 호출
   - `Authorization: Bearer {partner_token}`
-  - Body: `{"domain": "fleet-tau.vercel.app"}` (scheme 제외)
+  - Body: `{"domain": "bori-fleet.vercel.app"}` (scheme 제외)
 - [x] 등록 확인: `GET /api/1/partner_accounts/public_key?domain={도메인}` (partner 토큰)
 - [ ] (선택) `scripts/tesla-register.ps1` 또는 API 라우트로 register 자동화
 
@@ -302,7 +302,7 @@
 - Register에 **공개 도메인 + 공개키 호스팅** 필수, 로컬만으로는 실데이터 연동 불가
 - Phase 3 Mock 폴백으로 데모데이 일정은 보호 가능 → Register는 배포 직전 스프린트로 분리
 - **선행 조건**: Phase 3.6 **완료** (2026-07-07) — 로컬·Vercel API 200, Register·Tesla 배포 검증 완료
-- **진행 상태 (2026-07-07)**: EC 키 쌍 생성, 공개키 URL 접근 확인, Partner 토큰 발급, `fleet-tau.vercel.app` 도메인 Register 및 public key 조회 확인 완료.
+- **진행 상태 (2026-07-07)**: EC 키 쌍 생성, 공개키 URL 접근 확인, Partner 토큰 발급, `bori-fleet.vercel.app` 도메인 Register 및 public key 조회 확인 완료.
 - **연동 상태 (2026-07-07)**: 로컬·Vercel 모두 Tesla OAuth 연결 + `POST /api/sync/vehicles` 성공, `usedFallback=false`, `provider=tesla` 확인. `fleet_status` 응답 파싱 오류(`map is not a function`)와 API 캐시 이슈 수정 완료.
 - **UI 보정 (2026-07-07)**: Tesla `display_name`이 번호판처럼 보이지 않도록 VIN suffix 기반 식별명(`TESLA-xxxxxx`)으로 고정, 좌표 `0,0`은 `위치 데이터 없음`으로 표시, 지도는 유효 좌표가 없을 때 안내 문구를 노출. TPMS atm→PSI 환산 적용.
 - **알려진 제한**: 실차량 1대, VIN·배터리 확인. 위치는 수면·비주행 시 `0,0`으로 수신되어 지도 마커 미표시 — wake-up·주행 중 telemetry 재확인 필요.
@@ -315,10 +315,10 @@
 > 설치: [setup-guide.md](./setup-guide.md) §5.7
 > 근거: [requirements-db.md](./requirements-db.md) (Vercel 배포 오류 분석·DB 전환 요구사항)
 >
-> **배경**: Vercel 배포(`https://fleet-tau.vercel.app`)에서 UI는 로드되나 `GET /api/vehicles`가 **HTTP 500** → "차량 목록을 불러오지 못했습니다." SQLite(`file:./dev.db`)는 서버리스 환경에서 사용 불가. Phase 3 Tesla OAuth·동기화 **배포 테스트**를 위해 클라우드 DB 전환이 선행되어야 한다.
+> **배경**: Vercel 배포(`https://bori-fleet.vercel.app`)에서 UI는 로드되나 `GET /api/vehicles`가 **HTTP 500** → "차량 목록을 불러오지 못했습니다." SQLite(`file:./dev.db`)는 서버리스 환경에서 사용 불가. Phase 3 Tesla OAuth·동기화 **배포 테스트**를 위해 클라우드 DB 전환이 선행되어야 한다.
 
 ### 사전 조건
-- [x] Vercel 배포 완료 (페이지 로드 확인) — `fleet-tau.vercel.app` 등
+- [x] Vercel 배포 완료 (페이지 로드 확인) — `bori-fleet.vercel.app` 등
 - [x] [requirements-db.md §3](./requirements-db.md) 오류 원인 이해 (SQLite ≠ Vercel)
 
 ### Supabase 프로젝트
@@ -346,7 +346,7 @@
 ### 데이터 초기화·검증
 - [x] `pnpm db:setup`으로 dev DB에 Mock 12대 주입
 - [x] 로컬: `GET /api/vehicles` → **200**
-- [x] 배포: `https://fleet-tau.vercel.app/api/vehicles` → **200** + JSON (2026-07-07)
+- [x] 배포: `https://bori-fleet.vercel.app/api/vehicles` → **200** + JSON (2026-07-07)
 - [x] 배포 대시보드: KPI·지도·차량 목록 정상 표시 (mock·tesla 모두 확인, 2026-07-07)
 
 ### Tesla 배포 테스트 (Phase 3 + 3.6 연계)
@@ -368,7 +368,7 @@
 - `DATABASE_URL=file:./dev.db`를 Vercel에 설정해도 **해결되지 않음**
 - **코드 반영 (2026-07-07)**: `schema.prisma` postgresql, `directUrl`, 마이그레이션 `init_postgresql`, `build`에 `prisma migrate deploy`, `pnpm db:setup` 스크립트
 - **로컬 완료 (2026-07-07)**: Supabase dev 연결, migrate·시드 12대, `localhost/api/vehicles` 200
-- **Vercel 완료 (2026-07-07)**: env 등록·재배포, `fleet-tau.vercel.app/api/vehicles` 200, mock·tesla 대시보드 확인
+- **Vercel 완료 (2026-07-07)**: env 등록·재배포, `bori-fleet.vercel.app/api/vehicles` 200, mock·tesla 대시보드 확인
 - **P1001 해결**: Direct `db.xxx:5432` 차단 시 `DIRECT_URL`을 **Session pooler**(pooler 호스트:5432)로 변경
 - **pgbouncer 해결**: Transaction pooler `DATABASE_URL`에 `?pgbouncer=true` 필수
 
@@ -647,7 +647,7 @@
 
 > 설치: [setup-guide.md](./setup-guide.md) §7
 
-- [x] Vercel 프로젝트 연결 및 GitHub 자동 배포 (`fleet-tau.vercel.app`)
+- [x] Vercel 프로젝트 연결 및 GitHub 자동 배포 (`bori-fleet.vercel.app`)
 - [x] Vercel 환경변수 완비 (Phase 3.6 `DATABASE_URL`·`DIRECT_URL` 등 — 2026-07-07)
 - [ ] Supabase production 설정 (dev → production 프로젝트 분리)
 - [x] production 배포 및 도메인 확인 (API 200·대시보드 mock·tesla 데이터 표시, 2026-07-07)
@@ -718,4 +718,5 @@
 | 2026-07-08 | Phase 4.1 추가 — sleep 상태 대안용 가상 차량 시드 요구사항·체크리스트 ([requirements-virtual-vehicle-seeding.md](./requirements-virtual-vehicle-seeding.md)) |
 | 2026-07-09 | Phase 4.2 추가 — Tesla Fleet Telemetry webhook/비동기 처리/Asleep 추론 요구사항·체크리스트 ([requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md)) |
 | 2026-07-10 | Phase 4.2 완료 — Telemetry webhook/ingress/비동기 처리, ASLEEP 추론, polling fallback 축소, unlink 구독 해제, 설정 화면 Telemetry 상태 |
+| 2026-07-10 | 배포 URL 변경 — `fleet-tau.vercel.app` → `bori-fleet.vercel.app` |
 
