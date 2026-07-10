@@ -15,7 +15,8 @@
     "db:deploy": "prisma migrate deploy",
     "db:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-db.ps1",
     "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "telemetry:check": "powershell -ExecutionPolicy Bypass -File scripts/telemetry-webhook-check.ps1"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

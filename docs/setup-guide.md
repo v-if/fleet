@@ -321,6 +321,86 @@ Invoke-RestMethod -Method POST http://localhost:3000/api/sync/vehicles
 | 후처리 job | `POST /api/internal/telemetry/process` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET` |
 | 구독 해제 | unlink 시 `DELETE /api/1/vehicles/{vin}/fleet_telemetry_config` (`TESLA_PARTNER_TOKEN` 또는 사용자 토큰) |
 
+#### 5.4.1.1 Webhook 호출 확인 (운영 점검)
+
+**아키텍처**: Tesla 차량 → 자체 Fleet Telemetry 서버 → HTTP POST → FMS webhook
+
+FMS webhook URL: `https://bori-fleet.vercel.app/api/tesla/telemetry`
+
+**1) 스크립트로 점검 (권장)**
+
+```powershell
+# .env 의 NEXT_PUBLIC_APP_URL / secret 사용
+pnpm telemetry:check
+
+# 배포 URL + 실제 VIN 지정
+pnpm telemetry:check -- -BaseUrl https://bori-fleet.vercel.app -Vin YOUR17CHARVIN
+```
+
+성공 시:
+- `POST /api/tesla/telemetry` → `{"ok":true,"ingressId":"...","duplicate":false}`
+- `GET /api/internal/telemetry/status` → `lastReceivedAt` 갱신
+
+**2) 수동 POST (PowerShell)**
+
+```powershell
+$headers = @{ "Content-Type" = "application/json" }
+# secret 설정 시: $headers["Authorization"] = "Bearer $env:TESLA_TELEMETRY_WEBHOOK_SECRET"
+
+$body = @{
+  vin = "YOUR17CHARVIN"
+  createdAt = (Get-Date).ToUniversalTime().ToString("o")
+  data = @{
+    Soc = @{ doubleValue = 72 }
+    Location = @{ locationValue = @{ latitude = 37.5665; longitude = 126.9780 } }
+  }
+} | ConvertTo-Json -Depth 5
+
+Invoke-RestMethod -Uri "https://bori-fleet.vercel.app/api/tesla/telemetry" -Method POST -Headers $headers -Body $body
+```
+
+| HTTP | 의미 |
+|------|------|
+| 200 | webhook 정상, `TelemetryIngress` 저장 |
+| 401 | `TESLA_TELEMETRY_WEBHOOK_SECRET` 불일치 |
+| 503 | `TESLA_TELEMETRY_ENABLED=false` |
+
+**3) Supabase SQL**
+
+`scripts/telemetry-status.sql` — ingress 건수, 최근 수신, `telemetrySource=TELEMETRY` 스냅샷 조회
+
+**4) Vercel Logs**
+
+Deployments → Logs → `/api/tesla/telemetry` 필터. 외부 Telemetry 서버의 **POST 200** 반복 여부 확인.
+
+**5) 설정 화면**
+
+`/settings` → Fleet Telemetry 패널: 최근 수신/처리 시각, pending 건수
+
+#### 5.4.1.2 Telemetry 서버 → FMS relay 설정 예시
+
+Tesla `fleet_telemetry_config`의 `hostname`은 **Telemetry 서버** 주소입니다 (FMS Vercel URL 아님).
+Telemetry 서버가 수신한 이벤트를 FMS로 relay 할 때 아래 endpoint를 사용합니다.
+
+```
+POST https://bori-fleet.vercel.app/api/tesla/telemetry
+Content-Type: application/json
+Authorization: Bearer {TESLA_TELEMETRY_WEBHOOK_SECRET}   # 설정한 경우
+x-idempotency-key: {optional-unique-key}
+
+{
+  "vin": "5YJ...",
+  "createdAt": "2026-07-10T04:30:00.000Z",
+  "data": {
+    "Soc": { "doubleValue": 72 },
+    "Location": { "locationValue": { "latitude": 37.5665, "longitude": 126.9780 } }
+  }
+}
+```
+
+> Tesla 차량 구독 등록은 Vehicle Command Proxy 경유 `POST /api/1/vehicles/fleet_telemetry_config` 필요.
+> FMS는 webhook 수신·처리만 담당하며, relay/구독 인프라는 별도 운영합니다.
+
 상세: [requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md)
 
 ### 5.5 Tesla Partner Register (Phase 3.5) — 412 해결

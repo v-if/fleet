@@ -94,3 +94,4 @@
 | 2026-07-09 | requirements-tesla-fleet-telemetry.md — Tesla Fleet Telemetry 전환 요구사항 문서 추가 |
 | 2026-07-10 | Phase 4.2 완료 — Telemetry webhook/ingress/비동기 처리, ASLEEP 추론, polling fallback, 설정 화면 Telemetry 상태 |
 | 2026-07-10 | Telemetry primary 운영 — REST 자동 폴링 중지, registry-only sync, webhook 전용 VehicleSnapshot 갱신 |
+| 2026-07-10 | Telemetry 점검 — `scripts/telemetry-webhook-check.ps1`, `scripts/telemetry-status.sql`, `GET /api/internal/telemetry/status` |
