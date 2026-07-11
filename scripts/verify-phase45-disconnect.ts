@@ -186,7 +186,10 @@ async function main() {
   );
 
   const wakeSkip = await maybeRunWakeCooldownRestSync(after.id);
-  assert(wakeSkip.skipped === true, "wake cooldown REST must skip disconnected vehicle");
+  assert(
+    wakeSkip.ok === false && wakeSkip.skipped === true,
+    "wake cooldown REST must skip disconnected vehicle",
+  );
   assert(
     wakeSkip.error === "telemetry_disconnected",
     `wake skip reason expected telemetry_disconnected, got ${wakeSkip.error}`,
