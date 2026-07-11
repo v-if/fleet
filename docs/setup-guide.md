@@ -352,7 +352,15 @@ pnpm telemetry:check
 | 인증(선택) | `Authorization: Bearer $TESLA_TELEMETRY_WEBHOOK_SECRET` 또는 `x-telemetry-secret` 헤더 |
 | 후처리 job | `POST /api/internal/telemetry/process` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET` |
 | 구독 해제 | unlink/disconnect 시 `DELETE /api/1/vehicles/{vin}/fleet_telemetry_config` |
-| 구독 재등록 | reconnect 시 Vehicle Command Proxy로 `POST .../fleet_telemetry_config` (`TESLA_VEHICLE_COMMAND_PROXY_URL` + `TESLA_TELEMETRY_CA_PEM`) |
+| 구독 재등록 | reconnect → Vehicle Command Proxy `POST .../fleet_telemetry_config` |
+| Command Proxy (Fly) | **`https://bori-cmd-proxy.fly.dev`** — [handoff-fms.md](./handoff-fms.md) |
+| Vercel (필수) | `TESLA_VEHICLE_COMMAND_PROXY_URL=https://bori-cmd-proxy.fly.dev` |
+| Vercel (필수) | `TESLA_TELEMETRY_CA_PEM` = Telemetry와 **동일** CA (신규 금지) |
+| Vercel (권장) | `TELEMETRY_PUBLIC_HOST=telemetry.bori-fleet.shop` |
+| Proxy health | `GET https://bori-cmd-proxy.fly.dev/healthz` → `ok` |
+
+> Proxy CREATE 스모크(2026-07-12): VIN `LRWYGCFJ7SC214742` · HTTP 200 · GET `config != null`.  
+> **FMS 잔여**: 위 Vercel env 설정 후 redeploy → 「Telemetry 다시 연결」E2E.
 
 #### 5.4.1.1 Webhook 호출 확인 (운영 점검)
 
@@ -857,3 +865,4 @@ vercel
 | 2026-07-10 | §5.4.1 Telemetry 서버 연동·완료 현황 문서 링크 반영 |
 | 2026-07-10 | §5.4.1.3 P0 사용자 작업 — secret 동기화·화면 리허설·Fly 상태 점검 |
 | 2026-07-11 | Phase 4.4 — `TESLA_REST_WAKE_COOLDOWN_MINUTES`/`TESLA_BASELINE_ON_READY` env · §5.4.2 하이브리드 온보딩 |
+| 2026-07-12 | §5.4.1 Command Proxy Production — `bori-cmd-proxy.fly.dev` · [handoff-fms.md](./handoff-fms.md) |

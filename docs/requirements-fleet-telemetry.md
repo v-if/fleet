@@ -488,7 +488,7 @@ Authorization: Bearer {FMS_CRON_SECRET}
 | 3 | 공개키 `bori-fleet.shop/.well-known/...` (apex HTTP 200, www 308 금지) | 완료 |
 | 4 | Partner Register (`na`) — domain `bori-fleet.shop` | FMS 완료 |
 | 5 | Virtual Key 페어링 | 차량별 (실차 1대 완료) |
-| 6 | Vehicle Command Proxy | Telemetry repo 로컬 compose·스크립트 준비 |
+| 6 | Vehicle Command Proxy | ✅ Fly `bori-cmd-proxy` (`https://bori-cmd-proxy.fly.dev`) — [handoff-fms.md](./handoff-fms.md). 로컬 compose는 우회용 |
 
 ### 6.2 fleet_telemetry_config
 

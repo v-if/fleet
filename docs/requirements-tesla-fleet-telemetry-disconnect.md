@@ -6,7 +6,7 @@
 |------|------|
 | 목적 | Telemetry **구독 해제·연동 단절**을 오프라인(VK 삭제) / 소프트웨어(FMS) 두 경로로 정의하고, DB·API·UI·운영 계약을 확정한다 |
 | 초안 | 사용자 메모 → 본 문서로 정식화 (2026-07-11) |
-| 코드 | **A~D 완료** (2026-07-11) · P1 `fleet_status` 오프라인 감지기 잔여 |
+| 코드 | **A~D 완료** (2026-07-11) · P1 `fleet_status` 오프라인 감지기 잔여 · **Command Proxy Fly 완료** (2026-07-12) · FMS Vercel env·재연동 E2E 잔여 ([handoff-fms.md](./handoff-fms.md)) |
 | 관련 | [checklist-tesla-fleet-telemetry-disconnect.md](./checklist-tesla-fleet-telemetry-disconnect.md), [requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md), [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md), [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md), [handoff-phase44-to-fleet-telemetry.md](./handoff-phase44-to-fleet-telemetry.md) |
 | As-Is | `POST .../telemetry/disconnect`(A) · reconnect · unlink(B). UI·`disconnect:verify`(VIN `LRWYGCFJ7SC214742`) 반영. P1 오프라인 VK 감지는 미구현 |
 
@@ -114,7 +114,7 @@ Link / Lifecycle (VehicleSyncState.lifecycle + TelemetrySubscription)
 | R1 | `TELEMETRY_DISCONNECTED` 차량에 **[다시 연결]** — VK 확인(`fleet_status`) → **`fleet_telemetry_config` 재등록**(Vehicle Command Proxy) → Baseline 정책은 Phase 4.4와 동일 |
 | R2 | 소프트웨어 단절 후 재연결 시 과금/구독 재개 안내 |
 | R3 | Proxy/CA 미설정 시 재연결은 **실패로 표시** (DB만 활성하고 스트림 없는 상태 방지) |
-| R4 | Proxy 구축·Vercel 연결 — [requirements-tesla-vehicle-command-proxy.md](./requirements-tesla-vehicle-command-proxy.md) |
+| R4 | Proxy 구축·Vercel 연결 — [requirements-tesla-vehicle-command-proxy.md](./requirements-tesla-vehicle-command-proxy.md) · FMS 인수인계 [handoff-fms.md](./handoff-fms.md) (`https://bori-cmd-proxy.fly.dev`, Proxy 완료 · Vercel/E2E 잔여) |
 
 ### 5.4 Telemetry 서버
 
@@ -346,3 +346,4 @@ onStaleOrCron(vin):
 | 2026-07-11 | 초안 메모를 요구사항화 — A/B 분리, vehicle_data 프로브 금지·fleet_status 대체, DB/UI/체크리스트·영향도 추가 |
 | 2026-07-11 | A~C 구현 반영 — 코드 상태·§12 체크리스트 갱신 (D·P1 감지기 잔여) |
 | 2026-07-11 | A~D 완료 — disconnect:verify · VIN LRWYGCFJ7SC214742 · 빈 partner token 버그 수정 · P1 감지기 잔여 |
+| 2026-07-12 | Command Proxy Fly 완료 · [handoff-fms.md](./handoff-fms.md) · FMS Vercel/E2E 잔여 |

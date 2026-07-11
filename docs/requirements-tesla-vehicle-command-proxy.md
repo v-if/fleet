@@ -1,14 +1,26 @@
 # Vehicle Command Proxy — 개발 인수인계 · 요구사항
 
 > **작성자**: FMS 개발자 (`bori-fleet` / Vercel)  
-> **대상**: **신규 Vehicle Command Proxy 개발자** (본 문서만으로 Fly에 Proxy를 올려 재연동 이슈를 닫을 수 있어야 함)  
+> **최초 대상**: Vehicle Command Proxy 개발자  
 > **작성일**: 2026-07-12  
-> **우선순위**: P0 — Production 재연동(config 재등록) 차단 중  
-> **관련 FMS 문서**: [requirements-tesla-fleet-telemetry-disconnect.md](./requirements-tesla-fleet-telemetry-disconnect.md), [requirements-fleet-telemetry-completed.md](./requirements-fleet-telemetry-completed.md), [requirements-fleet-telemetry.md](./requirements-fleet-telemetry.md), [setup-guide.md](./setup-guide.md) §5.4
+> **상태 (2026-07-12)**: **Proxy Fly 배포·실차 CREATE 스모크 완료** (`bori-cmd-proxy` · `https://bori-cmd-proxy.fly.dev`).  
+> **FMS 잔여**: Vercel env 설정 · 「다시 연결」E2E — [handoff-fms.md](./handoff-fms.md)  
+> **관련**: [requirements-tesla-fleet-telemetry-disconnect.md](./requirements-tesla-fleet-telemetry-disconnect.md), [requirements-fleet-telemetry-completed.md](./requirements-fleet-telemetry-completed.md), [setup-guide.md](./setup-guide.md) §5.4
+
+### Proxy 완료 요약 (인수인계 반영)
+
+| 항목 | 값 |
+|------|-----|
+| Fly 앱 | `bori-cmd-proxy` · `nrt` · 상시 on |
+| Origin | `https://bori-cmd-proxy.fly.dev` |
+| healthz | `GET .../healthz` → `ok` |
+| 스모크 | VIN `LRWYGCFJ7SC214742` CREATE 200 · GET `config != null` |
+| Proxy 저장소 | `fleet-cmd-proxy` |
+| FMS 전달 문서 | [handoff-fms.md](./handoff-fms.md) |
 
 ---
 
-## 0. 이 문서를 받은 당신에게
+## 0. 이 문서를 받은 당신에게 (Proxy 개발자용 · 이력 유지)
 
 당신은 **Vehicle Command Proxy**(`tesla-http-proxy`)를 **Fly.io에 신규 배포**하는 담당입니다.
 
@@ -325,43 +337,42 @@ Fly에서는 `/config`에 A·B를 두고 동일 env로 기동.
 
 ### A. 준비
 
-- [ ] FMS·Telemetry 담당에게 **기존 VK private key(A)** 수령
-- [ ] **Telemetry CA(C)** 파일 위치 확인 (create body / FMS env용 — 내용 변경 금지)
-- [ ] Proxy HTTPS용 TLS(B) 준비
-- [ ] Tesla 사용자 access token으로 로컬 스모크할 계획 (FMS 연동 계정)
+- [x] FMS·Telemetry 담당에게 **기존 VK private key(A)** 수령
+- [x] **Telemetry CA(C)** 파일 위치 확인 (create body / FMS env용 — 내용 변경 금지)
+- [x] Proxy HTTPS용 TLS(B) 준비
+- [x] Tesla 사용자 access token으로 로컬 스모크할 계획 (FMS 연동 계정)
 
 ### B. Fly 앱
 
-- [ ] `fly apps create bori-cmd-proxy` (이름 협의 가능)
-- [ ] region `nrt`
-- [ ] Dockerfile + `fly.toml` (내부 포트 4443 ↔ 외부 443)
-- [ ] Volume `/config` 또는 secret으로 `fleet-key.pem`, `tls-*.pem` 배치
-- [ ] `fly deploy` · `fly status` · logs OK
-- [ ] **상시 on** 설정 확인
+- [x] `fly apps create bori-cmd-proxy`
+- [x] region `nrt`
+- [x] Dockerfile + `fly.toml` (내부 포트 4443 ↔ 외부 443)
+- [x] Volume `/config` 또는 secret으로 `fleet-key.pem`, `tls-*.pem` 배치
+- [x] `fly deploy` · `fly status` · logs OK
+- [x] **상시 on** 설정 확인 (`min_machines_running=1`, auto_stop off)
 
 ### C. 기능 스모크
 
-- [ ] (로컬 또는 Fly) Proxy 경유 CREATE — VIN `LRWYGCFJ7SC214742` (또는 협의 VIN)
-- [ ] `GET /api/1/vehicles/{vin}/fleet_telemetry_config` → **`config` not null**
-- [ ] (가능하면) 차량 wake 후 `synced: true`
-- [ ] Fly `bori-telemetry` 로그/헬스 — 소켓·relay 정상 (Telemetry 담당과 확인)
-- [ ] FMS webhook 수신 여부 — FMS 담당과 확인
+- [x] Proxy 경유 CREATE — VIN `LRWYGCFJ7SC214742` (HTTP 200 · `updated_vehicles:1`)
+- [x] `GET .../fleet_telemetry_config` → **`config` not null** (`hostname=telemetry.bori-fleet.shop`, Gear 포함)
+- [ ] (가능하면) 차량 wake 후 `synced: true` — 스모크 당시 `synced: false` (sleep 가능)
+- [ ] Fly `bori-telemetry` 수신·FMS ingress — **FMS Vercel env·재연동 E2E 후 확인**
 
 ### D. 인수인계 (FMS로 전달)
 
-- [ ] Proxy origin URL 확정 전달
-- [ ] CA 동일성 확인 메모
-- [ ] create/GET 성공 증거 (로그)
-- [ ] 장애 시: `fly status` / `fly logs` / 키 경로 runbook 1페이지
+- [x] Proxy origin URL 확정 전달 — `https://bori-cmd-proxy.fly.dev`
+- [x] CA 동일성 확인 메모 ([handoff-fms.md](./handoff-fms.md))
+- [x] create/GET 성공 증거
+- [x] 장애 runbook (`fly status` / `fly logs` / healthz)
 
-### E. FMS 연결 (FMS 담당 · 당신 협조)
+### E. FMS 연결 (FMS 담당 · 잔여)
 
-- [ ] Vercel `TESLA_VEHICLE_COMMAND_PROXY_URL`
-- [ ] Vercel `TESLA_TELEMETRY_CA_PEM`
+- [ ] Vercel `TESLA_VEHICLE_COMMAND_PROXY_URL=https://bori-cmd-proxy.fly.dev`
+- [ ] Vercel `TESLA_TELEMETRY_CA_PEM` (Telemetry 동일본)
 - [ ] (선택) `TELEMETRY_PUBLIC_HOST=telemetry.bori-fleet.shop`
 - [ ] Production redeploy
 - [ ] UI 「다시 연결」→ `TESLA_VEHICLE_COMMAND_PROXY_URL 미설정` **소멸**
-- [ ] 스트림 재개 확인
+- [ ] 스트림 재개 확인 (`telemetrySource=TELEMETRY`)
 
 ---
 
@@ -386,14 +397,14 @@ TELEMETRY_PUBLIC_HOST=telemetry.bori-fleet.shop
 
 ## 8. 수락 기준 (Definition of Done)
 
-다음이 **모두** 만족되면 본 이슈(재연동)는 해결된 것으로 본다.
-
-1. Fly Command Proxy HTTPS origin이 존재하고, Vercel에서 도달 가능하다.
-2. 동일 VK private key로 `fleet_telemetry_config` create가 성공한다.
-3. 지정 VIN에서 `GET fleet_telemetry_config` → `config != null`.
-4. FMS Production에 Proxy URL + Telemetry CA가 설정되어 있다.
-5. FMS 「Telemetry 다시 연결」 시 `TESLA_VEHICLE_COMMAND_PROXY_URL 미설정` 오류가 **재발하지 않는다**.
-6. (가능하면) 차량 wake 후 FMS에 Telemetry ingress가 다시 쌓이고 `telemetrySource=TELEMETRY`.
+| # | 기준 | 상태 |
+|---|------|:----:|
+| 1 | Fly Command Proxy HTTPS origin 존재 · Vercel에서 도달 가능 | ✅ Proxy |
+| 2 | 동일 VK private key로 config create 성공 | ✅ Proxy 스모크 |
+| 3 | 지정 VIN GET → `config != null` | ✅ |
+| 4 | FMS Production에 Proxy URL + Telemetry CA 설정 | ☐ FMS |
+| 5 | FMS 「다시 연결」 시 URL 미설정 오류 없음 | ☐ FMS E2E |
+| 6 | wake 후 ingress · `telemetrySource=TELEMETRY` | ☐ FMS E2E |
 
 ---
 
@@ -452,3 +463,4 @@ A. 차량이 다음 백엔드 연결 때 적용. wake 후 GET 재확인.
 |------|------|
 | 2026-07-12 | 초안 (FMS 내부) |
 | 2026-07-12 | **신규 Command Proxy 개발자 인수인계서**로 전면 개편 — 시스템 지도·FMS/Telemetry 정보·계약·DoD |
+| 2026-07-12 | Proxy 완료 반영 — `bori-cmd-proxy` · CREATE 스모크 · [handoff-fms.md](./handoff-fms.md) · FMS Vercel/E2E 잔여 |

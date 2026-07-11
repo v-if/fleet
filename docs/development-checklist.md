@@ -720,14 +720,15 @@
 
 ---
 
-### Phase 4.6 Vehicle Command Proxy (P0) — 문서
+### Phase 4.6 Vehicle Command Proxy (P0) — Proxy 완료 · FMS 잔여
 
-> **신규 Proxy 개발자 인수인계 문서** (2026-07-12) · Fly 배포·Vercel env 미착수  
-> 전달용: [requirements-tesla-vehicle-command-proxy.md](./requirements-tesla-vehicle-command-proxy.md)
+> **Proxy Fly 배포·CREATE 스모크 완료** (2026-07-12) · FMS Vercel env·재연동 E2E 잔여  
+> Proxy→FMS 인수인계: [handoff-fms.md](./handoff-fms.md)  
+> 요구사항: [requirements-tesla-vehicle-command-proxy.md](./requirements-tesla-vehicle-command-proxy.md)
 
-- [ ] Fly `tesla-http-proxy` 앱 배포 (Telemetry 앱과 분리 · 상시 on) — **Proxy 담당**
-- [ ] Vercel: `TESLA_VEHICLE_COMMAND_PROXY_URL` + `TESLA_TELEMETRY_CA_PEM` — **FMS 담당**
-- [ ] 실차 재연동 E2E (config create → ingress TELEMETRY)
+- [x] Fly `tesla-http-proxy` 앱 배포 — `bori-cmd-proxy` · `https://bori-cmd-proxy.fly.dev` · 상시 on · VIN CREATE 200
+- [ ] Vercel: `TESLA_VEHICLE_COMMAND_PROXY_URL=https://bori-cmd-proxy.fly.dev` + `TESLA_TELEMETRY_CA_PEM` — **FMS**
+- [ ] 실차 재연동 E2E (FMS 「다시 연결」→ URL 미설정 오류 없음 → ingress TELEMETRY) — **FMS**
 - [ ] (P1) 재연동 실패 UX·lifecycle 롤백 — FMS
 
 ---
@@ -823,4 +824,5 @@
 | 2026-07-11 | Phase 4.5 A~C 완료 — disconnect/reconnect/unlink · UI · D·P1 감지기 잔여 |
 | 2026-07-11 | Phase 4.5 D 완료 — disconnect:verify · VIN LRWYGCFJ7SC214742 · P1 감지기 잔여 |
 | 2026-07-12 | Phase 4.6 문서 — Vehicle Command Proxy ([requirements-tesla-vehicle-command-proxy.md](./requirements-tesla-vehicle-command-proxy.md)) |
+| 2026-07-12 | Phase 4.6 Proxy 완료 — [handoff-fms.md](./handoff-fms.md) · `bori-cmd-proxy` · FMS Vercel/E2E 잔여 |
 
