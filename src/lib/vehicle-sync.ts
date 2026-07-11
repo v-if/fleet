@@ -200,13 +200,25 @@ async function softUnlinkMissingTeslaVehicles(
 
   for (const vehicle of linkedVehicles) {
     if (vehicle.oemVehicleId && !activeVins.has(vehicle.oemVehicleId)) {
-      await prisma.vehicle.update({
-        where: { id: vehicle.id },
-        data: {
-          unlinkedAt: now,
-          isDeleted: true,
-        },
-      });
+      await prisma.$transaction([
+        prisma.vehicleSyncState.deleteMany({ where: { vehicleId: vehicle.id } }),
+        prisma.telemetrySubscription.updateMany({
+          where: { vehicleId: vehicle.id },
+          data: {
+            active: false,
+            configSynced: false,
+            configCheckedAt: null,
+            unsubscribedAt: now,
+          },
+        }),
+        prisma.vehicle.update({
+          where: { id: vehicle.id },
+          data: {
+            unlinkedAt: now,
+            isDeleted: true,
+          },
+        }),
+      ]);
     }
   }
 }

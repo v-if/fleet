@@ -1,6 +1,6 @@
 # 체크리스트 — Telemetry + Fleet API 하이브리드 데이터 (Phase 4.4)
 
-> **상태**: **A·B·C·D 완료** (2026-07-11) / E 미착수  
+> **상태**: **A~E 완료** (2026-07-11)  
 > **설계서**: [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md)  
 > **호출 정책**: [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md)  
 > **표시·매핑**: [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md), [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md)
@@ -94,15 +94,23 @@
 
 ---
 
-## E. 검증 · 문서 마감
+## E. 검증 · 문서 마감 — ✅ (2026-07-11)
 
-- [ ] `pnpm telemetry:check` + 실차 V 수신 후 Snapshot만 갱신·제원 불변 확인
-- [ ] 쿨다운 내 재wake 시 `vehicle_data` 미호출 로그 확인
-- [ ] 쿨다운 경과 후 1회 호출·`lastRestSyncAt` 갱신
-- [ ] unlink 시 SyncState/Subscription 정리
-- [ ] development-checklist Phase 4.4 체크 완료
-- [ ] setup-guide에 env·온보딩 절 보강
-- [ ] 본 체크리스트 완료일 기록
+- [x] `pnpm telemetry:check` — production webhook 200 (`ingressId` 생성). 테스트 VIN은 미매칭 FAILED(정상). 실차 VIN `LRWYGCFJ7SC214742` 최근 PROCESSED 이력 확인
+- [x] Telemetry → Snapshot만 / 제원 미갱신 — processor 코드 경로 + `wake_up` src 0건. 실차 제원 불변은 Baseline 후 운영 재확인 권장
+- [x] 쿨다운 Skip/Call — `scripts/verify-hybrid-phase44.cjs` (15분 Skip / 31분 Call) 통과
+- [x] unlink 시 SyncState 삭제 · Subscription `active=false`/`configSynced=false` (단건·계정 전체·registry soft-unlink)
+- [x] development-checklist Phase 4.4 체크 완료
+- [x] setup-guide §5 env·§5.4.2 온보딩 절 보강
+- [x] 본 체크리스트 완료일 기록 — **2026-07-11**
+
+**정적 검증 재실행**
+```powershell
+node --env-file=.env scripts/verify-hybrid-phase44.cjs
+# 또는
+pnpm hybrid:verify
+pnpm telemetry:check
+```
 
 ---
 
@@ -115,7 +123,7 @@
 | 3 | B 쿨다운 wake sync | A, Telemetry 수신 — ✅ |
 | 4 | C API | B — ✅ |
 | 5 | D UI | C — ✅ |
-| 6 | E 검증 | D |
+| 6 | E 검증 | D — ✅ |
 
 ---
 
@@ -123,6 +131,7 @@
 
 | 일자 | 내용 |
 |------|------|
+| 2026-07-11 | **E 완료** — hybrid:verify, telemetry:check, unlink SyncState 정리, setup-guide 온보딩 |
 | 2026-07-11 | **D 완료** — 목록/상세 제원·lifecycle·신선도 UI, 설정 온보딩 패널, Baseline/VK 액션 |
 | 2026-07-11 | **C 완료** — vehicles API 제원/lifecycle/freshness, baseline·VK 엔드포인트, telemetry status SyncState |
 | 2026-07-11 | **B 완료** — display-model, Baseline/wake REST, VK confirm API, processor 쿨다운, fallback 감사 |

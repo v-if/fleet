@@ -113,3 +113,4 @@
 | 2026-07-11 | Phase 4.4.B 완료 — Baseline/wake 쿨다운·VK confirm·제원 분리 Sync |
 | 2026-07-11 | Phase 4.4.C 완료 — vehicles API 제원/lifecycle/freshness · baseline 재시도 |
 | 2026-07-11 | Phase 4.4.D 완료 — 목록/상세 제원·lifecycle UI · 설정 온보딩 |
+| 2026-07-11 | Phase 4.4.E 완료 — hybrid:verify · telemetry:check · setup-guide 온보딩 · Phase 4.4 마감 |

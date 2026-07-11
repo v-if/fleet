@@ -265,9 +265,19 @@ TESLA_TELEMETRY_WEBHOOK_SECRET=
 TESLA_TELEMETRY_STALE_AFTER_SECONDS=300
 TESLA_TELEMETRY_FRESHNESS_SECONDS=120
 TESLA_REST_AUTO_SYNC_ENABLED=false
+TESLA_REST_WAKE_COOLDOWN_MINUTES=30
+TESLA_BASELINE_ON_READY=true
 TESLA_PARTNER_TOKEN=
 NEXT_PUBLIC_APP_URL=https://bori-fleet.shop
 ```
+
+> **Phase 4.4 하이브리드 env**
+> | 변수 | 기본 | 의미 |
+> |------|------|------|
+> | `TESLA_REST_WAKE_COOLDOWN_MINUTES` | `30` | ASLEEP→ONLINE 시 `vehicle_data` 쿨다운(분) |
+> | `TESLA_BASELINE_ON_READY` | `true` | VK/registry 후 Baseline `vehicle_data` 1회 시도 (실패 시 자동 wake 없음) |
+>
+> 상세: [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) · [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md)
 
 > **리전(`TESLA_FLEET_API_REGION`)** — OAuth `audience`와 Fleet API base URL에 사용된다.
 >
@@ -311,6 +321,28 @@ Invoke-RestMethod -Method POST http://localhost:3000/api/sync/vehicles
 - 배포(Vercel Cron 예시): `POST /api/sync/vehicles` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET` — Telemetry primary 시 registry-only(차량 목록만)
 - REST full sync(폴링 fallback): `POST /api/sync/vehicles?fallback=1` 또는 `TESLA_REST_AUTO_SYNC_ENABLED=true`
 - Telemetry primary(`TESLA_TELEMETRY_ENABLED=true`, `TESLA_REST_AUTO_SYNC_ENABLED=false` 기본): `VehicleSnapshot`은 webhook `/api/tesla/telemetry` 수신으로만 갱신
+
+### 5.4.2 하이브리드 온보딩 · 제원 (Phase 4.4)
+
+| 단계 | 동작 |
+|------|------|
+| OAuth + 목록 sync | registry-only — Snapshot 미생성, `VehicleSyncState` lifecycle 힌트 |
+| Virtual Key | 상세 **키 연결 확인** → `POST /api/vehicles/{id}/virtual-key/confirm` (`fleet_status`) |
+| Baseline | 차량이 깨어 있을 때 `vehicle_data` 1회 → 제원(`carType` 등) + Snapshot. **실패 시 자동 wake 금지** · 상세 **Baseline 재시도** / **제원 재동기화** |
+| 평시 | Telemetry만 Snapshot 갱신. 제원 컬럼 불변 |
+| ASLEEP→ONLINE | 쿨다운(`TESLA_REST_WAKE_COOLDOWN_MINUTES`) 경과 시에만 `vehicle_data` 0~1회 |
+| 수동 REST | 설정 **REST fallback 동기화** (`?fallback=1`) — 감사 로그 `MANUAL_FALLBACK` |
+| unlink | Telemetry 구독 해제 + `VehicleSyncState` 삭제 + 구독 `active=false` |
+
+정적 검증(실차 불필요):
+```powershell
+node --env-file=.env scripts/verify-hybrid-phase44.cjs
+```
+
+Webhook 스모크:
+```powershell
+pnpm telemetry:check
+```
 
 ### 5.4.1 Fleet Telemetry (Phase 4.2)
 
@@ -823,3 +855,4 @@ vercel
 | 2026-07-10 | 커스텀 도메인 — FMS `bori-fleet.shop`, Telemetry `telemetry.bori-fleet.shop` |
 | 2026-07-10 | §5.4.1 Telemetry 서버 연동·완료 현황 문서 링크 반영 |
 | 2026-07-10 | §5.4.1.3 P0 사용자 작업 — secret 동기화·화면 리허설·Fly 상태 점검 |
+| 2026-07-11 | Phase 4.4 — `TESLA_REST_WAKE_COOLDOWN_MINUTES`/`TESLA_BASELINE_ON_READY` env · §5.4.2 하이브리드 온보딩 |

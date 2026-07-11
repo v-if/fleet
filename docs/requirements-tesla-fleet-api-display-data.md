@@ -218,7 +218,7 @@
 |--------|------|------|
 | 필드 매트릭스 (시트/표) | Endpoint × 필드 × 정적/동적 × 화면 × 우선순위 | 조사 중 |
 | 데이터 모델 설계 | [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | ✅ 문서 |
-| 구현 체크리스트 | [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | ✅ A~D 완료 / E 미착수 |
+| 구현 체크리스트 | [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | ✅ Phase 4.4 A~E 완료 (2026-07-11) |
 | 스키마 PR | `Vehicle` 제원 + `VehicleSyncState` | 미착수 |
 | Sync 로직 PR | Baseline·쿨다운·제원 분리 | 미착수 |
 | UI PR | 목록·상세 고도화 | 미착수 |
@@ -235,3 +235,4 @@
 | 2026-07-11 | Phase 4.4.B Sync 로직 반영 (체크리스트 B 완료) |
 | 2026-07-11 | Phase 4.4.C API 계약 반영 (체크리스트 C 완료) |
 | 2026-07-11 | Phase 4.4.D UI 반영 (체크리스트 D 완료) |
+| 2026-07-11 | Phase 4.4.E 마감 (체크리스트 A~E 완료) |

@@ -18,6 +18,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "telemetry:check": "powershell -ExecutionPolicy Bypass -File scripts/telemetry-webhook-check.ps1",
     "telemetry:db": "node --env-file=.env scripts/telemetry-db-check.mjs",
+    "hybrid:verify": "node --env-file=.env scripts/verify-hybrid-phase44.cjs",
     "db:reset-data": "node --env-file=.env scripts/reset-fms-data.mjs"
   },
   "prisma": {

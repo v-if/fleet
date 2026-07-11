@@ -46,13 +46,25 @@ export async function unlinkVehicle(vehicleId: string): Promise<UnlinkVehicleRes
   });
   const now = new Date();
 
-  await prisma.vehicle.update({
-    where: { id: vehicle.id },
-    data: {
-      unlinkedAt: now,
-      isDeleted: true,
-    },
-  });
+  await prisma.$transaction([
+    prisma.vehicleSyncState.deleteMany({ where: { vehicleId: vehicle.id } }),
+    prisma.telemetrySubscription.updateMany({
+      where: { vehicleId: vehicle.id },
+      data: {
+        active: false,
+        configSynced: false,
+        configCheckedAt: null,
+        unsubscribedAt: now,
+      },
+    }),
+    prisma.vehicle.update({
+      where: { id: vehicle.id },
+      data: {
+        unlinkedAt: now,
+        isDeleted: true,
+      },
+    }),
+  ]);
 
   let accountUnlinked = false;
 
@@ -87,17 +99,32 @@ export async function unlinkAllVehiclesForAccount(teslaAccountId: string) {
   }
 
   const now = new Date();
+  const vehicleIds = vehicles.map((vehicle) => vehicle.id);
 
-  await prisma.vehicle.updateMany({
-    where: {
-      teslaAccountId,
-      ...activeVehicleWhere,
-    },
-    data: {
-      unlinkedAt: now,
-      isDeleted: true,
-    },
-  });
+  await prisma.$transaction([
+    prisma.vehicleSyncState.deleteMany({
+      where: { vehicleId: { in: vehicleIds } },
+    }),
+    prisma.telemetrySubscription.updateMany({
+      where: { vehicleId: { in: vehicleIds } },
+      data: {
+        active: false,
+        configSynced: false,
+        configCheckedAt: null,
+        unsubscribedAt: now,
+      },
+    }),
+    prisma.vehicle.updateMany({
+      where: {
+        teslaAccountId,
+        ...activeVehicleWhere,
+      },
+      data: {
+        unlinkedAt: now,
+        isDeleted: true,
+      },
+    }),
+  ]);
 
   await softUnlinkTeslaAccount(teslaAccountId);
 
