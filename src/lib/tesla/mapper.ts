@@ -3,6 +3,7 @@ import type { ChargingStatus, EventType, VehicleStatus } from "@prisma/client";
 
 import { createApiCallLog, createRequestId, sanitizeBody, sanitizeHeaders } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
+import { buildDisplayModel } from "@/lib/tesla/display-model";
 import { getValidTeslaAccessToken } from "./auth";
 import { getTeslaRegionConfig } from "./config";
 import type {
@@ -62,12 +63,9 @@ function derivePlateNumber(vin: string, displayName?: string | null) {
 }
 
 function deriveModel(config?: TeslaVehicleDataResponse["response"]["vehicle_config"]) {
-  const carType = config?.car_type ?? "Tesla";
-  const trim = config?.trim_badging;
-  if (trim) {
-    return `${carType} ${trim}`;
-  }
-  return carType;
+  const mapped = buildDisplayModel(config?.car_type, config?.trim_badging);
+  if (mapped) return mapped;
+  return "Tesla";
 }
 
 function deriveYearFromVin(vin: string) {
@@ -143,6 +141,10 @@ export function mapTeslaVehicleToSnapshot(
     model: deriveModel(data.vehicle_config),
     year: deriveYearFromVin(vin),
     oemVehicleId: vin,
+    carType: data.vehicle_config?.car_type ?? null,
+    trimBadging: data.vehicle_config?.trim_badging ?? null,
+    exteriorColor: data.vehicle_config?.exterior_color ?? null,
+    teslaDisplayName: data.display_name ?? listItem.display_name ?? null,
     latitude,
     longitude,
     batteryPercent,
@@ -252,7 +254,13 @@ export class TeslaFleetClient {
   }
 
   async getFleetStatus(vins: string[]) {
-    if (vins.length === 0) return [] as TeslaFleetStatusItem[];
+    if (vins.length === 0) {
+      return {
+        items: [] as TeslaFleetStatusItem[],
+        keyPairedVins: [] as string[],
+        unpairedVins: [] as string[],
+      };
+    }
 
     const data = await this.request<TeslaFleetStatusResponse>("/api/1/vehicles/fleet_status", {
       method: "POST",
@@ -260,28 +268,29 @@ export class TeslaFleetClient {
     });
 
     const vehicleInfo = data.response?.vehicle_info;
+    let items: TeslaFleetStatusItem[] = [];
 
     if (Array.isArray(vehicleInfo)) {
-      return vehicleInfo;
-    }
-
-    if (
+      items = vehicleInfo;
+    } else if (
       vehicleInfo &&
       typeof vehicleInfo === "object" &&
       "vehicle_info" in vehicleInfo &&
       Array.isArray(vehicleInfo.vehicle_info)
     ) {
-      return vehicleInfo.vehicle_info;
-    }
-
-    if (vehicleInfo && typeof vehicleInfo === "object") {
-      return Object.values(vehicleInfo).filter(
+      items = vehicleInfo.vehicle_info;
+    } else if (vehicleInfo && typeof vehicleInfo === "object") {
+      items = Object.values(vehicleInfo).filter(
         (item): item is TeslaFleetStatusItem =>
           Boolean(item && typeof item === "object" && "vin" in item),
       );
     }
 
-    return [];
+    return {
+      items,
+      keyPairedVins: data.response?.key_paired_vins ?? [],
+      unpairedVins: data.response?.unpaired_vins ?? [],
+    };
   }
 
   async getVehicleData(vin: string) {

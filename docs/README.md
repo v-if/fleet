@@ -110,3 +110,4 @@
 | 2026-07-11 | requirements-tesla-fleet-api-telemetry-webhook — Telemetry+REST 하이브리드 호출 최종 요구사항 |
 | 2026-07-11 | requirements-tesla-hybrid-data-model + checklist-tesla-hybrid-data — Phase 4.4 설계·체크리스트 (코드 미착수) |
 | 2026-07-11 | Phase 4.4.A 완료 — Vehicle 제원·VehicleSyncState migrate (`20260711120000_phase44a_hybrid_data_model`) |
+| 2026-07-11 | Phase 4.4.B 완료 — Baseline/wake 쿨다운·VK confirm·제원 분리 Sync |

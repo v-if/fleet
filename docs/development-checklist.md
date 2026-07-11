@@ -669,7 +669,7 @@
 
 ### Phase 4.4 하이브리드 데이터 모델 · 제원/호출 분리 (P0)
 
-> **4.4.A 완료** (2026-07-11) — B~E 미착수  
+> **4.4.A·B 완료** (2026-07-11) — C~E 미착수  
 > 설계: [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md)  
 > 체크리스트: [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md)  
 > 정책: [telemetry-webhook](./requirements-tesla-fleet-api-telemetry-webhook.md) · [display-data](./requirements-tesla-fleet-api-display-data.md) · [model-mapping](./requirements-tesla-fleet-api-model-mapping.md)
@@ -681,11 +681,12 @@
 - [x] 마이그레이션 · SyncState backfill · 시드 · env example — `20260711120000_phase44a_hybrid_data_model`
 
 #### 4.4.B Sync 로직
-- [ ] `buildDisplayModel` 매핑 유틸
-- [ ] Baseline `vehicle_data` 1회 (실패 시 자동 wake 금지)
-- [ ] ASLEEP→ONLINE 쿨다운 후 `vehicle_data` 0~1회
-- [ ] Telemetry는 Snapshot만 · 제원 미갱신
-- [ ] 수동 fallback 감사 로그 · 자동 wake_up 없음
+- [x] `buildDisplayModel` 매핑 유틸
+- [x] Baseline `vehicle_data` 1회 (실패 시 자동 wake 금지)
+- [x] ASLEEP→ONLINE 쿨다운 후 `vehicle_data` 0~1회
+- [x] Telemetry는 Snapshot만 · 제원 미갱신
+- [x] 수동 fallback 감사 로그 · 자동 wake_up 없음
+- [x] VK confirm API · registry SyncState lifecycle 힌트
 
 #### 4.4.C API
 - [ ] vehicles API에 제원·lifecycle·REST/Telemetry 신선도 노출
@@ -783,4 +784,5 @@
 | 2026-07-10 | Phase 4.3 P0 검증 — 실차 V→ingress PROCESSED·`telemetrySource=TELEMETRY` 실측, mapper Gear·VIN insensitive, 로컬 secret 동기화는 사용자 작업 |
 | 2026-07-11 | Phase 4.4 추가 — 하이브리드 데이터 모델·체크리스트 문서화 (스키마/Sync/UI, **코드 미착수**) |
 | 2026-07-11 | Phase 4.4.A 완료 — Vehicle 제원·VehicleSyncState·migrate backfill·시드·env (`20260711120000_phase44a_hybrid_data_model`) |
+| 2026-07-11 | Phase 4.4.B 완료 — Baseline/wake 쿨다운 REST, VK confirm API, 제원 분리 쓰기, fallback 감사 |
 

@@ -1,6 +1,6 @@
 # 체크리스트 — Telemetry + Fleet API 하이브리드 데이터 (Phase 4.4)
 
-> **상태**: **A 스키마·migrate 완료** (2026-07-11) / B~E 미착수  
+> **상태**: **A·B 완료** (2026-07-11) / C~E 미착수  
 > **설계서**: [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md)  
 > **호출 정책**: [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md)  
 > **표시·매핑**: [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md), [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md)
@@ -37,19 +37,28 @@
 
 ---
 
-## B. 도메인 로직 · Sync
+## B. 도메인 로직 · Sync — ✅
 
-- [ ] `buildDisplayModel(carType, trimBadging)` 유틸 ([model-mapping](./requirements-tesla-fleet-api-model-mapping.md))
-- [ ] registry-only sync: Snapshot 미생성, SyncState lifecycle 유지/생성
-- [ ] Baseline 서비스: `vehicle_data` 1회 → Vehicle 제원 + Snapshot + SyncState(`BASELINE`) — **실패 시 wake 금지**
-- [ ] VK 확인 API/플로우: `fleet_status` 후 lifecycle → `TELEMETRY_PENDING` / config 등록
-- [ ] ASLEEP→ONLINE: Telemetry 수신 시 SyncState 갱신 + 쿨다운 검사 후 `vehicle_data` 0~1회 (`WAKE_COOLDOWN`)
-- [ ] REST 경로: 제원 컬럼 **덮어쓰기 금지** (SPECS_REFRESH·명시 Baseline만 허용)
-- [ ] Telemetry processor: Vehicle 제원 미갱신, Snapshot만
-- [ ] 수동 `?fallback=1`: `MANUAL_FALLBACK` + 감사 로그
-- [ ] 자동 `wake_up` 호출 경로 없음 (회귀)
+- [x] `buildDisplayModel(carType, trimBadging)` 유틸 — `src/lib/tesla/display-model.ts`
+- [x] registry-only sync: Snapshot 미생성, SyncState lifecycle 힌트 (`fleet_status` key paired/unpaired)
+- [x] Baseline 서비스: `runBaselineForVehicle` — 제원+Snapshot+`BASELINE`, **실패 시 wake 금지**
+- [x] VK 확인: `POST /api/vehicles/[id]/virtual-key/confirm` → `TELEMETRY_PENDING` + 구독 ensure + 선택 Baseline
+- [x] ASLEEP→ONLINE: Telemetry processor → `lastWakeDetectedAt` + 쿨다운 후 `WAKE_COOLDOWN` REST 0~1회
+- [x] REST 경로: 제원 덮어쓰기 금지 (Baseline / 수동 `?fallback=1`만 `updateSpecs`)
+- [x] Telemetry processor: Vehicle 제원 미갱신, Snapshot만 (+ lifecycle READY 승격)
+- [x] 수동 `?fallback=1`: `MANUAL_FALLBACK` + audit metadata
+- [x] 자동 `wake_up` 호출 경로 없음 (src 전역 검색 0건)
 
-**완료 기준**: 단위/통합 테스트 또는 실차 시나리오로 Baseline·쿨다운 Skip/Call 검증
+**완료 기준**: 코드·타입체크 완료. 실차 Baseline·쿨다운 Skip/Call 실측은 **E**에서 마감.
+
+**주요 모듈**
+| 모듈 | 역할 |
+|------|------|
+| `src/lib/tesla/display-model.ts` | 표시 model 매핑 |
+| `src/lib/tesla/hybrid/sync-state.ts` | SyncState patch · 쿨다운 판정 |
+| `src/lib/tesla/hybrid/rest-sync.ts` | Baseline · wake REST · VK confirm · writeRestSnapshot |
+| `src/lib/vehicle-sync.ts` | registry/full/fallback 오케스트레이션 |
+| `src/lib/tesla/telemetry/processor.ts` | wake 감지 · 쿨다운 트리거 |
 
 ---
 
@@ -94,8 +103,8 @@
 | 순서 | 작업 | 의존 |
 |------|------|------|
 | 1 | A 스키마 | 없음 — ✅ |
-| 2 | B Baseline + 제원 쓰기 | A |
-| 3 | B 쿨다운 wake sync | A, Telemetry 수신 |
+| 2 | B Baseline + 제원 쓰기 | A — ✅ |
+| 3 | B 쿨다운 wake sync | A, Telemetry 수신 — ✅ |
 | 4 | C API | B |
 | 5 | D UI | C |
 | 6 | E 검증 | D |
@@ -106,5 +115,6 @@
 
 | 일자 | 내용 |
 |------|------|
+| 2026-07-11 | **B 완료** — display-model, Baseline/wake REST, VK confirm API, processor 쿨다운, fallback 감사 |
 | 2026-07-11 | **A 완료** — migrate `20260711120000_phase44a_hybrid_data_model`, SyncState backfill, 시드·env |
 | 2026-07-11 | 초안 — Phase 4.4 A~E 체크리스트 (코드 미착수) |

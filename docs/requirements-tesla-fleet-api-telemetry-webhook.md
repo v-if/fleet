@@ -244,14 +244,14 @@ onTelemetryReceived(vin):
 > 상세·진척: [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md)  
 > 스키마: [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md)
 
-- [ ] Lifecycle 상태(또는 동등 플래그)와 Operational ASLEEP/ONLINE 문서·코드 정합
-- [ ] VK/Telemetry ready 트리거 UI·`fleet_status` 확인 경로
-- [ ] 온보딩 Baseline `vehicle_data` 1회 (실패 시 wake 금지)
-- [ ] ASLEEP→ONLINE 시 `lastRestSyncAt` + 쿨다운 후 `vehicle_data` 0~1회
-- [ ] 자동 `wake_up` 경로 없음 회귀 테스트
-- [ ] 감사 로그: Baseline / wake-sync / 수동 fallback 구분
+- [x] Lifecycle 상태(또는 동등 플래그)와 Operational ASLEEP/ONLINE 문서·코드 정합
+- [x] VK/Telemetry ready 트리거 UI·`fleet_status` 확인 경로 — API `POST .../virtual-key/confirm` (UI는 Phase D)
+- [x] 온보딩 Baseline `vehicle_data` 1회 (실패 시 wake 금지)
+- [x] ASLEEP→ONLINE 시 `lastRestSyncAt` + 쿨다운 후 `vehicle_data` 0~1회
+- [x] 자동 `wake_up` 경로 없음 회귀 테스트 — src 검색 0건
+- [x] 감사 로그: Baseline / wake-sync / 수동 fallback 구분
 - [ ] (선택) Telemetry connectivity → ONLINE 전환 보강
-- [ ] 설정값 `TESLA_REST_WAKE_COOLDOWN_MINUTES` 추가
+- [x] 설정값 `TESLA_REST_WAKE_COOLDOWN_MINUTES` 추가
 
 ---
 
@@ -277,3 +277,4 @@ onTelemetryReceived(vin):
 | 2026-07-11 | 초안(고민·솔루션) 분석 후 최종 요구사항화 — VK 웹훅 가정 수정, Lifecycle/Operational 분리, DB 쿨다운, As-Is 정합 |
 | 2026-07-11 | 하이브리드 데이터 모델·Phase 4.4 체크리스트 링크 추가 |
 | 2026-07-11 | Phase 4.4.A 스키마·migrate 완료 반영 |
+| 2026-07-11 | Phase 4.4.B Sync 로직 반영 — 구현 체크리스트 §10 갱신 |

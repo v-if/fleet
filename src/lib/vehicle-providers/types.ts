@@ -15,6 +15,11 @@ export type VehicleSnapshotData = {
   model: string;
   year: number;
   oemVehicleId?: string;
+  /** vehicle_config — Baseline/제원 갱신 시에만 Vehicle에 반영 */
+  carType?: string | null;
+  trimBadging?: string | null;
+  exteriorColor?: string | null;
+  teslaDisplayName?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   batteryPercent?: number;

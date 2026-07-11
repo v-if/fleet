@@ -64,7 +64,18 @@ export async function POST(request: Request) {
         targetType: "System",
         requestId,
         status: AuditLogStatus.SUCCESS,
-        summary: `차량 동기화 성공 (${result.vehicleCount}대)`,
+        summary: forceFallback
+          ? `수동 REST fallback 동기화 성공 (${result.vehicleCount}대)`
+          : `차량 동기화 성공 (${result.vehicleCount}대)`,
+        metadata: {
+          forceFallback,
+          syncMode: result.syncMode,
+          usedFallback: result.usedFallback,
+          restSyncReason: forceFallback ? "MANUAL_FALLBACK" : null,
+          snapshotsWritten: result.snapshotsWritten,
+          baselineAttempted: result.baselineAttempted,
+          baselineSucceeded: result.baselineSucceeded,
+        },
       },
       {
         direction: ApiCallDirection.INBOUND,

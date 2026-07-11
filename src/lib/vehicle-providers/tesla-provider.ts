@@ -21,6 +21,8 @@ type FetchVehiclesOptions = {
 type FetchVehiclesResult = {
   snapshots: VehicleSnapshotData[];
   skippedVehicleDataCount: number;
+  keyPairedVins: string[];
+  unpairedVins: string[];
 };
 
 export class TeslaVehicleProvider implements VehicleDataProvider {
@@ -64,13 +66,18 @@ export class TeslaVehicleProvider implements VehicleDataProvider {
 
     const vehicles = await this.client.listVehicles();
     if (vehicles.length === 0) {
-      return { snapshots: [], skippedVehicleDataCount: 0 };
+      return {
+        snapshots: [],
+        skippedVehicleDataCount: 0,
+        keyPairedVins: [],
+        unpairedVins: [],
+      };
     }
 
     const vins = vehicles.map((vehicle) => vehicle.vin);
-    const fleetStatuses = await this.client.getFleetStatus(vins);
+    const fleetStatus = await this.client.getFleetStatus(vins);
     const fleetStatusByVin = new Map(
-      fleetStatuses.map((status) => [status.vin, status]),
+      fleetStatus.items.map((status) => [status.vin, status]),
     );
 
     const snapshots: VehicleSnapshotData[] = [];
@@ -122,7 +129,12 @@ export class TeslaVehicleProvider implements VehicleDataProvider {
       }
     }
 
-    return { snapshots, skippedVehicleDataCount };
+    return {
+      snapshots,
+      skippedVehicleDataCount,
+      keyPairedVins: fleetStatus.keyPairedVins,
+      unpairedVins: fleetStatus.unpairedVins,
+    };
   }
 
   async fetchVehicleDetail(plateNumber: string): Promise<VehicleSnapshotData | null> {

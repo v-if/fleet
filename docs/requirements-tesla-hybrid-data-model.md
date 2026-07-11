@@ -6,7 +6,7 @@
 |------|------|
 | 목적 | [하이브리드 호출](./requirements-tesla-fleet-api-telemetry-webhook.md) + [표시 데이터](./requirements-tesla-fleet-api-display-data.md) + [모델 매핑](./requirements-tesla-fleet-api-model-mapping.md)을 **DB·동기화·UI 구현**으로 연결하는 설계서 |
 | 범위 | 스키마, 쓰기 경로, 온보딩/쿨다운 상태, 구현 Phase 체크리스트 |
-| 코드 | **미착수** — 본 문서·체크리스트 확정 후 구현 |
+| 코드 | **4.4.A·B 적용** — 스키마 + Baseline/wake/VK Sync 로직. API/UI(C·D) 미착수 |
 | 작성일 | 2026-07-11 |
 
 ### 1.1 설계 목표
@@ -210,8 +210,8 @@ model VehicleSyncState {
 | Phase | 내용 | 코드 |
 |-------|------|------|
 | **4.4.A** | 스키마·마이그레이션·시드 | ✅ `20260711120000_phase44a_hybrid_data_model` (2026-07-11) |
-| **4.4.B** | Sync 로직 (Baseline·쿨다운·제원 분리) | 미착수 |
-| **4.4.C** | Telemetry processor ↔ SyncState | 미착수 |
+| **4.4.B** | Sync 로직 (Baseline·쿨다운·제원 분리) | ✅ display-model · hybrid/rest-sync · processor (2026-07-11) |
+| **4.4.C** | Telemetry processor ↔ SyncState | 일부 B에 포함(wake/READY) · API 노출은 C |
 | **4.4.D** | API/UI (lifecycle·제원 카드·모델 표시) | 미착수 |
 | **4.4.E** | 검증·감사 로그·문서 마감 | 미착수 |
 
@@ -235,3 +235,4 @@ model VehicleSyncState {
 |------|------|
 | 2026-07-11 | 초안 — Vehicle 제원 컬럼 + VehicleSyncState 1:1, 쓰기 경로, Phase 4.4 설계 (코드 미착수) |
 | 2026-07-11 | 4.4.A 적용 — Prisma enum/컬럼/VehicleSyncState, Supabase migrate·backfill 완료 |
+| 2026-07-11 | 4.4.B 적용 — buildDisplayModel, Baseline/wake REST, VK confirm, 제원 분리 쓰기 |

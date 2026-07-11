@@ -1,8 +1,19 @@
+import { RestSyncReason } from "@prisma/client";
+
 import {
   getActiveTeslaAccountForUser,
   getAnyActiveTeslaAccount,
 } from "@/lib/tesla/auth";
 import {
+  applyRegistryLifecycleHint,
+  ensureVehicleSyncState,
+} from "@/lib/tesla/hybrid/sync-state";
+import {
+  tryBaselinesForAccount,
+  writeRestSnapshot,
+} from "@/lib/tesla/hybrid/rest-sync";
+import {
+  isBaselineOnReadyEnabled,
   isTelemetryEnabled,
   resolveVehicleSyncMode,
   type VehicleSyncMode,
@@ -27,6 +38,8 @@ export type SyncVehiclesResult = {
   syncMode?: VehicleSyncMode;
   skippedVehicleDataCount?: number;
   snapshotsWritten?: number;
+  baselineAttempted?: number;
+  baselineSucceeded?: number;
   error?: string;
 };
 
@@ -34,23 +47,6 @@ export type SyncVehiclesOptions = {
   forceFallback?: boolean;
   mode?: VehicleSyncMode | "auto";
 };
-
-type UpsertSnapshotOptions = {
-  teslaAccountId?: string | null;
-  telemetrySource?: "REST" | "MIXED" | "TELEMETRY";
-  lastRestSyncAt?: Date;
-  preserveTelemetryFields?: boolean;
-  existingLastTelemetryAt?: Date | null;
-};
-
-/** Phase 4.4.A: Vehicle 생성 직후 SyncState 보장 (없으면 REGISTERED) */
-async function ensureVehicleSyncState(vehicleId: string) {
-  await prisma.vehicleSyncState.upsert({
-    where: { vehicleId },
-    create: { vehicleId },
-    update: {},
-  });
-}
 
 async function getLatestTelemetryAt(
   teslaAccountId: string | null,
@@ -72,6 +68,7 @@ async function getLatestTelemetryAt(
   return vehicle?.snapshots[0]?.lastTelemetryAt ?? null;
 }
 
+/** registry-only: Snapshot 미생성, 제원 덮어쓰기 금지, SyncState lifecycle 힌트 */
 async function upsertVehicleRegistry(
   snapshot: VehicleSnapshotData,
   teslaAccountId: string | null,
@@ -86,30 +83,36 @@ async function upsertVehicleRegistry(
         })
       : null;
 
+  const registryData = {
+    plateNumber: snapshot.plateNumber,
+    year: snapshot.year,
+    oemVehicleId: snapshot.oemVehicleId,
+    teslaAccountId,
+    unlinkedAt: null as Date | null,
+    isDeleted: false,
+    ...(snapshot.teslaDisplayName
+      ? { teslaDisplayName: snapshot.teslaDisplayName }
+      : {}),
+  };
+
   if (existing) {
-    return prisma.vehicle.update({
+    const updated = await prisma.vehicle.update({
       where: { id: existing.id },
       data: {
-        plateNumber: snapshot.plateNumber,
-        model: snapshot.model,
-        year: snapshot.year,
-        oemVehicleId: snapshot.oemVehicleId,
-        teslaAccountId,
-        unlinkedAt: null,
-        isDeleted: false,
+        ...registryData,
+        // 제원 동기화 전이면 placeholder model만 유지/갱신
+        ...(existing.specsSyncedAt ? {} : { model: snapshot.model }),
       },
     });
+    await ensureVehicleSyncState(updated.id);
+    return updated;
   }
 
   const created = await prisma.vehicle.upsert({
     where: { plateNumber: snapshot.plateNumber },
     update: {
+      ...registryData,
       model: snapshot.model,
-      year: snapshot.year,
-      oemVehicleId: snapshot.oemVehicleId,
-      teslaAccountId,
-      unlinkedAt: null,
-      isDeleted: false,
     },
     create: {
       plateNumber: snapshot.plateNumber,
@@ -117,124 +120,13 @@ async function upsertVehicleRegistry(
       year: snapshot.year,
       oemVehicleId: snapshot.oemVehicleId,
       teslaAccountId,
+      ...(snapshot.teslaDisplayName
+        ? { teslaDisplayName: snapshot.teslaDisplayName }
+        : {}),
     },
   });
   await ensureVehicleSyncState(created.id);
   return created;
-}
-
-async function upsertSnapshot(
-  snapshot: VehicleSnapshotData,
-  options: UpsertSnapshotOptions = {},
-) {
-  const {
-    teslaAccountId = null,
-    telemetrySource = "REST",
-    lastRestSyncAt = new Date(),
-    preserveTelemetryFields = false,
-    existingLastTelemetryAt = null,
-  } = options;
-
-  const existing =
-    teslaAccountId && snapshot.oemVehicleId
-      ? await prisma.vehicle.findFirst({
-          where: {
-            teslaAccountId,
-            oemVehicleId: snapshot.oemVehicleId,
-          },
-          include: {
-            snapshots: {
-              orderBy: { lastUpdatedAt: "desc" },
-              take: 1,
-            },
-          },
-        })
-      : null;
-
-  const previousSnapshot = existing?.snapshots[0];
-
-  const vehicle = existing
-    ? await prisma.vehicle.update({
-        where: { id: existing.id },
-        data: {
-          plateNumber: snapshot.plateNumber,
-          model: snapshot.model,
-          year: snapshot.year,
-          oemVehicleId: snapshot.oemVehicleId,
-          teslaAccountId,
-          unlinkedAt: null,
-          isDeleted: false,
-        },
-      })
-    : await prisma.vehicle.upsert({
-        where: { plateNumber: snapshot.plateNumber },
-        update: {
-          model: snapshot.model,
-          year: snapshot.year,
-          oemVehicleId: snapshot.oemVehicleId,
-          teslaAccountId,
-          unlinkedAt: null,
-          isDeleted: false,
-        },
-        create: {
-          plateNumber: snapshot.plateNumber,
-          model: snapshot.model,
-          year: snapshot.year,
-          oemVehicleId: snapshot.oemVehicleId,
-          teslaAccountId,
-        },
-      });
-
-  await ensureVehicleSyncState(vehicle.id);
-
-  const resolvedTelemetrySource =
-    preserveTelemetryFields && previousSnapshot?.telemetrySource === "TELEMETRY"
-      ? "MIXED"
-      : telemetrySource;
-
-  await prisma.vehicleSnapshot.create({
-    data: {
-      vehicleId: vehicle.id,
-      latitude: snapshot.latitude,
-      longitude: snapshot.longitude,
-      batteryPercent: snapshot.batteryPercent,
-      rangeKm: snapshot.rangeKm,
-      ignitionOn: snapshot.ignitionOn,
-      status: snapshot.status,
-      chargingStatus: snapshot.chargingStatus,
-      odometerKm: snapshot.odometerKm,
-      locked: snapshot.locked,
-      doorsOpen: snapshot.doorsOpen,
-      windowsOpen: snapshot.windowsOpen,
-      insideTempC: snapshot.insideTempC,
-      outsideTempC: snapshot.outsideTempC,
-      climateOn: snapshot.climateOn,
-      tpmsFrontLeft: snapshot.tpmsFrontLeft,
-      tpmsFrontRight: snapshot.tpmsFrontRight,
-      tpmsRearLeft: snapshot.tpmsRearLeft,
-      tpmsRearRight: snapshot.tpmsRearRight,
-      sentryMode: snapshot.sentryMode,
-      serviceStatus: snapshot.serviceStatus,
-      softwareVersion: snapshot.softwareVersion,
-      nearbyChargingSites: snapshot.nearbyChargingSites
-        ? JSON.stringify(snapshot.nearbyChargingSites)
-        : null,
-      lastTelemetryAt: preserveTelemetryFields
-        ? (existingLastTelemetryAt ?? previousSnapshot?.lastTelemetryAt ?? null)
-        : null,
-      lastRestSyncAt,
-      telemetrySource: resolvedTelemetrySource,
-      isAsleepInferred: preserveTelemetryFields
-        ? (previousSnapshot?.isAsleepInferred ?? false)
-        : false,
-      sleepInferredAt: preserveTelemetryFields
-        ? (previousSnapshot?.sleepInferredAt ?? null)
-        : null,
-      lastUpdatedAt: snapshot.lastUpdatedAt,
-    },
-  });
-
-  return vehicle;
 }
 
 async function replaceEvents(
@@ -327,6 +219,7 @@ export async function syncVehiclesFromProvider(
   const lastSyncedAt = new Date();
   const syncMode = resolveVehicleSyncMode(options);
   const registryOnly = syncMode === "registry";
+  const usedFallback = Boolean(options.forceFallback);
 
   let resolvedUserId = userId;
   let teslaAccountId: string | null = null;
@@ -377,11 +270,12 @@ export async function syncVehiclesFromProvider(
     requestedProvider === "tesla"
       ? new TeslaVehicleProvider(resolvedUserId)
       : createVehicleProvider();
-  const usedFallback = false;
-  let errorMessage: string | undefined;
 
+  let errorMessage: string | undefined;
   let snapshots: VehicleSnapshotData[] = [];
   let skippedVehicleDataCount = 0;
+  let keyPairedVins: string[] = [];
+  let unpairedVins: string[] = [];
 
   try {
     const telemetryEnabled = isTelemetryEnabled();
@@ -399,6 +293,8 @@ export async function syncVehiclesFromProvider(
       });
       snapshots = result.snapshots;
       skippedVehicleDataCount = result.skippedVehicleDataCount;
+      keyPairedVins = result.keyPairedVins;
+      unpairedVins = result.unpairedVins;
     } else {
       snapshots = await provider.fetchVehicles();
     }
@@ -408,6 +304,8 @@ export async function syncVehiclesFromProvider(
   }
 
   const effectiveProvider = provider.name;
+  const keyPairedSet = new Set(keyPairedVins);
+  const unpairedSet = new Set(unpairedVins);
 
   if (effectiveProvider === "mock") {
     await resetMockFleet();
@@ -417,7 +315,13 @@ export async function syncVehiclesFromProvider(
 
   for (const snapshot of snapshots) {
     if (registryOnly && effectiveProvider === "tesla") {
-      await upsertVehicleRegistry(snapshot, teslaAccountId);
+      const vehicle = await upsertVehicleRegistry(snapshot, teslaAccountId);
+      await applyRegistryLifecycleHint(
+        vehicle.id,
+        snapshot.oemVehicleId,
+        keyPairedSet,
+        unpairedSet,
+      );
       continue;
     }
 
@@ -429,18 +333,36 @@ export async function syncVehiclesFromProvider(
       isTelemetryEnabled() && isTelemetryFresh(lastTelemetryAt),
     );
 
-    await upsertSnapshot(snapshot, {
+    // 수동 fallback만 제원 갱신 허용. 일반 full(레거시)은 동적 Snapshot만.
+    const updateSpecs = usedFallback && Boolean(snapshot.carType);
+
+    await writeRestSnapshot(snapshot, {
       teslaAccountId: effectiveProvider === "tesla" ? teslaAccountId : null,
       telemetrySource: "REST",
       lastRestSyncAt: lastSyncedAt,
       preserveTelemetryFields,
       existingLastTelemetryAt: lastTelemetryAt,
+      updateSpecs,
+      restSyncReason: usedFallback ? RestSyncReason.MANUAL_FALLBACK : undefined,
     });
     snapshotsWritten += 1;
   }
 
   if (registryOnly && effectiveProvider === "tesla" && teslaAccountId) {
     await ensureTelemetrySubscriptionsForAccount(teslaAccountId);
+  }
+
+  let baselineAttempted = 0;
+  let baselineSucceeded = 0;
+  if (
+    registryOnly &&
+    effectiveProvider === "tesla" &&
+    teslaAccountId &&
+    isBaselineOnReadyEnabled()
+  ) {
+    const baseline = await tryBaselinesForAccount(teslaAccountId);
+    baselineAttempted = baseline.attempted;
+    baselineSucceeded = baseline.succeeded;
   }
 
   if (effectiveProvider === "tesla" && teslaAccountId) {
@@ -496,6 +418,8 @@ export async function syncVehiclesFromProvider(
     syncMode,
     skippedVehicleDataCount,
     snapshotsWritten,
+    baselineAttempted,
+    baselineSucceeded,
     error: errorMessage,
   };
 }

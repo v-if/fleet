@@ -96,6 +96,7 @@ export type TeslaVehicleDataResponse = {
     vehicle_config?: {
       car_type?: string;
       trim_badging?: string;
+      exterior_color?: string;
     };
   };
 };

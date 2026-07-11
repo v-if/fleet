@@ -86,3 +86,21 @@ export function getTelemetryProcessBatchSize(): number {
 export function getPartnerToken(): string | null {
   return process.env.TESLA_PARTNER_TOKEN ?? null;
 }
+
+/** ASLEEP→ONLINE 시 vehicle_data 쿨다운(분). 기본 30 */
+export function getRestWakeCooldownMinutes(): number {
+  const minutes = Number(process.env.TESLA_REST_WAKE_COOLDOWN_MINUTES ?? "30");
+  if (!Number.isFinite(minutes) || minutes < 0) {
+    return 30;
+  }
+  return minutes;
+}
+
+/** READY/VK 확인 후 Baseline vehicle_data 1회 시도. 기본 true */
+export function isBaselineOnReadyEnabled(): boolean {
+  const value = process.env.TESLA_BASELINE_ON_READY;
+  if (value === "false" || value === "0") {
+    return false;
+  }
+  return true;
+}

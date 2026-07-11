@@ -1,7 +1,9 @@
-import { TelemetryIngressStatus, TelemetrySource } from "@prisma/client";
+import { TelemetryIngressStatus, TelemetrySource, VehicleLifecycle } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
+import { maybeRunWakeCooldownRestSync } from "@/lib/tesla/hybrid/rest-sync";
+import { patchVehicleSyncState } from "@/lib/tesla/hybrid/sync-state";
 
 import { getTelemetryProcessBatchSize, getTelemetryStaleAfterMs, getTelemetryFreshnessMs } from "./config";
 import { refreshTelemetryMetadataCounts } from "./ingress";
@@ -87,12 +89,15 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
         orderBy: { lastUpdatedAt: "desc" },
         take: 1,
       },
+      syncState: true,
     },
   });
 
   if (!vehicle) return null;
 
   const previous = vehicle.snapshots[0];
+  const wasAsleep =
+    previous?.isAsleepInferred === true || previous?.status === "ASLEEP";
   const merged = mergeSnapshotFields(fields, previous);
 
   await prisma.vehicleSnapshot.create({
@@ -123,6 +128,31 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
       active: true,
     },
   });
+
+  // Vehicle 제원 컬럼은 Telemetry로 갱신하지 않음 (Phase 4.4.B)
+  if (
+    vehicle.syncState?.lifecycle === VehicleLifecycle.TELEMETRY_PENDING ||
+    vehicle.syncState?.lifecycle === VehicleLifecycle.KEY_PENDING ||
+    vehicle.syncState?.lifecycle === VehicleLifecycle.REGISTERED
+  ) {
+    await patchVehicleSyncState(vehicleId, {
+      lifecycle: VehicleLifecycle.READY,
+      telemetryConfigSyncedAt:
+        vehicle.syncState.telemetryConfigSyncedAt ?? fields.eventAt,
+    });
+  }
+
+  if (wasAsleep) {
+    await patchVehicleSyncState(vehicleId, {
+      lastWakeDetectedAt: fields.eventAt,
+    });
+
+    try {
+      await maybeRunWakeCooldownRestSync(vehicleId);
+    } catch (error) {
+      console.warn(`Wake cooldown REST sync failed for ${vehicleId}:`, error);
+    }
+  }
 
   return vehicle.id;
 }
