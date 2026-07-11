@@ -25,6 +25,7 @@
 | [handoff-phase44-to-fleet-telemetry.md](./handoff-phase44-to-fleet-telemetry.md) | Phase 4.4 → **Telemetry 서버 전달 사항** (배포 불필요·인지/선택 과제) | Telemetry 담당에 공유·이슈 붙일 때 |
 | [requirements-tesla-fleet-telemetry-disconnect.md](./requirements-tesla-fleet-telemetry-disconnect.md) | Telemetry **연동 해제** — 오프라인(VK)/소프트웨어(FMS), A·B 분리, UI·체크리스트 | 구독 끊기·프라이버시·과금·unlink 분리 설계할 때 |
 | [checklist-tesla-fleet-telemetry-disconnect.md](./checklist-tesla-fleet-telemetry-disconnect.md) | Phase 4.5 연동 해제 구현 체크리스트 | 연동 해제 작업 진척 관리할 때 |
+| [requirements-tesla-vehicle-command-proxy.md](./requirements-tesla-vehicle-command-proxy.md) | **Command Proxy 개발자 인수인계** — 왜 필요한지·FMS/Telemetry 맥락·Fly 배포·Vercel 연결 | Proxy 신규 담당에게 전달·재연동 create 막을 때 |
 | [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md) | `car_type`·`trim_badging` → 화면 모델명 매핑 | 차량 제원 표시·Vehicle 컬럼 추가할 때 |
 | [requirements-front-design.md](./requirements-front-design.md) | Pleos Fleet UI 벤치마킹, 프론트 구성·디자인 개선 요구사항 | 화면 UI/UX 개선할 때 |
 | [requirements-dashboard-design.md](./requirements-dashboard-design.md) | TailAdmin 템플릿 벤치마킹, 디자인 토큰·컴포넌트 마감 개선 요구사항 (Phase 3.7) · **전면 템플릿 적용** (Phase 3.8) | 대시보드·목록·상세 디자인 다듬을 때 |
@@ -122,3 +123,5 @@
 | 2026-07-11 | checklist-tesla-fleet-telemetry-disconnect — Phase 4.5 체크리스트 |
 | 2026-07-11 | Phase 4.5 A~C 완료 — Telemetry disconnect/reconnect · UI · D·P1 잔여 |
 | 2026-07-11 | Phase 4.5 D 완료 — disconnect:verify · VIN LRWYGCFJ7SC214742 · P1 감지기 잔여 |
+| 2026-07-12 | requirements-tesla-vehicle-command-proxy — Fly Proxy·Vercel env·재연동 create 요구사항 |
+| 2026-07-12 | Command Proxy 문서를 **신규 개발자 인수인계서**로 개편 |

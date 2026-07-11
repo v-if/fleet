@@ -114,6 +114,7 @@ Link / Lifecycle (VehicleSyncState.lifecycle + TelemetrySubscription)
 | R1 | `TELEMETRY_DISCONNECTED` 차량에 **[다시 연결]** — VK 확인(`fleet_status`) → **`fleet_telemetry_config` 재등록**(Vehicle Command Proxy) → Baseline 정책은 Phase 4.4와 동일 |
 | R2 | 소프트웨어 단절 후 재연결 시 과금/구독 재개 안내 |
 | R3 | Proxy/CA 미설정 시 재연결은 **실패로 표시** (DB만 활성하고 스트림 없는 상태 방지) |
+| R4 | Proxy 구축·Vercel 연결 — [requirements-tesla-vehicle-command-proxy.md](./requirements-tesla-vehicle-command-proxy.md) |
 
 ### 5.4 Telemetry 서버
 

@@ -720,6 +720,18 @@
 
 ---
 
+### Phase 4.6 Vehicle Command Proxy (P0) — 문서
+
+> **신규 Proxy 개발자 인수인계 문서** (2026-07-12) · Fly 배포·Vercel env 미착수  
+> 전달용: [requirements-tesla-vehicle-command-proxy.md](./requirements-tesla-vehicle-command-proxy.md)
+
+- [ ] Fly `tesla-http-proxy` 앱 배포 (Telemetry 앱과 분리 · 상시 on) — **Proxy 담당**
+- [ ] Vercel: `TESLA_VEHICLE_COMMAND_PROXY_URL` + `TESLA_TELEMETRY_CA_PEM` — **FMS 담당**
+- [ ] 실차 재연동 E2E (config create → ingress TELEMETRY)
+- [ ] (P1) 재연동 실패 UX·lifecycle 롤백 — FMS
+
+---
+
 ## Phase 5. 배포 및 데모 (M5)
 
 > 설치: [setup-guide.md](./setup-guide.md) §7
@@ -810,4 +822,5 @@
 | 2026-07-11 | Phase 4.5 문서 — Telemetry 연동 해제 요구사항 ([requirements-tesla-fleet-telemetry-disconnect.md](./requirements-tesla-fleet-telemetry-disconnect.md)) |
 | 2026-07-11 | Phase 4.5 A~C 완료 — disconnect/reconnect/unlink · UI · D·P1 감지기 잔여 |
 | 2026-07-11 | Phase 4.5 D 완료 — disconnect:verify · VIN LRWYGCFJ7SC214742 · P1 감지기 잔여 |
+| 2026-07-12 | Phase 4.6 문서 — Vehicle Command Proxy ([requirements-tesla-vehicle-command-proxy.md](./requirements-tesla-vehicle-command-proxy.md)) |
 
