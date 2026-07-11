@@ -19,5 +19,7 @@ export function toMapVehicles(vehicles: VehicleListItemDto[]): MapVehicle[] {
       batteryPercent: vehicle.snapshot.batteryPercent,
       ignitionOn: vehicle.snapshot.ignitionOn,
       chargingStatus: vehicle.snapshot.chargingStatus,
+      lifecycle: vehicle.syncState?.lifecycle ?? null,
+      carType: vehicle.carType,
     }));
 }

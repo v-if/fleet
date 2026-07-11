@@ -1,6 +1,6 @@
 # 체크리스트 — Telemetry + Fleet API 하이브리드 데이터 (Phase 4.4)
 
-> **상태**: **A·B 완료** (2026-07-11) / C~E 미착수  
+> **상태**: **A·B·C 완료** (2026-07-11) / D~E 미착수  
 > **설계서**: [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md)  
 > **호출 정책**: [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md)  
 > **표시·매핑**: [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md), [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md)
@@ -62,14 +62,22 @@
 
 ---
 
-## C. API · 응답 계약
+## C. API · 응답 계약 — ✅
 
-- [ ] `/api/vehicles`, `/api/vehicles/[id]`에 제원·lifecycle·`lastRestSyncAt`·신선도 필드 노출
-- [ ] 설정/온보딩: VK 확인·Baseline 재시도 엔드포인트(또는 기존 sync 확장)
-- [ ] Telemetry status에 SyncState 요약(선택)
-- [ ] 타입(`MapVehicle` 등) 및 Zod/공유 타입 갱신
+- [x] `/api/vehicles`, `/api/vehicles/[id]`에 제원·lifecycle·`lastRestSyncAt`·신선도 필드 노출
+- [x] 설정/온보딩: VK 확인 `POST .../virtual-key/confirm` · Baseline 재시도 `POST .../baseline`
+- [x] Telemetry status에 SyncState 요약 (`lifecycleCounts` · 차량별 lifecycle/REST 시각)
+- [x] 타입(`VehicleListItemDto` · `MapVehicle` 등) 갱신 — Zod 스키마 없음(TS DTO)
 
-**완료 기준**: API JSON에 `carType`/`model`/`lifecycle` 확인
+**완료 기준**: API JSON에 `carType`/`model`/`lifecycle` 확인 — **충족 (2026-07-11)**
+
+**응답 필드 (목록·상세 공통)**
+| 필드 | 설명 |
+|------|------|
+| `carType`, `trimBadging`, `exteriorColor`, `teslaDisplayName`, `specsSyncedAt` | Vehicle 제원 |
+| `syncState.lifecycle` 등 | VehicleSyncState |
+| `freshness.lastTelemetryAt` / `lastRestSyncAt` | 신선도 (REST SoT=SyncState) |
+| 상세 `telemetrySubscription` | 구독·configSynced |
 
 ---
 
@@ -105,7 +113,7 @@
 | 1 | A 스키마 | 없음 — ✅ |
 | 2 | B Baseline + 제원 쓰기 | A — ✅ |
 | 3 | B 쿨다운 wake sync | A, Telemetry 수신 — ✅ |
-| 4 | C API | B |
+| 4 | C API | B — ✅ |
 | 5 | D UI | C |
 | 6 | E 검증 | D |
 
@@ -115,6 +123,7 @@
 
 | 일자 | 내용 |
 |------|------|
+| 2026-07-11 | **C 완료** — vehicles API 제원/lifecycle/freshness, baseline·VK 엔드포인트, telemetry status SyncState |
 | 2026-07-11 | **B 완료** — display-model, Baseline/wake REST, VK confirm API, processor 쿨다운, fallback 감사 |
 | 2026-07-11 | **A 완료** — migrate `20260711120000_phase44a_hybrid_data_model`, SyncState backfill, 시드·env |
 | 2026-07-11 | 초안 — Phase 4.4 A~E 체크리스트 (코드 미착수) |

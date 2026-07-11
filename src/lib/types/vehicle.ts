@@ -1,4 +1,11 @@
-import type { ChargingStatus, EventType, ServiceStatus, VehicleStatus } from "@prisma/client";
+import type {
+  ChargingStatus,
+  EventType,
+  RestSyncReason,
+  ServiceStatus,
+  VehicleLifecycle,
+  VehicleStatus,
+} from "@prisma/client";
 
 export type NearbyChargingSiteDto = {
   name: string;
@@ -49,12 +56,40 @@ export type VehicleEventDto = {
   createdAt: string;
 };
 
+/** Phase 4.4 — 온보딩·쿨다운 SoT */
+export type VehicleSyncStateDto = {
+  lifecycle: VehicleLifecycle;
+  virtualKeyConfirmedAt: string | null;
+  telemetryConfigSyncedAt: string | null;
+  baselineCompletedAt: string | null;
+  baselineLastError: string | null;
+  lastRestSyncAt: string | null;
+  lastRestSyncReason: RestSyncReason | null;
+  lastWakeDetectedAt: string | null;
+  updatedAt: string;
+};
+
+export type VehicleFreshnessDto = {
+  lastTelemetryAt: string | null;
+  /** SyncState SoT, 없으면 Snapshot 미러 */
+  lastRestSyncAt: string | null;
+  lastRestSyncReason: RestSyncReason | null;
+  telemetrySource: "TELEMETRY" | "REST" | "MIXED" | null;
+};
+
 export type VehicleListItemDto = {
   id: string;
   plateNumber: string;
   model: string;
   year: number;
   oemVehicleId: string | null;
+  carType: string | null;
+  trimBadging: string | null;
+  exteriorColor: string | null;
+  teslaDisplayName: string | null;
+  specsSyncedAt: string | null;
+  syncState: VehicleSyncStateDto | null;
+  freshness: VehicleFreshnessDto;
   snapshot: VehicleSnapshotDto | null;
   recentEvents: VehicleEventDto[];
   isIdle: boolean;
@@ -83,10 +118,19 @@ export type VehiclesResponse = {
   vehicles: VehicleListItemDto[];
 };
 
+export type VehicleTelemetrySubscriptionDto = {
+  active: boolean;
+  configSynced: boolean;
+  configCheckedAt: string | null;
+  subscribedAt: string;
+  lastError: string | null;
+};
+
 export type VehicleDetailDto = VehicleListItemDto & {
   createdAt: string;
   updatedAt: string;
   events: VehicleEventDto[];
+  telemetrySubscription: VehicleTelemetrySubscriptionDto | null;
 };
 
 export type VehicleDetailResponse = {
@@ -104,4 +148,6 @@ export type MapVehicle = {
   batteryPercent: number | null;
   ignitionOn: boolean | null;
   chargingStatus?: ChargingStatus | null;
+  lifecycle?: VehicleLifecycle | null;
+  carType?: string | null;
 };

@@ -6,10 +6,12 @@ import { getVehicleProviderName } from "@/lib/vehicle-providers";
 import type { NearbyChargingSiteDto } from "@/lib/types/vehicle";
 import type {
   VehicleDetailDto,
+  VehicleFreshnessDto,
   VehicleListItemDto,
+  VehicleSyncStateDto,
   VehiclesResponse,
 } from "@/lib/types/vehicle";
-import type { VehicleSnapshot } from "@prisma/client";
+import type { VehicleSnapshot, VehicleSyncState } from "@prisma/client";
 
 function parseNearbyChargingSites(json: string | null): NearbyChargingSiteDto[] {
   if (!json) return [];
@@ -57,10 +59,44 @@ function serializeSnapshot(snapshot: VehicleSnapshot) {
   };
 }
 
+function serializeSyncState(
+  syncState: VehicleSyncState | null | undefined,
+): VehicleSyncStateDto | null {
+  if (!syncState) return null;
+  return {
+    lifecycle: syncState.lifecycle,
+    virtualKeyConfirmedAt: syncState.virtualKeyConfirmedAt?.toISOString() ?? null,
+    telemetryConfigSyncedAt:
+      syncState.telemetryConfigSyncedAt?.toISOString() ?? null,
+    baselineCompletedAt: syncState.baselineCompletedAt?.toISOString() ?? null,
+    baselineLastError: syncState.baselineLastError,
+    lastRestSyncAt: syncState.lastRestSyncAt?.toISOString() ?? null,
+    lastRestSyncReason: syncState.lastRestSyncReason,
+    lastWakeDetectedAt: syncState.lastWakeDetectedAt?.toISOString() ?? null,
+    updatedAt: syncState.updatedAt.toISOString(),
+  };
+}
+
+function buildFreshness(
+  syncState: VehicleSyncState | null | undefined,
+  snapshot: VehicleSnapshot | null,
+): VehicleFreshnessDto {
+  return {
+    lastTelemetryAt: snapshot?.lastTelemetryAt?.toISOString() ?? null,
+    lastRestSyncAt:
+      syncState?.lastRestSyncAt?.toISOString() ??
+      snapshot?.lastRestSyncAt?.toISOString() ??
+      null,
+    lastRestSyncReason: syncState?.lastRestSyncReason ?? null,
+    telemetrySource: snapshot?.telemetrySource ?? null,
+  };
+}
+
 function toListItem(
   vehicle: Awaited<ReturnType<typeof fetchVehiclesFromDb>>[number],
 ): VehicleListItemDto {
   const snapshot = vehicle.snapshots[0] ?? null;
+  const syncState = vehicle.syncState ?? null;
 
   return {
     id: vehicle.id,
@@ -68,6 +104,13 @@ function toListItem(
     model: vehicle.model,
     year: vehicle.year,
     oemVehicleId: vehicle.oemVehicleId,
+    carType: vehicle.carType,
+    trimBadging: vehicle.trimBadging,
+    exteriorColor: vehicle.exteriorColor,
+    teslaDisplayName: vehicle.teslaDisplayName,
+    specsSyncedAt: vehicle.specsSyncedAt?.toISOString() ?? null,
+    syncState: serializeSyncState(syncState),
+    freshness: buildFreshness(syncState, snapshot),
     snapshot: snapshot ? serializeSnapshot(snapshot) : null,
     recentEvents: vehicle.events.map((event) => ({
       id: event.id,
@@ -84,19 +127,22 @@ function toListItem(
   };
 }
 
+const vehicleListInclude = {
+  snapshots: {
+    orderBy: { lastUpdatedAt: "desc" as const },
+    take: 1,
+  },
+  events: {
+    orderBy: { occurredAt: "desc" as const },
+    take: 3,
+  },
+  syncState: true,
+};
+
 async function fetchVehiclesFromDb() {
   return prisma.vehicle.findMany({
     where: activeVehicleWhere,
-    include: {
-      snapshots: {
-        orderBy: { lastUpdatedAt: "desc" },
-        take: 1,
-      },
-      events: {
-        orderBy: { occurredAt: "desc" },
-        take: 3,
-      },
-    },
+    include: vehicleListInclude,
     orderBy: { plateNumber: "asc" },
   });
 }
@@ -158,20 +204,19 @@ export async function getVehicleDetail(
       ...activeVehicleWhere,
     },
     include: {
-      snapshots: {
-        orderBy: { lastUpdatedAt: "desc" },
-        take: 1,
-      },
+      ...vehicleListInclude,
       events: {
         orderBy: { occurredAt: "desc" },
         take: 10,
       },
+      telemetrySubscription: true,
     },
   });
 
   if (!vehicle) return null;
 
   const base = toListItem(vehicle);
+  const subscription = vehicle.telemetrySubscription;
 
   return {
     ...base,
@@ -186,5 +231,14 @@ export async function getVehicleDetail(
       resolvedAt: event.resolvedAt?.toISOString() ?? null,
       createdAt: event.createdAt.toISOString(),
     })),
+    telemetrySubscription: subscription
+      ? {
+          active: subscription.active,
+          configSynced: subscription.configSynced,
+          configCheckedAt: subscription.configCheckedAt?.toISOString() ?? null,
+          subscribedAt: subscription.subscribedAt.toISOString(),
+          lastError: subscription.lastError,
+        }
+      : null,
   };
 }

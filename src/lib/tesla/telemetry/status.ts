@@ -46,6 +46,18 @@ export async function getTelemetryOperationalStatus() {
         id: true,
         plateNumber: true,
         oemVehicleId: true,
+        carType: true,
+        specsSyncedAt: true,
+        syncState: {
+          select: {
+            lifecycle: true,
+            baselineCompletedAt: true,
+            baselineLastError: true,
+            lastRestSyncAt: true,
+            lastRestSyncReason: true,
+            lastWakeDetectedAt: true,
+          },
+        },
         snapshots: {
           orderBy: { lastUpdatedAt: "desc" },
           take: 1,
@@ -53,6 +65,7 @@ export async function getTelemetryOperationalStatus() {
             telemetrySource: true,
             lastTelemetryAt: true,
             lastUpdatedAt: true,
+            lastRestSyncAt: true,
           },
         },
       },
@@ -98,10 +111,31 @@ export async function getTelemetryOperationalStatus() {
       registeredCount: registeredVehicles.length,
       activeSubscriptionCount: subscriptionCount,
       telemetrySnapshotCount: telemetrySnapshots,
+      lifecycleCounts: registeredVehicles.reduce(
+        (acc, vehicle) => {
+          const key = vehicle.syncState?.lifecycle ?? "UNKNOWN";
+          acc[key] = (acc[key] ?? 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
       items: registeredVehicles.map((vehicle) => ({
         id: vehicle.id,
         plateNumber: vehicle.plateNumber,
         vin: vehicle.oemVehicleId,
+        carType: vehicle.carType,
+        specsSyncedAt: vehicle.specsSyncedAt?.toISOString() ?? null,
+        lifecycle: vehicle.syncState?.lifecycle ?? null,
+        baselineCompletedAt:
+          vehicle.syncState?.baselineCompletedAt?.toISOString() ?? null,
+        baselineLastError: vehicle.syncState?.baselineLastError ?? null,
+        lastRestSyncAt:
+          vehicle.syncState?.lastRestSyncAt?.toISOString() ??
+          vehicle.snapshots[0]?.lastRestSyncAt?.toISOString() ??
+          null,
+        lastRestSyncReason: vehicle.syncState?.lastRestSyncReason ?? null,
+        lastWakeDetectedAt:
+          vehicle.syncState?.lastWakeDetectedAt?.toISOString() ?? null,
         latestTelemetryAt:
           vehicle.snapshots[0]?.lastTelemetryAt?.toISOString() ??
           vehicle.snapshots[0]?.lastUpdatedAt?.toISOString() ??
