@@ -72,6 +72,7 @@ enum VehicleLifecycle {
   KEY_PENDING
   TELEMETRY_PENDING
   READY
+  TELEMETRY_DISCONNECTED
 }
 
 /// vehicle_data / 제원 REST 호출 사유 (쿨다운·감사)
@@ -80,6 +81,13 @@ enum RestSyncReason {
   WAKE_COOLDOWN
   MANUAL_FALLBACK
   SPECS_REFRESH
+}
+
+/// Telemetry 연동 해제 사유 (Phase 4.5)
+enum TelemetryDisconnectReason {
+  USER_SOFTWARE
+  VK_REMOVED_OFFLINE
+  UNLINK
 }
 
 model User {
@@ -157,24 +165,27 @@ model TelemetryIngress {
 }
 
 model TelemetrySubscription {
-  id             String        @id @default(cuid())
-  vehicleId      String        @unique
-  vehicle        Vehicle       @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  vin            String
-  teslaAccountId String?
-  teslaAccount   TeslaAccount? @relation(fields: [teslaAccountId], references: [id], onDelete: SetNull)
-  active         Boolean       @default(true)
-  configSynced   Boolean       @default(false)
-  configCheckedAt DateTime?    @db.Timestamptz(3)
-  subscribedAt   DateTime      @default(now()) @db.Timestamptz(3)
-  unsubscribedAt DateTime?     @db.Timestamptz(3)
-  lastError      String?
-  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime      @updatedAt @db.Timestamptz(3)
+  id               String                      @id @default(cuid())
+  vehicleId        String                      @unique
+  vehicle          Vehicle                     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vin              String
+  teslaAccountId   String?
+  teslaAccount     TeslaAccount?               @relation(fields: [teslaAccountId], references: [id], onDelete: SetNull)
+  active           Boolean                     @default(true)
+  configSynced     Boolean                     @default(false)
+  configCheckedAt  DateTime?                   @db.Timestamptz(3)
+  subscribedAt     DateTime                    @default(now()) @db.Timestamptz(3)
+  unsubscribedAt   DateTime?                   @db.Timestamptz(3)
+  disconnectedAt   DateTime?                   @db.Timestamptz(3)
+  disconnectReason TelemetryDisconnectReason?
+  lastError        String?
+  createdAt        DateTime                    @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime                    @updatedAt @db.Timestamptz(3)
 
   @@index([vin])
   @@index([teslaAccountId])
   @@index([active])
+  @@index([disconnectReason])
 }
 
 model Vehicle {

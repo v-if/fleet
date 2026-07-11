@@ -23,6 +23,8 @@
 | [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | 하이브리드 **DB 설계** — Vehicle 제원 + VehicleSyncState + Snapshot 쓰기 경로 | 스키마·마이그레이션·sync 구현할 때 |
 | [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | Phase 4.4 구현 체크리스트 (A~E) | 하이브리드 데이터 작업 진척·완료 확인 |
 | [handoff-phase44-to-fleet-telemetry.md](./handoff-phase44-to-fleet-telemetry.md) | Phase 4.4 → **Telemetry 서버 전달 사항** (배포 불필요·인지/선택 과제) | Telemetry 담당에 공유·이슈 붙일 때 |
+| [requirements-tesla-fleet-telemetry-disconnect.md](./requirements-tesla-fleet-telemetry-disconnect.md) | Telemetry **연동 해제** — 오프라인(VK)/소프트웨어(FMS), A·B 분리, UI·체크리스트 | 구독 끊기·프라이버시·과금·unlink 분리 설계할 때 |
+| [checklist-tesla-fleet-telemetry-disconnect.md](./checklist-tesla-fleet-telemetry-disconnect.md) | Phase 4.5 연동 해제 구현 체크리스트 | 연동 해제 작업 진척 관리할 때 |
 | [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md) | `car_type`·`trim_badging` → 화면 모델명 매핑 | 차량 제원 표시·Vehicle 컬럼 추가할 때 |
 | [requirements-front-design.md](./requirements-front-design.md) | Pleos Fleet UI 벤치마킹, 프론트 구성·디자인 개선 요구사항 | 화면 UI/UX 개선할 때 |
 | [requirements-dashboard-design.md](./requirements-dashboard-design.md) | TailAdmin 템플릿 벤치마킹, 디자인 토큰·컴포넌트 마감 개선 요구사항 (Phase 3.7) · **전면 템플릿 적용** (Phase 3.8) | 대시보드·목록·상세 디자인 다듬을 때 |
@@ -116,3 +118,6 @@
 | 2026-07-11 | Phase 4.4.D 완료 — 목록/상세 제원·lifecycle UI · 설정 온보딩 |
 | 2026-07-11 | Phase 4.4.E 완료 — hybrid:verify · telemetry:check · setup-guide 온보딩 · Phase 4.4 마감 |
 | 2026-07-11 | handoff-phase44-to-fleet-telemetry — Telemetry 서버 전달 사항(배포 불필요) 정리 |
+| 2026-07-11 | requirements-tesla-fleet-telemetry-disconnect — 연동 해제(A/B·fleet_status·UI·체크리스트) |
+| 2026-07-11 | checklist-tesla-fleet-telemetry-disconnect — Phase 4.5 체크리스트 |
+| 2026-07-11 | Phase 4.5 A~C 완료 — Telemetry disconnect/reconnect · UI · D·P1 잔여 |

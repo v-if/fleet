@@ -9,7 +9,9 @@ import { TpmsDiagram } from "@/components/fleet/tpms-diagram";
 import { VehicleMap } from "@/components/fleet/vehicle-map";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
+import { Modal } from "@/components/ui/modal";
 import { FleetToolbar } from "@/components/fms/FleetToolbar";
+import { useRouter } from "next/navigation";
 import { useVehicleDetail, useVehicleRefresh } from "@/hooks/use-vehicles";
 import {
   chargingStatusBadgeColor,
@@ -19,6 +21,7 @@ import {
 import { labelCarType, labelTrimBadging } from "@/lib/tesla/display-model";
 import type { MapVehicle, VehicleDetailDto } from "@/lib/types/vehicle";
 import {
+  DISCONNECT_REASON_LABEL,
   LIFECYCLE_LABEL,
   formatColorBadge,
   lifecycleBadgeColor,
@@ -93,12 +96,19 @@ function InfoField({ label, value }: { label: string; value: string }) {
 }
 
 export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProps) {
+  const router = useRouter();
   const { data, isLoading, isError, error, isFetching, refetch } = useVehicleDetail(vehicleId);
   const refreshVehicles = useVehicleRefresh();
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isConfirmingKey, setIsConfirmingKey] = useState(false);
   const [isRetryingBaseline, setIsRetryingBaseline] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const [isUnlinking, setIsUnlinking] = useState(false);
+  const [confirmDisconnectOpen, setConfirmDisconnectOpen] = useState(false);
+  const [successDisconnectOpen, setSuccessDisconnectOpen] = useState(false);
+  const [confirmUnlinkOpen, setConfirmUnlinkOpen] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   async function handleRefresh() {
@@ -156,6 +166,88 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
       setActionMessage("Baseline 요청 중 오류가 발생했습니다.");
     } finally {
       setIsRetryingBaseline(false);
+    }
+  }
+
+  async function handleDisconnectTelemetry() {
+    setIsDisconnecting(true);
+    setActionMessage(null);
+    try {
+      const response = await fetch(`/api/vehicles/${vehicleId}/telemetry/disconnect`, {
+        method: "POST",
+      });
+      const body = (await response.json()) as {
+        error?: string;
+        teslaUnsubscribe?: { ok?: boolean; error?: string };
+      };
+      if (!response.ok) {
+        setActionMessage(body.error ?? "Telemetry 연동 해제에 실패했습니다.");
+        return;
+      }
+      setConfirmDisconnectOpen(false);
+      setSuccessDisconnectOpen(true);
+      if (body.teslaUnsubscribe && body.teslaUnsubscribe.ok === false) {
+        setActionMessage(
+          `DB는 단절 처리되었습니다. Tesla 구독 해제 재시도가 필요할 수 있습니다: ${body.teslaUnsubscribe.error ?? ""}`,
+        );
+      }
+      await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      await refetch();
+    } catch {
+      setActionMessage("Telemetry 연동 해제 요청 중 오류가 발생했습니다.");
+    } finally {
+      setIsDisconnecting(false);
+    }
+  }
+
+  async function handleReconnectTelemetry() {
+    setIsReconnecting(true);
+    setActionMessage(null);
+    try {
+      const response = await fetch(`/api/vehicles/${vehicleId}/telemetry/reconnect`, {
+        method: "POST",
+      });
+      const body = (await response.json()) as {
+        error?: string;
+        virtualKey?: { ok?: boolean; error?: string };
+      };
+      if (!response.ok) {
+        setActionMessage(body.error ?? "Telemetry 재연결에 실패했습니다.");
+        return;
+      }
+      setActionMessage(
+        body.virtualKey?.ok
+          ? "Telemetry 재연결이 준비되었습니다. Baseline이 시도되었을 수 있습니다."
+          : `재연결은 반영되었습니다. Virtual Key 확인: ${body.virtualKey?.error ?? "미확인"}`,
+      );
+      await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      await refetch();
+    } catch {
+      setActionMessage("Telemetry 재연결 요청 중 오류가 발생했습니다.");
+    } finally {
+      setIsReconnecting(false);
+    }
+  }
+
+  async function handleUnlinkFromFleet() {
+    setIsUnlinking(true);
+    setActionMessage(null);
+    try {
+      const response = await fetch(`/api/vehicles/${vehicleId}/unlink`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        const body = (await response.json()) as { error?: string };
+        setActionMessage(body.error ?? "플릿에서 제거하지 못했습니다.");
+        return;
+      }
+      setConfirmUnlinkOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      router.push("/vehicles");
+    } catch {
+      setActionMessage("플릿 제거 요청 중 오류가 발생했습니다.");
+    } finally {
+      setIsUnlinking(false);
     }
   }
 
@@ -276,6 +368,15 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   {isRetryingBaseline ? "Baseline 중..." : "Baseline 재시도"}
                 </Button>
               ) : null}
+              {guidance.actions.includes("reconnect_telemetry") ? (
+                <Button
+                  size="sm"
+                  onClick={() => void handleReconnectTelemetry()}
+                  disabled={isReconnecting}
+                >
+                  {isReconnecting ? "재연결 중..." : "Telemetry 다시 연결"}
+                </Button>
+              ) : null}
               <Link href="/settings">
                 <Button size="sm" variant="outline">
                   연동 설정
@@ -348,14 +449,42 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
           <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">제원</h4>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => void handleRetryBaseline()}
-                disabled={isRetryingBaseline}
-              >
-                {isRetryingBaseline ? "동기화 중..." : "제원 재동기화"}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                {lifecycle !== "TELEMETRY_DISCONNECTED" ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setConfirmDisconnectOpen(true)}
+                    disabled={isDisconnecting}
+                  >
+                    Telemetry 연동 끊기
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={() => void handleReconnectTelemetry()}
+                    disabled={isReconnecting}
+                  >
+                    {isReconnecting ? "재연결 중..." : "Telemetry 다시 연결"}
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleRetryBaseline()}
+                  disabled={isRetryingBaseline || lifecycle === "TELEMETRY_DISCONNECTED"}
+                >
+                  {isRetryingBaseline ? "동기화 중..." : "제원 재동기화"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setConfirmUnlinkOpen(true)}
+                  disabled={isUnlinking}
+                >
+                  플릿에서 제거
+                </Button>
+              </div>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <InfoField label="표시 모델" value={vehicle.model} />
@@ -401,9 +530,15 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                       ? vehicle.telemetrySubscription.configSynced
                         ? "활성 · config synced"
                         : "활성"
-                      : "비활성"
+                      : vehicle.telemetrySubscription.disconnectReason
+                        ? `단절 · ${DISCONNECT_REASON_LABEL[vehicle.telemetrySubscription.disconnectReason]}`
+                        : "비활성"
                     : "-"
                 }
+              />
+              <InfoField
+                label="단절 시각"
+                value={formatDateTime(vehicle.telemetrySubscription?.disconnectedAt ?? null)}
               />
               <InfoField
                 label="Baseline"
@@ -548,6 +683,84 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
           ) : null}
         </div>
       </div>
+
+      <Modal
+        isOpen={confirmDisconnectOpen}
+        onClose={() => setConfirmDisconnectOpen(false)}
+        className="max-w-lg p-6"
+      >
+        <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">
+          Telemetry 연동 끊기
+        </h3>
+        <p className="text-theme-sm text-gray-600 dark:text-gray-300">
+          이 차량의 <strong>실시간 Telemetry 수신이 중지</strong>됩니다. Virtual Key는 자동
+          삭제되지 않습니다. 과금·프라이버시 목적의 구독 해지에 가깝습니다.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setConfirmDisconnectOpen(false)}
+            disabled={isDisconnecting}
+          >
+            취소
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => void handleDisconnectTelemetry()}
+            disabled={isDisconnecting}
+          >
+            {isDisconnecting ? "해제 중..." : "연동 끊기"}
+          </Button>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={successDisconnectOpen}
+        onClose={() => setSuccessDisconnectOpen(false)}
+        className="max-w-lg p-6"
+      >
+        <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">
+          Telemetry 연동 해제 완료
+        </h3>
+        <p className="text-theme-sm text-gray-600 dark:text-gray-300">
+          보리차 FMS와의 Telemetry 연동이 해제되었습니다. 완벽한 보안을 위해 Tesla 모바일 앱
+          또는 차량 화면의 <strong>안전</strong> 메뉴에서 <strong>bori-fleet Virtual Key</strong>를
+          함께 삭제해 주세요.
+        </p>
+        <div className="mt-6 flex justify-end">
+          <Button size="sm" onClick={() => setSuccessDisconnectOpen(false)}>
+            확인
+          </Button>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={confirmUnlinkOpen}
+        onClose={() => setConfirmUnlinkOpen(false)}
+        className="max-w-lg p-6"
+      >
+        <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">
+          플릿에서 제거
+        </h3>
+        <p className="text-theme-sm text-gray-600 dark:text-gray-300">
+          목록에서 이 차량이 제거되며 Telemetry 구독도 해제됩니다. Virtual Key는 자동 삭제되지
+          않습니다.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setConfirmUnlinkOpen(false)}
+            disabled={isUnlinking}
+          >
+            취소
+          </Button>
+          <Button size="sm" onClick={() => void handleUnlinkFromFleet()} disabled={isUnlinking}>
+            {isUnlinking ? "제거 중..." : "플릿에서 제거"}
+          </Button>
+        </div>
+      </Modal>
     </>
   );
 }

@@ -90,6 +90,7 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
         take: 1,
       },
       syncState: true,
+      telemetrySubscription: true,
     },
   });
 
@@ -112,28 +113,38 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
     },
   });
 
-  await prisma.telemetrySubscription.upsert({
-    where: { vehicleId },
-    update: {
-      vin: fields.vin,
-      teslaAccountId: vehicle.teslaAccountId,
-      active: true,
-      unsubscribedAt: null,
-      lastError: null,
-    },
-    create: {
-      vehicleId,
-      vin: fields.vin,
-      teslaAccountId: vehicle.teslaAccountId,
-      active: true,
-    },
-  });
-
   // Vehicle 제원 컬럼은 Telemetry로 갱신하지 않음 (Phase 4.4.B)
+  // 소프트웨어 단절 상태면 구독을 다시 활성화하지 않음 (Phase 4.5)
+  const isDisconnected =
+    vehicle.syncState?.lifecycle === VehicleLifecycle.TELEMETRY_DISCONNECTED ||
+    (vehicle.telemetrySubscription != null &&
+      vehicle.telemetrySubscription.active === false &&
+      vehicle.telemetrySubscription.disconnectReason != null);
+
+  if (!isDisconnected) {
+    await prisma.telemetrySubscription.upsert({
+      where: { vehicleId },
+      update: {
+        vin: fields.vin,
+        teslaAccountId: vehicle.teslaAccountId,
+        active: true,
+        unsubscribedAt: null,
+        lastError: null,
+      },
+      create: {
+        vehicleId,
+        vin: fields.vin,
+        teslaAccountId: vehicle.teslaAccountId,
+        active: true,
+      },
+    });
+  }
+
   if (
-    vehicle.syncState?.lifecycle === VehicleLifecycle.TELEMETRY_PENDING ||
-    vehicle.syncState?.lifecycle === VehicleLifecycle.KEY_PENDING ||
-    vehicle.syncState?.lifecycle === VehicleLifecycle.REGISTERED
+    !isDisconnected &&
+    (vehicle.syncState?.lifecycle === VehicleLifecycle.TELEMETRY_PENDING ||
+      vehicle.syncState?.lifecycle === VehicleLifecycle.KEY_PENDING ||
+      vehicle.syncState?.lifecycle === VehicleLifecycle.REGISTERED)
   ) {
     await patchVehicleSyncState(vehicleId, {
       lifecycle: VehicleLifecycle.READY,
@@ -142,7 +153,7 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
     });
   }
 
-  if (wasAsleep) {
+  if (wasAsleep && !isDisconnected) {
     await patchVehicleSyncState(vehicleId, {
       lastWakeDetectedAt: fields.eventAt,
     });

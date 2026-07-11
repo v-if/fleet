@@ -1,6 +1,8 @@
+import { TelemetryDisconnectReason } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
-import { unsubscribeVehicleTelemetry } from "@/lib/tesla/telemetry/subscription";
+import { disconnectVehicleTelemetry } from "@/lib/tesla/telemetry/disconnect";
 
 async function countActiveVehiclesForAccount(teslaAccountId: string) {
   return prisma.vehicle.count({
@@ -30,6 +32,7 @@ export type UnlinkVehicleResult = {
   telemetry: { ok: boolean; stub?: boolean; skipped?: boolean; error?: string };
 };
 
+/** B. 차량 플릿 제거 — 먼저 Telemetry 단절(A) 후 soft-delete */
 export async function unlinkVehicle(vehicleId: string): Promise<UnlinkVehicleResult | null> {
   const vehicle = await prisma.vehicle.findFirst({
     where: {
@@ -40,10 +43,10 @@ export async function unlinkVehicle(vehicleId: string): Promise<UnlinkVehicleRes
 
   if (!vehicle) return null;
 
-  const telemetry = await unsubscribeVehicleTelemetry(vehicle.oemVehicleId, {
-    vehicleId: vehicle.id,
-    teslaAccountId: vehicle.teslaAccountId,
+  const disconnect = await disconnectVehicleTelemetry(vehicleId, {
+    reason: TelemetryDisconnectReason.UNLINK,
   });
+
   const now = new Date();
 
   await prisma.$transaction([
@@ -55,6 +58,8 @@ export async function unlinkVehicle(vehicleId: string): Promise<UnlinkVehicleRes
         configSynced: false,
         configCheckedAt: null,
         unsubscribedAt: now,
+        disconnectedAt: now,
+        disconnectReason: TelemetryDisconnectReason.UNLINK,
       },
     }),
     prisma.vehicle.update({
@@ -79,7 +84,7 @@ export async function unlinkVehicle(vehicleId: string): Promise<UnlinkVehicleRes
   return {
     vehicleId: vehicle.id,
     accountUnlinked,
-    telemetry,
+    telemetry: disconnect?.teslaUnsubscribe ?? { ok: false, error: "disconnect_failed" },
   };
 }
 
@@ -92,9 +97,8 @@ export async function unlinkAllVehiclesForAccount(teslaAccountId: string) {
   });
 
   for (const vehicle of vehicles) {
-    await unsubscribeVehicleTelemetry(vehicle.oemVehicleId, {
-      vehicleId: vehicle.id,
-      teslaAccountId,
+    await disconnectVehicleTelemetry(vehicle.id, {
+      reason: TelemetryDisconnectReason.UNLINK,
     });
   }
 
@@ -112,6 +116,8 @@ export async function unlinkAllVehiclesForAccount(teslaAccountId: string) {
         configSynced: false,
         configCheckedAt: null,
         unsubscribedAt: now,
+        disconnectedAt: now,
+        disconnectReason: TelemetryDisconnectReason.UNLINK,
       },
     }),
     prisma.vehicle.updateMany({

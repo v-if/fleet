@@ -705,6 +705,20 @@
 
 ---
 
+### Phase 4.5 Telemetry 연동 해제 (P0~P1) — A~C 완료
+
+> **A~C 완료** (2026-07-11) · D(E2E)·P1 오프라인 감지기 잔여  
+> 요구사항: [requirements-tesla-fleet-telemetry-disconnect.md](./requirements-tesla-fleet-telemetry-disconnect.md)  
+> 체크리스트: [checklist-tesla-fleet-telemetry-disconnect.md](./checklist-tesla-fleet-telemetry-disconnect.md)
+
+- [x] 스키마: `TELEMETRY_DISCONNECTED` · `TelemetryDisconnectReason` · migrate
+- [x] API: Telemetry 단절(A) ≠ 차량 unlink(B) · reconnect · allowlist/wake skip
+- [x] UI: 끊기/VK 안내 모달 · 목록 단절 뱃지·필터 · 「플릿에서 제거」
+- [ ] D: 소프트웨어 끊기 E2E · ASLEEP≠DISCONNECTED 회귀
+- [ ] (P1) 오프라인 VK 제거 감지 — `fleet_status` only (`vehicle_data` 프로브 금지)
+
+---
+
 ## Phase 5. 배포 및 데모 (M5)
 
 > 설치: [setup-guide.md](./setup-guide.md) §7
@@ -792,4 +806,6 @@
 | 2026-07-11 | Phase 4.4.C 완료 — vehicles API 제원/lifecycle/freshness, baseline 재시도, telemetry status SyncState |
 | 2026-07-11 | Phase 4.4.D 완료 — 목록/상세 제원·lifecycle UI, 설정 온보딩, Baseline/VK 액션 |
 | 2026-07-11 | Phase 4.4.E 완료 — hybrid:verify, telemetry:check, unlink SyncState, setup-guide 온보딩 |
+| 2026-07-11 | Phase 4.5 문서 — Telemetry 연동 해제 요구사항 ([requirements-tesla-fleet-telemetry-disconnect.md](./requirements-tesla-fleet-telemetry-disconnect.md)) |
+| 2026-07-11 | Phase 4.5 A~C 완료 — disconnect/reconnect/unlink · UI · D·P1 감지기 잔여 |
 

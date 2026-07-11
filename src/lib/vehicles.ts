@@ -190,6 +190,9 @@ export async function getVehiclesResponse(): Promise<VehiclesResponse> {
       idle: items.filter((item) => item.isIdle).length,
       charging: snapshots.filter((snapshot) => snapshot.chargingStatus === "CHARGING")
         .length,
+      telemetryDisconnected: items.filter(
+        (item) => item.syncState?.lifecycle === "TELEMETRY_DISCONNECTED",
+      ).length,
     },
     vehicles: items,
   };
@@ -237,6 +240,8 @@ export async function getVehicleDetail(
           configSynced: subscription.configSynced,
           configCheckedAt: subscription.configCheckedAt?.toISOString() ?? null,
           subscribedAt: subscription.subscribedAt.toISOString(),
+          disconnectedAt: subscription.disconnectedAt?.toISOString() ?? null,
+          disconnectReason: subscription.disconnectReason,
           lastError: subscription.lastError,
         }
       : null,

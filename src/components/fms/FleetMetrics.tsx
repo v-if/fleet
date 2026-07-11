@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import Badge from "@/components/ui/badge/Badge";
 import {
   AlertIcon,
@@ -24,6 +26,7 @@ type MetricConfig = {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   badgeColor: "primary" | "success" | "error" | "warning" | "info" | "light" | "dark";
+  href?: string;
 };
 
 const metrics: MetricConfig[] = [
@@ -63,6 +66,13 @@ const metrics: MetricConfig[] = [
     icon: TimeIcon,
     badgeColor: "light",
   },
+  {
+    key: "telemetryDisconnected",
+    label: "Telemetry 단절",
+    icon: AlertIcon,
+    badgeColor: "warning",
+    href: "/vehicles?filter=telemetry_disconnected",
+  },
 ];
 
 function toPercent(count: number, total: number) {
@@ -78,11 +88,8 @@ export function FleetMetrics({ summary, className }: FleetMetricsProps) {
         const value = summary[metric.key];
         const percent = toPercent(value, summary.total);
 
-        return (
-          <div
-            key={metric.key}
-            className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:p-5"
-          >
+        const card = (
+          <div className="flex h-full flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 sm:h-11 sm:w-11">
                 <Icon className="size-5 text-gray-800 dark:text-white/90 sm:size-6" />
@@ -105,6 +112,20 @@ export function FleetMetrics({ summary, className }: FleetMetricsProps) {
                 <Badge color={metric.badgeColor}>{percent}%</Badge>
               )}
             </div>
+          </div>
+        );
+
+        if (metric.href) {
+          return (
+            <Link key={metric.key} href={metric.href} className="block h-full">
+              {card}
+            </Link>
+          );
+        }
+
+        return (
+          <div key={metric.key} className="h-full">
+            {card}
           </div>
         );
       })}

@@ -41,6 +41,7 @@ export async function getTelemetryOperationalStatus() {
       where: {
         ...activeVehicleWhere,
         oemVehicleId: { not: null },
+        telemetrySubscription: { is: { active: true } },
       },
       select: {
         id: true,

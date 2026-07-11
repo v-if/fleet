@@ -80,6 +80,9 @@ export async function applyRegistryLifecycleHint(
   if (existing?.lifecycle === VehicleLifecycle.READY) {
     return;
   }
+  if (existing?.lifecycle === VehicleLifecycle.TELEMETRY_DISCONNECTED) {
+    return;
+  }
 
   const normalized = vin.trim().toUpperCase();
   const paired = [...keyPairedVins].some((v) => v.toUpperCase() === normalized);

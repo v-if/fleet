@@ -33,7 +33,17 @@ import {
 } from "@/lib/vehicle-lifecycle";
 import type { VehicleListItemDto } from "@/lib/types/vehicle";
 
-type StatusFilter = "ALL" | "ONLINE" | "WARNING" | "ALERT" | "OFFLINE" | "ASLEEP" | "IDLE" | "CHARGING" | "ABNORMAL";
+type StatusFilter =
+  | "ALL"
+  | "ONLINE"
+  | "WARNING"
+  | "ALERT"
+  | "OFFLINE"
+  | "ASLEEP"
+  | "IDLE"
+  | "CHARGING"
+  | "ABNORMAL"
+  | "TELEMETRY_DISCONNECTED";
 
 type FleetVehicleTableProps = {
   vehicles: VehicleListItemDto[];
@@ -50,6 +60,7 @@ const filterOptions: { value: StatusFilter; label: string }[] = [
   { value: "ABNORMAL", label: "이상상태" },
   { value: "OFFLINE", label: "오프라인" },
   { value: "ASLEEP", label: "취침 중" },
+  { value: "TELEMETRY_DISCONNECTED", label: "Telemetry 단절" },
   { value: "IDLE", label: "미운행" },
 ];
 
@@ -66,6 +77,7 @@ function resolveInitialFilter(param: string | null): StatusFilter {
   if (param === "abnormal") return "ABNORMAL";
   if (param === "idle") return "IDLE";
   if (param === "charging") return "CHARGING";
+  if (param === "telemetry_disconnected") return "TELEMETRY_DISCONNECTED";
   return "ALL";
 }
 
@@ -92,6 +104,9 @@ export function FleetVehicleTable({
       if (statusFilter === "ALL") return true;
       if (statusFilter === "IDLE") return vehicle.isIdle;
       if (statusFilter === "CHARGING") return snapshot?.chargingStatus === "CHARGING";
+      if (statusFilter === "TELEMETRY_DISCONNECTED") {
+        return vehicle.syncState?.lifecycle === "TELEMETRY_DISCONNECTED";
+      }
       if (statusFilter === "ABNORMAL") {
         const status = snapshot?.status;
         return status === "OFFLINE" || status === "ASLEEP" || status === "WARNING" || status === "ALERT";

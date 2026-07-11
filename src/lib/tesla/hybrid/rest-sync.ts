@@ -281,9 +281,31 @@ export async function runBaselineForVehicle(
 export async function maybeRunWakeCooldownRestSync(
   vehicleId: string,
 ): Promise<RestSyncOnceResult> {
+  const subscription = await prisma.telemetrySubscription.findUnique({
+    where: { vehicleId },
+    select: { active: true },
+  });
+  if (subscription && !subscription.active) {
+    return {
+      ok: false,
+      skipped: true,
+      error: "telemetry_disconnected",
+      vehicleId,
+    };
+  }
+
   const syncState = await prisma.vehicleSyncState.findUnique({
     where: { vehicleId },
   });
+  if (syncState?.lifecycle === VehicleLifecycle.TELEMETRY_DISCONNECTED) {
+    return {
+      ok: false,
+      skipped: true,
+      error: "telemetry_disconnected",
+      vehicleId,
+    };
+  }
+
   const cooldownMinutes = getRestWakeCooldownMinutes();
 
   if (!isRestWakeCooldownElapsed(syncState?.lastRestSyncAt, cooldownMinutes)) {

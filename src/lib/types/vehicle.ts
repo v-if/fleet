@@ -114,6 +114,7 @@ export type VehiclesResponse = {
     asleep: number;
     idle: number;
     charging: number;
+    telemetryDisconnected: number;
   };
   vehicles: VehicleListItemDto[];
 };
@@ -123,6 +124,8 @@ export type VehicleTelemetrySubscriptionDto = {
   configSynced: boolean;
   configCheckedAt: string | null;
   subscribedAt: string;
+  disconnectedAt: string | null;
+  disconnectReason: "USER_SOFTWARE" | "VK_REMOVED_OFFLINE" | "UNLINK" | null;
   lastError: string | null;
 };
 

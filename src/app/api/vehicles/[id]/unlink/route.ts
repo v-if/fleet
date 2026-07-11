@@ -89,7 +89,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       vehicleId: result.vehicleId,
       requestId,
       status: AuditLogStatus.SUCCESS,
-      summary: `차량 연동 해제 성공: ${result.vehicleId}`,
+      summary: `차량 연동 해제(플릿에서 제거) 성공: ${result.vehicleId}`,
       metadata: sanitizeBody({
         accountUnlinked: result.accountUnlinked,
         telemetry: result.telemetry,
