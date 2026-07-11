@@ -1,6 +1,6 @@
 # 체크리스트 — Telemetry + Fleet API 하이브리드 데이터 (Phase 4.4)
 
-> **상태**: **A·B·C 완료** (2026-07-11) / D~E 미착수  
+> **상태**: **A·B·C·D 완료** (2026-07-11) / E 미착수  
 > **설계서**: [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md)  
 > **호출 정책**: [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md)  
 > **표시·매핑**: [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md), [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md)
@@ -81,16 +81,16 @@
 
 ---
 
-## D. UI
+## D. UI — ✅
 
-- [ ] 목록: 매핑된 `model`·트림/색 뱃지(P0~P1)
-- [ ] 상세: 제원 카드 (VIN, carType, trim, color, specsSyncedAt)
-- [ ] 상세/설정: lifecycle 안내 (KEY_PENDING → QR, TELEMETRY_PENDING → 대기)
-- [ ] 신선도: 마지막 Telemetry / 마지막 REST 시각
-- [ ] ASLEEP 배지와 lifecycle READY 동시 표시 규칙
-- [ ] (P1) 제원 수동 재동기화 버튼
+- [x] 목록: 매핑된 `model`·트림/색 뱃지(P0~P1)
+- [x] 상세: 제원 카드 (VIN, carType, trim, color, specsSyncedAt)
+- [x] 상세/설정: lifecycle 안내 (KEY_PENDING → QR, TELEMETRY_PENDING → 대기) + 키 확인/Baseline 버튼
+- [x] 신선도: 마지막 Telemetry / 마지막 REST 시각
+- [x] ASLEEP 배지와 lifecycle READY 동시 표시 규칙
+- [x] (P1) 제원 수동 재동기화 버튼 — 상세 `제원 재동기화` → Baseline API
 
-**완료 기준**: 빈 DB → 가상 차량 / 실차 연동 플로우에서 제원·상태가 화면에 보임
+**완료 기준**: 빈 DB → 가상 차량 / 실차 연동 플로우에서 제원·상태가 화면에 보임 — **UI 반영 (2026-07-11)**, 실차 확인은 E
 
 ---
 
@@ -114,7 +114,7 @@
 | 2 | B Baseline + 제원 쓰기 | A — ✅ |
 | 3 | B 쿨다운 wake sync | A, Telemetry 수신 — ✅ |
 | 4 | C API | B — ✅ |
-| 5 | D UI | C |
+| 5 | D UI | C — ✅ |
 | 6 | E 검증 | D |
 
 ---
@@ -123,6 +123,7 @@
 
 | 일자 | 내용 |
 |------|------|
+| 2026-07-11 | **D 완료** — 목록/상세 제원·lifecycle·신선도 UI, 설정 온보딩 패널, Baseline/VK 액션 |
 | 2026-07-11 | **C 완료** — vehicles API 제원/lifecycle/freshness, baseline·VK 엔드포인트, telemetry status SyncState |
 | 2026-07-11 | **B 완료** — display-model, Baseline/wake REST, VK confirm API, processor 쿨다운, fallback 감사 |
 | 2026-07-11 | **A 완료** — migrate `20260711120000_phase44a_hybrid_data_model`, SyncState backfill, 시드·env |

@@ -112,3 +112,4 @@
 | 2026-07-11 | Phase 4.4.A 완료 — Vehicle 제원·VehicleSyncState migrate (`20260711120000_phase44a_hybrid_data_model`) |
 | 2026-07-11 | Phase 4.4.B 완료 — Baseline/wake 쿨다운·VK confirm·제원 분리 Sync |
 | 2026-07-11 | Phase 4.4.C 완료 — vehicles API 제원/lifecycle/freshness · baseline 재시도 |
+| 2026-07-11 | Phase 4.4.D 완료 — 목록/상세 제원·lifecycle UI · 설정 온보딩 |

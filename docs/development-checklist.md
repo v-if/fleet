@@ -669,7 +669,7 @@
 
 ### Phase 4.4 하이브리드 데이터 모델 · 제원/호출 분리 (P0)
 
-> **4.4.A·B·C 완료** (2026-07-11) — D~E 미착수  
+> **4.4.A~D 완료** (2026-07-11) — E 미착수  
 > 설계: [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md)  
 > 체크리스트: [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md)  
 > 정책: [telemetry-webhook](./requirements-tesla-fleet-api-telemetry-webhook.md) · [display-data](./requirements-tesla-fleet-api-display-data.md) · [model-mapping](./requirements-tesla-fleet-api-model-mapping.md)
@@ -694,7 +694,8 @@
 - [x] Telemetry status SyncState 요약 · DTO/`MapVehicle` 갱신
 
 #### 4.4.D UI
-- [ ] 목록·상세 제원/모델 표시 · lifecycle 온보딩 안내
+- [x] 목록·상세 제원/모델 표시 · lifecycle 온보딩 안내
+- [x] 신선도 · ASLEEP+READY 동시 표시 · 제원 재동기화 버튼
 
 #### 4.4.E 검증
 - [ ] 제원 불변 + 쿨다운 Skip/Call 실측 · 문서 마감
@@ -788,4 +789,5 @@
 | 2026-07-11 | Phase 4.4.A 완료 — Vehicle 제원·VehicleSyncState·migrate backfill·시드·env (`20260711120000_phase44a_hybrid_data_model`) |
 | 2026-07-11 | Phase 4.4.B 완료 — Baseline/wake 쿨다운 REST, VK confirm API, 제원 분리 쓰기, fallback 감사 |
 | 2026-07-11 | Phase 4.4.C 완료 — vehicles API 제원/lifecycle/freshness, baseline 재시도, telemetry status SyncState |
+| 2026-07-11 | Phase 4.4.D 완료 — 목록/상세 제원·lifecycle UI, 설정 온보딩, Baseline/VK 액션 |
 

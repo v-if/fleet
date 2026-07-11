@@ -24,6 +24,13 @@ import {
   formatDateTime,
   formatOdometer,
 } from "@/lib/vehicle-status";
+import {
+  LIFECYCLE_LABEL,
+  formatColorBadge,
+  formatTrimBadge,
+  lifecycleBadgeColor,
+  shouldShowLifecycleBadge,
+} from "@/lib/vehicle-lifecycle";
 import type { VehicleListItemDto } from "@/lib/types/vehicle";
 
 type StatusFilter = "ALL" | "ONLINE" | "WARNING" | "ALERT" | "OFFLINE" | "ASLEEP" | "IDLE" | "CHARGING" | "ABNORMAL";
@@ -77,7 +84,8 @@ export function FleetVehicleTable({
   const filtered = useMemo(() => {
     return vehicles.filter((vehicle) => {
       const snapshot = vehicle.snapshot;
-      const haystack = `${vehicle.plateNumber} ${vehicle.model}`.toLowerCase();
+      const haystack =
+        `${vehicle.plateNumber} ${vehicle.model} ${vehicle.carType ?? ""} ${vehicle.trimBadging ?? ""} ${vehicle.exteriorColor ?? ""}`.toLowerCase();
       const matchesQuery = haystack.includes(query.trim().toLowerCase());
 
       if (!matchesQuery) return false;
@@ -152,6 +160,9 @@ export function FleetVehicleTable({
                 const snapshot = vehicle.snapshot;
                 const status = snapshot?.status ?? "OFFLINE";
                 const chargingStatus = snapshot?.chargingStatus ?? "DISCONNECTED";
+                const lifecycle = vehicle.syncState?.lifecycle ?? null;
+                const trimLabel = formatTrimBadge(vehicle);
+                const colorLabel = formatColorBadge(vehicle);
 
                 return (
                   <TableRow key={vehicle.id}>
@@ -172,13 +183,39 @@ export function FleetVehicleTable({
                           <span className="block truncate text-theme-xs text-gray-500 dark:text-gray-400">
                             {vehicle.model} · {vehicle.year}
                           </span>
+                          {(trimLabel || colorLabel) && (
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {trimLabel ? (
+                                <Badge size="sm" color="light">
+                                  {trimLabel}
+                                </Badge>
+                              ) : null}
+                              {colorLabel ? (
+                                <Badge size="sm" color="light">
+                                  {colorLabel}
+                                </Badge>
+                              ) : null}
+                            </div>
+                          )}
                         </div>
                       </Link>
                     </TableCell>
                     <TableCell className={`px-3 py-4 ${tableColumns[1].className}`}>
-                      <Badge size="sm" color={vehicleStatusBadgeColor(status)}>
-                        {STATUS_LABEL[status]}
-                      </Badge>
+                      <div className="flex flex-col items-start gap-1">
+                        <Badge size="sm" color={vehicleStatusBadgeColor(status)}>
+                          {STATUS_LABEL[status]}
+                        </Badge>
+                        {shouldShowLifecycleBadge(lifecycle) && lifecycle ? (
+                          <Badge size="sm" color={lifecycleBadgeColor(lifecycle)}>
+                            {LIFECYCLE_LABEL[lifecycle]}
+                          </Badge>
+                        ) : null}
+                        {status === "ASLEEP" && lifecycle === "READY" ? (
+                          <span className="text-[10px] leading-tight text-gray-400">
+                            관제준비·취침
+                          </span>
+                        ) : null}
+                      </div>
                     </TableCell>
                     <TableCell className={`px-3 py-4 ${tableColumns[2].className}`}>
                       <Badge size="sm" color={chargingStatusBadgeColor(chargingStatus)}>

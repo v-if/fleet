@@ -20,6 +20,11 @@ import {
   STATUS_LABEL,
   formatDateTime,
 } from "@/lib/vehicle-status";
+import {
+  LIFECYCLE_LABEL,
+  lifecycleBadgeColor,
+  shouldShowLifecycleBadge,
+} from "@/lib/vehicle-lifecycle";
 import type { VehicleListItemDto } from "@/lib/types/vehicle";
 
 type FleetRecentVehiclesProps = {
@@ -76,6 +81,7 @@ export function FleetRecentVehicles({ vehicles, limit = 8 }: FleetRecentVehicles
               const snapshot = vehicle.snapshot;
               const status = snapshot?.status ?? "OFFLINE";
               const chargingStatus = snapshot?.chargingStatus ?? "DISCONNECTED";
+              const lifecycle = vehicle.syncState?.lifecycle ?? null;
 
               return (
                 <TableRow key={vehicle.id}>
@@ -97,9 +103,16 @@ export function FleetRecentVehicles({ vehicles, limit = 8 }: FleetRecentVehicles
                     </Link>
                   </TableCell>
                   <TableCell className={`py-4 ${columns[1].className}`}>
-                    <Badge size="sm" color={vehicleStatusBadgeColor(status)}>
-                      {STATUS_LABEL[status]}
-                    </Badge>
+                    <div className="flex flex-col items-start gap-1">
+                      <Badge size="sm" color={vehicleStatusBadgeColor(status)}>
+                        {STATUS_LABEL[status]}
+                      </Badge>
+                      {shouldShowLifecycleBadge(lifecycle) && lifecycle ? (
+                        <Badge size="sm" color={lifecycleBadgeColor(lifecycle)}>
+                          {LIFECYCLE_LABEL[lifecycle]}
+                        </Badge>
+                      ) : null}
+                    </div>
                   </TableCell>
                   <TableCell className={`py-4 ${columns[2].className}`}>
                     <Badge size="sm" color={chargingStatusBadgeColor(chargingStatus)}>

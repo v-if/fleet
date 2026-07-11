@@ -3,12 +3,17 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
 import { FleetToolbar } from "@/components/fms/FleetToolbar";
-import { useVehicleRefresh } from "@/hooks/use-vehicles";
+import { useVehicleRefresh, useVehicles } from "@/hooks/use-vehicles";
+import {
+  LIFECYCLE_LABEL,
+  lifecycleBadgeColor,
+  shouldShowLifecycleBadge,
+} from "@/lib/vehicle-lifecycle";
 
 type TeslaStatus = {
   configured: boolean;
@@ -45,6 +50,7 @@ export function FleetSettingsView() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const refreshVehicles = useVehicleRefresh();
+  const { data: vehiclesData } = useVehicles();
   const { data: status, isLoading } = useQuery({
     queryKey: ["tesla-status"],
     queryFn: fetchTeslaStatus,
@@ -54,6 +60,12 @@ export function FleetSettingsView() {
   const [isDisconnecting, setIsDisconnecting] = useState(false);
 
   const telemetryPrimary = status?.telemetry.primaryMode ?? false;
+
+  const onboardingVehicles = useMemo(() => {
+    return (vehiclesData?.vehicles ?? []).filter((vehicle) =>
+      shouldShowLifecycleBadge(vehicle.syncState?.lifecycle),
+    );
+  }, [vehiclesData?.vehicles]);
 
   async function handleSync() {
     setIsRefreshing(true);
@@ -112,6 +124,48 @@ export function FleetSettingsView() {
           </div>
         ) : null}
 
+        {onboardingVehicles.length > 0 ? (
+          <div className="rounded-2xl border border-warning-200 bg-warning-50 p-5 dark:border-warning-500/30 dark:bg-warning-500/10 lg:p-6">
+            <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+              온보딩 대기 차량
+            </h4>
+            <p className="mb-4 text-theme-sm text-gray-600 dark:text-gray-300">
+              Virtual Key 확인 또는 Telemetry/Baseline이 끝나지 않은 차량입니다. 상세에서 키
+              확인·Baseline을 진행하세요. 서버는 차량을 자동으로 깨우지 않습니다.
+            </p>
+            <ul className="space-y-2">
+              {onboardingVehicles.slice(0, 8).map((vehicle) => {
+                const lifecycle = vehicle.syncState?.lifecycle;
+                return (
+                  <li
+                    key={vehicle.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-warning-100 bg-white/70 px-3 py-2 dark:border-warning-500/20 dark:bg-black/10"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">
+                        {vehicle.plateNumber}
+                      </p>
+                      <p className="truncate text-theme-xs text-gray-500">{vehicle.model}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {lifecycle ? (
+                        <Badge size="sm" color={lifecycleBadgeColor(lifecycle)}>
+                          {LIFECYCLE_LABEL[lifecycle]}
+                        </Badge>
+                      ) : null}
+                      <Link href={`/vehicles/${vehicle.id}`}>
+                        <Button size="sm" variant="outline">
+                          상세
+                        </Button>
+                      </Link>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : null}
+
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
           <h4 className="mb-6 text-lg font-semibold text-gray-800 dark:text-white/90">
             Tesla Fleet API
@@ -157,11 +211,21 @@ export function FleetSettingsView() {
                     <Button size="sm">Tesla 계정 연결</Button>
                   </Link>
                 ) : (
-                  <Button size="sm" variant="outline" onClick={() => void handleDisconnect()} disabled={isDisconnecting}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void handleDisconnect()}
+                    disabled={isDisconnecting}
+                  >
                     {isDisconnecting ? "해제 중..." : "연결 해제"}
                   </Button>
                 )}
-                <Button size="sm" variant="outline" onClick={() => void handleSync()} disabled={isRefreshing}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleSync()}
+                  disabled={isRefreshing}
+                >
                   {isRefreshing
                     ? "동기화 중..."
                     : telemetryPrimary
