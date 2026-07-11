@@ -121,3 +121,4 @@
 | 2026-07-11 | requirements-tesla-fleet-telemetry-disconnect — 연동 해제(A/B·fleet_status·UI·체크리스트) |
 | 2026-07-11 | checklist-tesla-fleet-telemetry-disconnect — Phase 4.5 체크리스트 |
 | 2026-07-11 | Phase 4.5 A~C 완료 — Telemetry disconnect/reconnect · UI · D·P1 잔여 |
+| 2026-07-11 | Phase 4.5 D 완료 — disconnect:verify · VIN LRWYGCFJ7SC214742 · P1 감지기 잔여 |

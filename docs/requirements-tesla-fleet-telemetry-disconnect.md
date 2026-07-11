@@ -6,9 +6,9 @@
 |------|------|
 | 목적 | Telemetry **구독 해제·연동 단절**을 오프라인(VK 삭제) / 소프트웨어(FMS) 두 경로로 정의하고, DB·API·UI·운영 계약을 확정한다 |
 | 초안 | 사용자 메모 → 본 문서로 정식화 (2026-07-11) |
-| 코드 | **A~C 완료** (2026-07-11) · D(E2E)·P1 `fleet_status` 오프라인 감지기 잔여 |
+| 코드 | **A~D 완료** (2026-07-11) · P1 `fleet_status` 오프라인 감지기 잔여 |
 | 관련 | [checklist-tesla-fleet-telemetry-disconnect.md](./checklist-tesla-fleet-telemetry-disconnect.md), [requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md), [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md), [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md), [handoff-phase44-to-fleet-telemetry.md](./handoff-phase44-to-fleet-telemetry.md) |
-| As-Is | `POST .../telemetry/disconnect`(A) · `POST .../telemetry/reconnect` · unlink(B)=A 후 soft-delete. UI 모달·단절 뱃지/필터 반영. P1 오프라인 VK 감지는 미구현 |
+| As-Is | `POST .../telemetry/disconnect`(A) · reconnect · unlink(B). UI·`disconnect:verify`(VIN `LRWYGCFJ7SC214742`) 반영. P1 오프라인 VK 감지는 미구현 |
 
 ---
 
@@ -285,8 +285,9 @@ onStaleOrCron(vin):
 
 ## 12. 구현 체크리스트
 
-> **Phase 4.5** — A~C 완료 (2026-07-11). D·P1 오프라인 감지기 잔여.  
-> 상세: [checklist-tesla-fleet-telemetry-disconnect.md](./checklist-tesla-fleet-telemetry-disconnect.md)
+> **Phase 4.5** — A~D 완료 (2026-07-11). P1 오프라인 감지기 잔여.  
+> 상세: [checklist-tesla-fleet-telemetry-disconnect.md](./checklist-tesla-fleet-telemetry-disconnect.md)  
+> 검증: `pnpm disconnect:verify` · VIN `LRWYGCFJ7SC214742`
 
 ### 0. 문서 · 합의
 - [x] 본 문서 A/B 액션 분리·vehicle_data 프로브 금지 합의
@@ -315,10 +316,10 @@ onStaleOrCron(vin):
 - [x] unlink 버튼 라벨을 “플릿에서 제거”로 구분
 
 ### D. 검증
-- [ ] 소프트웨어 끊기 → config DELETE · DB 단절 · 목록 잔존 · allowlist 제외
-- [ ] ASLEEP 장시간 + 키 유지 → DISCONNECTED **아님**
+- [x] 소프트웨어 끊기 → config DELETE · DB 단절 · 목록 잔존 · allowlist 제외 (`LRWYGCFJ7SC214742`)
+- [x] ASLEEP 장시간 + 키 유지 → DISCONNECTED **아님** (오탐 0)
 - [ ] 키 제거 후 fleet_status → DISCONNECTED (P1)
-- [ ] 자동 vehicle_data/wake_up 없음 회귀
+- [x] 자동 vehicle_data/wake_up 없음 회귀
 - [x] Telemetry handoff 문서 한 줄 갱신(선택)
 
 ---
@@ -342,3 +343,4 @@ onStaleOrCron(vin):
 |------|------|
 | 2026-07-11 | 초안 메모를 요구사항화 — A/B 분리, vehicle_data 프로브 금지·fleet_status 대체, DB/UI/체크리스트·영향도 추가 |
 | 2026-07-11 | A~C 구현 반영 — 코드 상태·§12 체크리스트 갱신 (D·P1 감지기 잔여) |
+| 2026-07-11 | A~D 완료 — disconnect:verify · VIN LRWYGCFJ7SC214742 · 빈 partner token 버그 수정 · P1 감지기 잔여 |

@@ -84,7 +84,8 @@ export function getTelemetryProcessBatchSize(): number {
 }
 
 export function getPartnerToken(): string | null {
-  return process.env.TESLA_PARTNER_TOKEN ?? null;
+  const value = process.env.TESLA_PARTNER_TOKEN?.trim();
+  return value ? value : null;
 }
 
 /** ASLEEP→ONLINE 시 vehicle_data 쿨다운(분). 기본 30 */

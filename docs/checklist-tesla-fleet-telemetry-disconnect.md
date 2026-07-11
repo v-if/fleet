@@ -1,7 +1,8 @@
 # 체크리스트 — Fleet Telemetry 연동 해제 (Phase 4.5)
 
-> **상태**: A~C 완료 / D(E2E)·P1 오프라인 감지기 미완 (2026-07-11)  
-> **요구사항**: [requirements-tesla-fleet-telemetry-disconnect.md](./requirements-tesla-fleet-telemetry-disconnect.md)
+> **상태**: A~D 완료 / P1 오프라인 감지기 미완 (2026-07-11)  
+> **요구사항**: [requirements-tesla-fleet-telemetry-disconnect.md](./requirements-tesla-fleet-telemetry-disconnect.md)  
+> **검증 VIN**: `LRWYGCFJ7SC214742` · `pnpm disconnect:verify` (`scripts/verify-phase45-disconnect.ts`)
 
 ---
 
@@ -45,10 +46,11 @@
 
 ## D. 검증
 
-- [ ] 소프트웨어 끊기 E2E
-- [ ] ASLEEP ≠ DISCONNECTED 오탐 없음
+- [x] 소프트웨어 끊기 E2E — VIN `LRWYGCFJ7SC214742`  
+  - Tesla `DELETE fleet_telemetry_config` 200 · DB `TELEMETRY_DISCONNECTED` · `USER_SOFTWARE` · 목록 잔존(`isDeleted=false`) · allowlist 제외
+- [x] ASLEEP ≠ DISCONNECTED 오탐 없음 (스냅샷 ASLEEP + 단절 사유 없는 DISCONNECTED = 0)
 - [ ] (P1) VK 제거 → fleet_status → DISCONNECTED
-- [ ] 자동 wake / vehicle_data 프로브 없음
+- [x] 자동 wake / vehicle_data 프로브 없음 (`src`에 `wake_up` 0 · disconnect 경로 `vehicle_data` 없음 · wake REST skip)
 
 ---
 
@@ -58,3 +60,4 @@
 |------|------|
 | 2026-07-11 | 초안 — Phase 4.5 체크리스트 (코드 미착수) |
 | 2026-07-11 | A~C 완료 — 스키마·disconnect/reconnect/unlink·UI · D·P1 감지기 잔여 |
+| 2026-07-11 | D 완료 — `disconnect:verify` · VIN LRWYGCFJ7SC214742 · partner token 빈값 버그 수정 · P1 감지기 잔여 |

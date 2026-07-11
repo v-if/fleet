@@ -705,16 +705,17 @@
 
 ---
 
-### Phase 4.5 Telemetry 연동 해제 (P0~P1) — A~C 완료
+### Phase 4.5 Telemetry 연동 해제 (P0~P1) — A~D 완료
 
-> **A~C 완료** (2026-07-11) · D(E2E)·P1 오프라인 감지기 잔여  
+> **A~D 완료** (2026-07-11) · P1 오프라인 감지기 잔여  
 > 요구사항: [requirements-tesla-fleet-telemetry-disconnect.md](./requirements-tesla-fleet-telemetry-disconnect.md)  
-> 체크리스트: [checklist-tesla-fleet-telemetry-disconnect.md](./checklist-tesla-fleet-telemetry-disconnect.md)
+> 체크리스트: [checklist-tesla-fleet-telemetry-disconnect.md](./checklist-tesla-fleet-telemetry-disconnect.md)  
+> 검증: `pnpm disconnect:verify` · VIN `LRWYGCFJ7SC214742`
 
 - [x] 스키마: `TELEMETRY_DISCONNECTED` · `TelemetryDisconnectReason` · migrate
 - [x] API: Telemetry 단절(A) ≠ 차량 unlink(B) · reconnect · allowlist/wake skip
 - [x] UI: 끊기/VK 안내 모달 · 목록 단절 뱃지·필터 · 「플릿에서 제거」
-- [ ] D: 소프트웨어 끊기 E2E · ASLEEP≠DISCONNECTED 회귀
+- [x] D: 소프트웨어 끊기 E2E · ASLEEP≠DISCONNECTED · wake/`vehicle_data` 프로브 없음
 - [ ] (P1) 오프라인 VK 제거 감지 — `fleet_status` only (`vehicle_data` 프로브 금지)
 
 ---
@@ -808,4 +809,5 @@
 | 2026-07-11 | Phase 4.4.E 완료 — hybrid:verify, telemetry:check, unlink SyncState, setup-guide 온보딩 |
 | 2026-07-11 | Phase 4.5 문서 — Telemetry 연동 해제 요구사항 ([requirements-tesla-fleet-telemetry-disconnect.md](./requirements-tesla-fleet-telemetry-disconnect.md)) |
 | 2026-07-11 | Phase 4.5 A~C 완료 — disconnect/reconnect/unlink · UI · D·P1 감지기 잔여 |
+| 2026-07-11 | Phase 4.5 D 완료 — disconnect:verify · VIN LRWYGCFJ7SC214742 · P1 감지기 잔여 |
 
