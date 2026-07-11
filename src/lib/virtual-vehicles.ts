@@ -5,6 +5,8 @@ import {
   EventType,
   ServiceStatus,
   TeslaAccountRole,
+  VehicleLifecycle,
+  RestSyncReason,
   VehicleStatus,
 } from "@prisma/client";
 
@@ -120,6 +122,10 @@ export async function createVirtualTeslaAccountWithVehicles(input: CreateVirtual
       model: modelOption.label,
       year: randomInt(2021, 2026),
       oemVehicleId: randomVin(index + 1),
+      carType: modelOption.carType,
+      trimBadging: modelOption.trim,
+      exteriorColor: pickOne(["SolidBlack", "PearlWhite", "DeepBlueMetallic", "RedMultiCoat"]),
+      teslaDisplayName: modelOption.label,
       snapshot: {
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,
@@ -172,6 +178,19 @@ export async function createVirtualTeslaAccountWithVehicles(input: CreateVirtual
           model: vehicleSeed.model,
           year: vehicleSeed.year,
           oemVehicleId: vehicleSeed.oemVehicleId,
+          carType: vehicleSeed.carType,
+          trimBadging: vehicleSeed.trimBadging,
+          exteriorColor: vehicleSeed.exteriorColor,
+          teslaDisplayName: vehicleSeed.teslaDisplayName,
+          specsSyncedAt: new Date(),
+          syncState: {
+            create: {
+              lifecycle: VehicleLifecycle.READY,
+              baselineCompletedAt: new Date(),
+              lastRestSyncAt: new Date(),
+              lastRestSyncReason: RestSyncReason.BASELINE,
+            },
+          },
           snapshots: {
             create: [vehicleSeed.snapshot],
           },

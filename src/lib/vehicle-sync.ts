@@ -43,6 +43,15 @@ type UpsertSnapshotOptions = {
   existingLastTelemetryAt?: Date | null;
 };
 
+/** Phase 4.4.A: Vehicle 생성 직후 SyncState 보장 (없으면 REGISTERED) */
+async function ensureVehicleSyncState(vehicleId: string) {
+  await prisma.vehicleSyncState.upsert({
+    where: { vehicleId },
+    create: { vehicleId },
+    update: {},
+  });
+}
+
 async function getLatestTelemetryAt(
   teslaAccountId: string | null,
   oemVehicleId: string | undefined,
@@ -92,7 +101,7 @@ async function upsertVehicleRegistry(
     });
   }
 
-  return prisma.vehicle.upsert({
+  const created = await prisma.vehicle.upsert({
     where: { plateNumber: snapshot.plateNumber },
     update: {
       model: snapshot.model,
@@ -110,6 +119,8 @@ async function upsertVehicleRegistry(
       teslaAccountId,
     },
   });
+  await ensureVehicleSyncState(created.id);
+  return created;
 }
 
 async function upsertSnapshot(
@@ -173,6 +184,8 @@ async function upsertSnapshot(
           teslaAccountId,
         },
       });
+
+  await ensureVehicleSyncState(vehicle.id);
 
   const resolvedTelemetrySource =
     preserveTelemetryFields && previousSnapshot?.telemetrySource === "TELEMETRY"

@@ -18,6 +18,11 @@
 | [requirements-fleet-telemetry-completed.md](./requirements-fleet-telemetry-completed.md) | Telemetry 서버 **개발 완료·보류 현황** · FMS 인수인계 (도메인·secrets·공동 검증) | Telemetry 연동·실차 E2E·시연 준비할 때 |
 | [auth-user-mapping.md](./auth-user-mapping.md) | Phase 4 Supabase Auth ↔ FMS User 매핑 설계 메모 | 인증·다테넌시 구현 전 |
 | [requirements-tesla-api.md](./requirements-tesla-api.md) | 테슬라 Fleet API 조회/제어 기능 정리, FMS 화면 적용안 | 데이터 연동·제어 기능 설계할 때 |
+| [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md) | 프론트 고도화 선행 — Fleet API 표시 항목 조사, **정적/동적** 분류 | 화면 고도화·제원/실시간 데이터 설계할 때 |
+| [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md) | Telemetry vs Fleet API **하이브리드 호출** — ASLEEP 금지·이벤트 주도 REST | 수집 전략·wake/쿨다운 설계할 때 |
+| [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | 하이브리드 **DB 설계** — Vehicle 제원 + VehicleSyncState + Snapshot 쓰기 경로 | 스키마·마이그레이션·sync 구현할 때 |
+| [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | Phase 4.4 구현 체크리스트 (A~E) | 하이브리드 데이터 작업 진행·진척 관리할 때 |
+| [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md) | `car_type`·`trim_badging` → 화면 모델명 매핑 | 차량 제원 표시·Vehicle 컬럼 추가할 때 |
 | [requirements-front-design.md](./requirements-front-design.md) | Pleos Fleet UI 벤치마킹, 프론트 구성·디자인 개선 요구사항 | 화면 UI/UX 개선할 때 |
 | [requirements-dashboard-design.md](./requirements-dashboard-design.md) | TailAdmin 템플릿 벤치마킹, 디자인 토큰·컴포넌트 마감 개선 요구사항 (Phase 3.7) · **전면 템플릿 적용** (Phase 3.8) | 대시보드·목록·상세 디자인 다듬을 때 |
 | [development-checklist.md](./development-checklist.md) | Phase별(M1~M5) 개발 체크리스트 | 개발 진행·진척 관리할 때 |
@@ -101,3 +106,7 @@
 | 2026-07-10 | 커스텀 도메인 — FMS `bori-fleet.shop`, Telemetry `telemetry.bori-fleet.shop` |
 | 2026-07-10 | requirements-fleet-telemetry-completed.md — Telemetry 서버 개발 완료·보류 현황 FMS 인수인계 반영 |
 | 2026-07-10 | P0 Telemetry E2E 실측 — 실차 V→PROCESSED·TELEMETRY, 사용자 잔여=로컬 secret·UI 리허설 |
+| 2026-07-11 | requirements-tesla-fleet-api-display-data / model-mapping — 프론트 고도화 선행 조사·정적·동적 분류 문서화 |
+| 2026-07-11 | requirements-tesla-fleet-api-telemetry-webhook — Telemetry+REST 하이브리드 호출 최종 요구사항 |
+| 2026-07-11 | requirements-tesla-hybrid-data-model + checklist-tesla-hybrid-data — Phase 4.4 설계·체크리스트 (코드 미착수) |
+| 2026-07-11 | Phase 4.4.A 완료 — Vehicle 제원·VehicleSyncState migrate (`20260711120000_phase44a_hybrid_data_model`) |

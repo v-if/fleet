@@ -667,6 +667,37 @@
 >
 > **P0 검증 메모 (2026-07-10)**: Supabase 실측 — 실차 VIN ingress 다건 `PROCESSED`, `telemetrySource=TELEMETRY`. Fly→FMS secret Production 정상. 로컬 `TESLA_TELEMETRY_WEBHOOK_SECRET` 동기화 후 `pnpm telemetry:check` **200** 확인. `TESLA_SYNC_CRON_SECRET`/`FMS_CRON_SECRET`은 빈 값(기존) — status API 인증 없음. 시연 전 https://bori-fleet.shop UI 육안 확인.
 
+### Phase 4.4 하이브리드 데이터 모델 · 제원/호출 분리 (P0)
+
+> **4.4.A 완료** (2026-07-11) — B~E 미착수  
+> 설계: [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md)  
+> 체크리스트: [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md)  
+> 정책: [telemetry-webhook](./requirements-tesla-fleet-api-telemetry-webhook.md) · [display-data](./requirements-tesla-fleet-api-display-data.md) · [model-mapping](./requirements-tesla-fleet-api-model-mapping.md)
+
+#### 4.4.A 스키마
+- [x] `VehicleLifecycle` / `RestSyncReason` enum
+- [x] `Vehicle` 제원 컬럼 (`carType`, `trimBadging`, `exteriorColor`, `teslaDisplayName`, `specsSyncedAt`)
+- [x] `VehicleSyncState` 1:1 (lifecycle, Baseline, `lastRestSyncAt` 쿨다운 SoT)
+- [x] 마이그레이션 · SyncState backfill · 시드 · env example — `20260711120000_phase44a_hybrid_data_model`
+
+#### 4.4.B Sync 로직
+- [ ] `buildDisplayModel` 매핑 유틸
+- [ ] Baseline `vehicle_data` 1회 (실패 시 자동 wake 금지)
+- [ ] ASLEEP→ONLINE 쿨다운 후 `vehicle_data` 0~1회
+- [ ] Telemetry는 Snapshot만 · 제원 미갱신
+- [ ] 수동 fallback 감사 로그 · 자동 wake_up 없음
+
+#### 4.4.C API
+- [ ] vehicles API에 제원·lifecycle·REST/Telemetry 신선도 노출
+
+#### 4.4.D UI
+- [ ] 목록·상세 제원/모델 표시 · lifecycle 온보딩 안내
+
+#### 4.4.E 검증
+- [ ] 제원 불변 + 쿨다운 Skip/Call 실측 · 문서 마감
+
+**완료 기준**: 정적 제원은 Vehicle에만, 동적은 Snapshot+Telemetry, `vehicle_data`는 Baseline·wake 쿨다운·수동만
+
 ---
 
 ## Phase 5. 배포 및 데모 (M5)
@@ -750,4 +781,6 @@
 | 2026-07-10 | 커스텀 도메인 — FMS `bori-fleet.shop`, Telemetry `telemetry.bori-fleet.shop` |
 | 2026-07-10 | Phase 4.3 추가 — Fleet Telemetry 서버 연동 (M0~M2·M4 완료, M3 V→FMS E2E 보류) |
 | 2026-07-10 | Phase 4.3 P0 검증 — 실차 V→ingress PROCESSED·`telemetrySource=TELEMETRY` 실측, mapper Gear·VIN insensitive, 로컬 secret 동기화는 사용자 작업 |
+| 2026-07-11 | Phase 4.4 추가 — 하이브리드 데이터 모델·체크리스트 문서화 (스키마/Sync/UI, **코드 미착수**) |
+| 2026-07-11 | Phase 4.4.A 완료 — Vehicle 제원·VehicleSyncState·migrate backfill·시드·env (`20260711120000_phase44a_hybrid_data_model`) |
 

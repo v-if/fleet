@@ -66,6 +66,22 @@ enum ApiCallDirection {
   OUTBOUND
 }
 
+/// 온보딩 수명주기 (운행 상태 VehicleStatus 와 분리)
+enum VehicleLifecycle {
+  REGISTERED
+  KEY_PENDING
+  TELEMETRY_PENDING
+  READY
+}
+
+/// vehicle_data / 제원 REST 호출 사유 (쿨다운·감사)
+enum RestSyncReason {
+  BASELINE
+  WAKE_COOLDOWN
+  MANUAL_FALLBACK
+  SPECS_REFRESH
+}
+
 model User {
   id            String         @id @default(cuid())
   email         String         @unique
@@ -148,6 +164,8 @@ model TelemetrySubscription {
   teslaAccountId String?
   teslaAccount   TeslaAccount? @relation(fields: [teslaAccountId], references: [id], onDelete: SetNull)
   active         Boolean       @default(true)
+  configSynced   Boolean       @default(false)
+  configCheckedAt DateTime?    @db.Timestamptz(3)
   subscribedAt   DateTime      @default(now()) @db.Timestamptz(3)
   unsubscribedAt DateTime?     @db.Timestamptz(3)
   lastError      String?
@@ -160,27 +178,57 @@ model TelemetrySubscription {
 }
 
 model Vehicle {
-  id             String           @id @default(cuid())
-  plateNumber    String           @unique
-  model          String
-  year           Int
-  oemVehicleId   String?
-  teslaAccountId String?
-  teslaAccount   TeslaAccount?    @relation(fields: [teslaAccountId], references: [id], onDelete: SetNull)
-  unlinkedAt     DateTime?         @db.Timestamptz(3)
-  isDeleted      Boolean          @default(false)
-  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
+  id               String         @id @default(cuid())
+  plateNumber      String         @unique
+  model            String
+  year             Int
+  oemVehicleId     String?
+  teslaAccountId   String?
+  teslaAccount     TeslaAccount?  @relation(fields: [teslaAccountId], references: [id], onDelete: SetNull)
+  /// vehicle_config.car_type (정적)
+  carType          String?
+  /// vehicle_config.trim_badging (정적)
+  trimBadging      String?
+  /// vehicle_config.exterior_color (정적)
+  exteriorColor    String?
+  /// Fleet vehicles.display_name (준정적)
+  teslaDisplayName String?
+  /// 제원 마지막 저장 시각
+  specsSyncedAt    DateTime?      @db.Timestamptz(3)
+  unlinkedAt       DateTime?      @db.Timestamptz(3)
+  isDeleted        Boolean        @default(false)
+  createdAt        DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @db.Timestamptz(3)
   snapshots              VehicleSnapshot[]
   events                 VehicleEvent[]
   auditLogs              AuditLog[]
   apiCallLogs            ApiCallLog[]
   telemetryIngress       TelemetryIngress[]
   telemetrySubscription  TelemetrySubscription?
+  syncState              VehicleSyncState?
 
   @@unique([teslaAccountId, oemVehicleId])
   @@index([teslaAccountId])
   @@index([unlinkedAt])
+  @@index([carType])
+}
+
+/// 하이브리드 온보딩·쿨다운 SoT (Vehicle 1:1)
+model VehicleSyncState {
+  vehicleId                 String           @id
+  vehicle                   Vehicle          @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  lifecycle                 VehicleLifecycle @default(REGISTERED)
+  virtualKeyConfirmedAt     DateTime?        @db.Timestamptz(3)
+  telemetryConfigSyncedAt   DateTime?        @db.Timestamptz(3)
+  baselineCompletedAt       DateTime?        @db.Timestamptz(3)
+  baselineLastError         String?
+  lastRestSyncAt            DateTime?        @db.Timestamptz(3)
+  lastRestSyncReason        RestSyncReason?
+  lastWakeDetectedAt        DateTime?        @db.Timestamptz(3)
+  updatedAt                 DateTime         @updatedAt @db.Timestamptz(3)
+
+  @@index([lifecycle])
+  @@index([lastRestSyncAt])
 }
 
 model VehicleSnapshot {
