@@ -3,7 +3,8 @@
 > **상태**: **A~E 완료** (2026-07-11)  
 > **설계서**: [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md)  
 > **호출 정책**: [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md)  
-> **표시·매핑**: [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md), [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md)
+> **표시·매핑**: [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md), [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md)  
+> **Telemetry 서버**: 배포 변경 없음 — [handoff-phase44-to-fleet-telemetry.md](./handoff-phase44-to-fleet-telemetry.md)
 
 ---
 
@@ -132,6 +133,7 @@ pnpm telemetry:check
 | 일자 | 내용 |
 |------|------|
 | 2026-07-11 | **E 완료** — hybrid:verify, telemetry:check, unlink SyncState 정리, setup-guide 온보딩 |
+| 2026-07-11 | Telemetry handoff 문서 — [handoff-phase44-to-fleet-telemetry.md](./handoff-phase44-to-fleet-telemetry.md) (서버 배포 불필요) |
 | 2026-07-11 | **D 완료** — 목록/상세 제원·lifecycle·신선도 UI, 설정 온보딩 패널, Baseline/VK 액션 |
 | 2026-07-11 | **C 완료** — vehicles API 제원/lifecycle/freshness, baseline·VK 엔드포인트, telemetry status SyncState |
 | 2026-07-11 | **B 완료** — display-model, Baseline/wake REST, VK confirm API, processor 쿨다운, fallback 감사 |

@@ -295,6 +295,7 @@ Authorization: Bearer {TESLA_SYNC_CRON_SECRET}   # Fly: FMS_CRON_SECRET
 | [requirements-fleet-telemetry.md](./requirements-fleet-telemetry.md) | 원 요구사항·§5 계약·운영 시나리오 |
 | [development-checklist.md](./development-checklist.md) | FMS Phase 체크리스트 (Phase 4.2·4.3) |
 | [setup-guide.md](./setup-guide.md) | FMS 로컬·배포·Telemetry webhook 점검 (§5.4.1) |
+| [handoff-phase44-to-fleet-telemetry.md](./handoff-phase44-to-fleet-telemetry.md) | Phase 4.4 → Telemetry 전달 (배포 불필요·인지/선택) |
 | Telemetry repo `docs/` | Fly·Proxy·커스텀 도메인 상세 (별도 저장소) |
 
 ---
@@ -306,3 +307,4 @@ Authorization: Bearer {TESLA_SYNC_CRON_SECRET}   # Fly: FMS_CRON_SECRET
 | 2026-07-10 | 초안 — FMS 인수인계용 Telemetry 개발 완료·보류 현황 정리 |
 | 2026-07-10 | FMS docs에 반영 — 커스텀 도메인 `bori-fleet.shop` / `telemetry.bori-fleet.shop` |
 | 2026-07-10 | P0 재검증 — 실차 V E2E PROCESSED·TELEMETRY 스냅샷 확인, 잔여=로컬 secret·UI 리허설 |
+| 2026-07-11 | Phase 4.4 handoff 링크 — Telemetry 서버 코드/배포 변경 없음 명시 |
