@@ -733,6 +733,37 @@
 
 ---
 
+### Phase VD-1 차량 상세 UI (P0) — ✅ 2026-07-12
+
+> 요구사항: [requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md)  
+> 체크리스트: [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md)  
+> 수용 VIN: `LRWYGCFJ7SC214742`
+
+- [x] Summary strip (상태·SoC·충전·잠금·이슈·상대 신선도)
+- [x] ASLEEP 추론 배지 · 위치 null empty UX · configSynced 경고
+- [x] 보안 타일 · 운영 액션 그룹 · VIN 복사
+- [ ] 실차 수동 검수 (체크리스트 VD-1)
+
+### Phase VD-2 차량 상세 UI (P1) — ✅ 2026-07-12
+
+- [x] 연동 타임라인 (구독/VK/config/Baseline/Telemetry/REST/wake)
+- [x] baselineLastError · subscription.lastError 접이식
+- [x] TPMS/공조 출처 힌트 · REST 사유 한글화
+- [x] 제원 접기 · 이벤트 resolvedAt/empty
+- [ ] 실차 수동 검수 (체크리스트 VD-2)
+
+### Phase VD-3 차량 상세 데이터 파이프 (P2) — ✅ 2026-07-12
+
+> migrate: `20260712080000_phase_vd3_snapshot_detail`
+
+- [x] chargeLimitSoc · chargerPowerKw · 개별 도어/트렁크 스키마·REST 매핑
+- [x] nearby_charging_sites · service_data · Baseline alerts
+- [x] Telemetry EstBatteryRange · DoorState 구독 필드
+- [x] 상세 UI (충전 상세·개폐·인근 충전소)
+- [ ] 실차 Baseline 수동 검수 (체크리스트 VD-3)
+
+---
+
 ## Phase 5. 배포 및 데모 (M5)
 
 > 설치: [setup-guide.md](./setup-guide.md) §7
@@ -825,4 +856,7 @@
 | 2026-07-11 | Phase 4.5 D 완료 — disconnect:verify · VIN LRWYGCFJ7SC214742 · P1 감지기 잔여 |
 | 2026-07-12 | Phase 4.6 문서 — Vehicle Command Proxy ([requirements-tesla-vehicle-command-proxy.md](./requirements-tesla-vehicle-command-proxy.md)) |
 | 2026-07-12 | Phase 4.6 Proxy 완료 — [handoff-fms.md](./handoff-fms.md) · `bori-cmd-proxy` · FMS Vercel/E2E 잔여 |
+| 2026-07-12 | Phase VD-1 완료 — 차량 상세 Summary/추론 ASLEEP/위치 empty/configSynced 경고 ([requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md), [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md)) |
+| 2026-07-12 | Phase VD-2 완료 — 연동 타임라인·오류 접이·제원 접기·이벤트 resolved |
+| 2026-07-12 | Phase VD-3 완료 — Snapshot charge/doors/trunk · nearby/service/alerts · UI |
 

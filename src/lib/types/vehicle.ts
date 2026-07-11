@@ -23,9 +23,17 @@ export type VehicleSnapshotDto = {
   status: VehicleStatus | null;
   chargingStatus: ChargingStatus | null;
   odometerKm: number | null;
+  chargeLimitSoc: number | null;
+  chargerPowerKw: number | null;
   locked: boolean | null;
   doorsOpen: boolean | null;
   windowsOpen: boolean | null;
+  doorDfOpen: boolean | null;
+  doorDrOpen: boolean | null;
+  doorPfOpen: boolean | null;
+  doorPrOpen: boolean | null;
+  frontTrunkOpen: boolean | null;
+  rearTrunkOpen: boolean | null;
   insideTempC: number | null;
   outsideTempC: number | null;
   climateOn: boolean | null;

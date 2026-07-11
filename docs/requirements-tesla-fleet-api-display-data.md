@@ -236,3 +236,7 @@
 | 2026-07-11 | Phase 4.4.C API 계약 반영 (체크리스트 C 완료) |
 | 2026-07-11 | Phase 4.4.D UI 반영 (체크리스트 D 완료) |
 | 2026-07-11 | Phase 4.4.E 마감 (체크리스트 A~E 완료) |
+| 2026-07-12 | 후속 — 차량 상세 UI 고도화 요구사항: [requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md) |
+| 2026-07-12 | Phase VD-1 완료 — Summary/추론 ASLEEP/위치 empty/configSynced ([checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md)) |
+| 2026-07-12 | Phase VD-2 완료 — 연동 타임라인·오류·제원 접기 |
+| 2026-07-12 | Phase VD-3 완료 — Snapshot 확장·nearby/service/alerts |

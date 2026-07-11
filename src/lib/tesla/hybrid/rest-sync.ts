@@ -8,7 +8,11 @@ import {
   isRestWakeCooldownElapsed,
   patchVehicleSyncState,
 } from "@/lib/tesla/hybrid/sync-state";
-import { mapTeslaVehicleToSnapshot, TeslaFleetClient } from "@/lib/tesla/mapper";
+import {
+  mapTeslaAlertsToEvents,
+  mapTeslaVehicleToSnapshot,
+  TeslaFleetClient,
+} from "@/lib/tesla/mapper";
 import {
   getRestWakeCooldownMinutes,
   isBaselineOnReadyEnabled,
@@ -141,9 +145,17 @@ export async function writeRestSnapshot(
       status: snapshot.status,
       chargingStatus: snapshot.chargingStatus,
       odometerKm: snapshot.odometerKm,
+      chargeLimitSoc: snapshot.chargeLimitSoc ?? null,
+      chargerPowerKw: snapshot.chargerPowerKw ?? null,
       locked: snapshot.locked,
       doorsOpen: snapshot.doorsOpen,
       windowsOpen: snapshot.windowsOpen,
+      doorDfOpen: snapshot.doorDfOpen ?? null,
+      doorDrOpen: snapshot.doorDrOpen ?? null,
+      doorPfOpen: snapshot.doorPfOpen ?? null,
+      doorPrOpen: snapshot.doorPrOpen ?? null,
+      frontTrunkOpen: snapshot.frontTrunkOpen ?? null,
+      rearTrunkOpen: snapshot.rearTrunkOpen ?? null,
       insideTempC: snapshot.insideTempC,
       outsideTempC: snapshot.outsideTempC,
       climateOn: snapshot.climateOn,
@@ -241,12 +253,43 @@ export async function runBaselineForVehicle(
       fleet.items.find((item) => item.vin.toUpperCase() === ctx.vin.toUpperCase()),
     );
 
+    const [nearbyChargingSites, serviceStatus] = await Promise.all([
+      client.getNearbyChargingSites(ctx.vin),
+      client.getServiceStatus(ctx.vin),
+    ]);
+    snapshot.nearbyChargingSites = nearbyChargingSites;
+    snapshot.serviceStatus = serviceStatus;
+
     await writeRestSnapshot(snapshot, {
       teslaAccountId: ctx.teslaAccountId,
       updateSpecs: true,
       restSyncReason: RestSyncReason.BASELINE,
       lastRestSyncAt: new Date(),
     });
+
+    try {
+      const alerts = await client.getRecentAlerts(ctx.vin);
+      const plateNumber = snapshot.plateNumber;
+      const events = mapTeslaAlertsToEvents(plateNumber, alerts);
+      await prisma.vehicleEvent.deleteMany({
+        where: {
+          vehicleId,
+          type: { in: ["ALERT", "WARNING"] },
+        },
+      });
+      for (const event of events) {
+        await prisma.vehicleEvent.create({
+          data: {
+            vehicleId,
+            type: event.type,
+            message: event.message,
+            occurredAt: event.occurredAt,
+          },
+        });
+      }
+    } catch (alertError) {
+      console.warn(`Baseline recent_alerts skipped for ${ctx.vin}:`, alertError);
+    }
 
     await createAuditLog({
       action: "VEHICLE_BASELINE_SYNC",
@@ -334,6 +377,12 @@ export async function maybeRunWakeCooldownRestSync(
 
     const data = await client.getVehicleData(ctx.vin);
     const snapshot = mapTeslaVehicleToSnapshot(listItem, data);
+    const [nearbyChargingSites, serviceStatus] = await Promise.all([
+      client.getNearbyChargingSites(ctx.vin),
+      client.getServiceStatus(ctx.vin),
+    ]);
+    snapshot.nearbyChargingSites = nearbyChargingSites;
+    snapshot.serviceStatus = serviceStatus;
 
     await writeRestSnapshot(snapshot, {
       teslaAccountId: ctx.teslaAccountId,

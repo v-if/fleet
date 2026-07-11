@@ -47,6 +47,29 @@ export type TeslaRecentAlertsResponse = {
   };
 };
 
+export type TeslaNearbyChargingSite = {
+  name?: string;
+  distance_miles?: number;
+  available_stalls?: number;
+  total_stalls?: number;
+};
+
+export type TeslaNearbyChargingSitesResponse = {
+  response: {
+    destination_charging?: TeslaNearbyChargingSite[];
+    superchargers?: TeslaNearbyChargingSite[];
+  };
+};
+
+export type TeslaServiceDataResponse = {
+  response: {
+    service_status?: string | null;
+    service_etc?: string | null;
+    service_months?: number | null;
+    service_miles?: number | null;
+  };
+};
+
 export type TeslaVehicleDataResponse = {
   response: {
     id?: number;
@@ -58,6 +81,8 @@ export type TeslaVehicleDataResponse = {
       est_battery_range?: number;
       battery_range?: number;
       charging_state?: string;
+      charge_limit_soc?: number;
+      charger_power?: number;
     };
     drive_state?: {
       latitude?: number;

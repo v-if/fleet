@@ -48,6 +48,9 @@ const DEFAULT_TELEMETRY_FIELDS: Record<string, { interval_seconds: number }> = {
   InsideTemp: { interval_seconds: 60 },
   OutsideTemp: { interval_seconds: 60 },
   SentryMode: { interval_seconds: 60 },
+  /** VD-3: 거리·개폐 보강 (재구독/재연결 시 반영) */
+  EstBatteryRange: { interval_seconds: 120 },
+  DoorState: { interval_seconds: 60 },
 };
 
 export async function deleteFleetTelemetryConfig(

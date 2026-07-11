@@ -254,9 +254,21 @@ model VehicleSnapshot {
   status              VehicleStatus?
   chargingStatus      ChargingStatus?
   odometerKm          Float?
+  /// charge_state.charge_limit_soc (%)
+  chargeLimitSoc      Float?
+  /// charge_state.charger_power (kW)
+  chargerPowerKw      Float?
   locked              Boolean?
   doorsOpen           Boolean?
   windowsOpen         Boolean?
+  /// vehicle_state df/dr/pf/pr (개별 도어)
+  doorDfOpen          Boolean?
+  doorDrOpen          Boolean?
+  doorPfOpen          Boolean?
+  doorPrOpen          Boolean?
+  /// frunk / trunk
+  frontTrunkOpen      Boolean?
+  rearTrunkOpen       Boolean?
   insideTempC         Float?
   outsideTempC        Float?
   climateOn           Boolean?

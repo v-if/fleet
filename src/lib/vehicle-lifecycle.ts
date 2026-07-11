@@ -21,6 +21,16 @@ export const DISCONNECT_REASON_LABEL: Record<
   UNLINK: "플릿 제거",
 };
 
+export const REST_SYNC_REASON_LABEL: Record<
+  "BASELINE" | "WAKE_COOLDOWN" | "MANUAL_FALLBACK" | "SPECS_REFRESH",
+  string
+> = {
+  BASELINE: "Baseline(제원·스냅샷)",
+  WAKE_COOLDOWN: "Wake 후 쿨다운 REST",
+  MANUAL_FALLBACK: "수동 폴백",
+  SPECS_REFRESH: "제원 재동기화",
+};
+
 export function lifecycleBadgeColor(lifecycle: VehicleLifecycle): TailAdminBadgeColor {
   switch (lifecycle) {
     case "READY":

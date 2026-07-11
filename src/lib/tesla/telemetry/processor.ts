@@ -41,6 +41,14 @@ function mergeSnapshotFields(
         locked: boolean | null;
         doorsOpen: boolean | null;
         windowsOpen: boolean | null;
+        chargeLimitSoc?: number | null;
+        chargerPowerKw?: number | null;
+        doorDfOpen?: boolean | null;
+        doorDrOpen?: boolean | null;
+        doorPfOpen?: boolean | null;
+        doorPrOpen?: boolean | null;
+        frontTrunkOpen?: boolean | null;
+        rearTrunkOpen?: boolean | null;
         insideTempC: number | null;
         outsideTempC: number | null;
         climateOn: boolean | null;
@@ -67,6 +75,14 @@ function mergeSnapshotFields(
     locked: current.locked ?? previous?.locked ?? null,
     doorsOpen: current.doorsOpen ?? previous?.doorsOpen ?? null,
     windowsOpen: current.windowsOpen ?? previous?.windowsOpen ?? null,
+    chargeLimitSoc: previous?.chargeLimitSoc ?? null,
+    chargerPowerKw: previous?.chargerPowerKw ?? null,
+    doorDfOpen: previous?.doorDfOpen ?? null,
+    doorDrOpen: previous?.doorDrOpen ?? null,
+    doorPfOpen: previous?.doorPfOpen ?? null,
+    doorPrOpen: previous?.doorPrOpen ?? null,
+    frontTrunkOpen: previous?.frontTrunkOpen ?? null,
+    rearTrunkOpen: previous?.rearTrunkOpen ?? null,
     insideTempC: current.insideTempC ?? previous?.insideTempC ?? null,
     outsideTempC: current.outsideTempC ?? previous?.outsideTempC ?? null,
     climateOn: current.climateOn ?? previous?.climateOn ?? null,
@@ -339,9 +355,17 @@ export async function inferAsleepVehicles() {
             status: "ONLINE",
             chargingStatus: snapshot.chargingStatus,
             odometerKm: snapshot.odometerKm,
+            chargeLimitSoc: snapshot.chargeLimitSoc,
+            chargerPowerKw: snapshot.chargerPowerKw,
             locked: snapshot.locked,
             doorsOpen: snapshot.doorsOpen,
             windowsOpen: snapshot.windowsOpen,
+            doorDfOpen: snapshot.doorDfOpen,
+            doorDrOpen: snapshot.doorDrOpen,
+            doorPfOpen: snapshot.doorPfOpen,
+            doorPrOpen: snapshot.doorPrOpen,
+            frontTrunkOpen: snapshot.frontTrunkOpen,
+            rearTrunkOpen: snapshot.rearTrunkOpen,
             insideTempC: snapshot.insideTempC,
             outsideTempC: snapshot.outsideTempC,
             climateOn: snapshot.climateOn,
@@ -381,9 +405,17 @@ export async function inferAsleepVehicles() {
         status: "ASLEEP",
         chargingStatus: snapshot.chargingStatus,
         odometerKm: snapshot.odometerKm,
+        chargeLimitSoc: snapshot.chargeLimitSoc,
+        chargerPowerKw: snapshot.chargerPowerKw,
         locked: snapshot.locked,
         doorsOpen: snapshot.doorsOpen,
         windowsOpen: snapshot.windowsOpen,
+        doorDfOpen: snapshot.doorDfOpen,
+        doorDrOpen: snapshot.doorDrOpen,
+        doorPfOpen: snapshot.doorPfOpen,
+        doorPrOpen: snapshot.doorPrOpen,
+        frontTrunkOpen: snapshot.frontTrunkOpen,
+        rearTrunkOpen: snapshot.rearTrunkOpen,
         insideTempC: snapshot.insideTempC,
         outsideTempC: snapshot.outsideTempC,
         climateOn: snapshot.climateOn,

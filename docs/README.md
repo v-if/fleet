@@ -19,6 +19,8 @@
 | [auth-user-mapping.md](./auth-user-mapping.md) | Phase 4 Supabase Auth ↔ FMS User 매핑 설계 메모 | 인증·다테넌시 구현 전 |
 | [requirements-tesla-api.md](./requirements-tesla-api.md) | 테슬라 Fleet API 조회/제어 기능 정리, FMS 화면 적용안 | 데이터 연동·제어 기능 설계할 때 |
 | [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md) | 프론트 고도화 선행 — Fleet API 표시 항목 조사, **정적/동적** 분류 | 화면 고도화·제원/실시간 데이터 설계할 때 |
+| [requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md) | **차량 상세** 고도화 — 실차 DB 대조, 관리자 IA·표현·Phase (VD-1~3) | 상세 UI/UX 구현 전에 |
+| [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md) | 차량 상세 UI Phase VD-1~3 체크리스트 | VD 구현·검수할 때 |
 | [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md) | Telemetry vs Fleet API **하이브리드 호출** — ASLEEP 금지·이벤트 주도 REST | 수집 전략·wake/쿨다운 설계할 때 |
 | [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | 하이브리드 **DB 설계** — Vehicle 제원 + VehicleSyncState + Snapshot 쓰기 경로 | 스키마·마이그레이션·sync 구현할 때 |
 | [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | Phase 4.4 구현 체크리스트 (A~E) | 하이브리드 데이터 작업 진척·완료 확인 |
@@ -127,3 +129,6 @@
 | 2026-07-12 | requirements-tesla-vehicle-command-proxy — Fly Proxy·Vercel env·재연동 create 요구사항 |
 | 2026-07-12 | Command Proxy 문서를 **신규 개발자 인수인계서**로 개편 |
 | 2026-07-12 | handoff-fms — Proxy 배포 완료·FMS Vercel env/E2E 잔여 (`bori-cmd-proxy`) |
+| 2026-07-12 | Phase VD-1 — 차량 상세 UI ([requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md), [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md)) |
+| 2026-07-12 | Phase VD-2 — 차량 상세 운영 진단 UI 완료 |
+| 2026-07-12 | Phase VD-3 — charge/doors/nearby/service/alerts 파이프·UI 완료 |

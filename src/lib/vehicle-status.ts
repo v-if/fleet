@@ -104,6 +104,28 @@ export function formatDateTime(value: Date | string | null) {
   return date.toLocaleString("ko-KR");
 }
 
+/** 상대 시각 — 툴팁에는 formatDateTime 절대시각을 병행 */
+export function formatRelativeTime(value: Date | string | null) {
+  if (!value) return "-";
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) return "-";
+  const diffMs = Date.now() - date.getTime();
+  if (diffMs < 0) return formatDateTime(value);
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 1) return "방금";
+  if (mins < 60) return `${mins}분 전`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 48) return `${hours}시간 전`;
+  const days = Math.floor(hours / 24);
+  return `${days}일 전`;
+}
+
+export function formatSocPercent(percent: number | null | undefined) {
+  if (percent == null) return "-";
+  const rounded = Math.round(percent * 10) / 10;
+  return Number.isInteger(rounded) ? `${rounded}%` : `${rounded.toFixed(1)}%`;
+}
+
 export function formatOdometer(km: number | null | undefined) {
   if (km == null) return "-";
   return `${Math.round(km).toLocaleString("ko-KR")} km`;

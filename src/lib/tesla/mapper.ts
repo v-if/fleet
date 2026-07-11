@@ -1,5 +1,5 @@
 import { ApiCallDirection } from "@prisma/client";
-import type { ChargingStatus, EventType, VehicleStatus } from "@prisma/client";
+import type { ChargingStatus, EventType, ServiceStatus, VehicleStatus } from "@prisma/client";
 
 import { createApiCallLog, createRequestId, sanitizeBody, sanitizeHeaders } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
@@ -10,7 +10,10 @@ import type {
   TeslaAlert,
   TeslaFleetStatusItem,
   TeslaFleetStatusResponse,
+  TeslaNearbyChargingSite,
+  TeslaNearbyChargingSitesResponse,
   TeslaRecentAlertsResponse,
+  TeslaServiceDataResponse,
   TeslaVehicleDataResponse,
   TeslaVehicleListItem,
   TeslaVehicleListResponse,
@@ -43,15 +46,52 @@ function mapChargingStatus(value: string | undefined): ChargingStatus {
   }
 }
 
-function mapAlertType(alert: TeslaAlert): EventType {
-  const text = `${alert.name ?? ""} ${alert.user_text ?? ""}`.toLowerCase();
-  if (text.includes("critical") || text.includes("fault")) {
-    return "ALERT";
+function mapServiceStatus(value: string | null | undefined): ServiceStatus | null {
+  if (!value) return null;
+  const normalized = value.toLowerCase();
+  if (normalized.includes("in_service") || normalized.includes("in-service")) {
+    return "IN_SERVICE";
   }
-  if (text.includes("offline") || text.includes("disconnect")) {
-    return "OFFLINE";
+  if (
+    normalized.includes("due") ||
+    normalized.includes("soon") ||
+    normalized.includes("schedule")
+  ) {
+    return "DUE_SOON";
   }
-  return "WARNING";
+  if (normalized.includes("ok") || normalized === "none" || normalized.includes("not")) {
+    return "OK";
+  }
+  return "OK";
+}
+
+function openFlag(value: number | boolean | null | undefined): boolean | null {
+  if (value == null) return null;
+  return Boolean(value);
+}
+
+export function mapNearbyChargingSites(
+  destination: TeslaNearbyChargingSite[] = [],
+  superchargers: TeslaNearbyChargingSite[] = [],
+): NearbyChargingSite[] {
+  const sites = [...destination, ...superchargers]
+    .map((site) => {
+      const name = site.name?.trim();
+      if (!name) return null;
+      const miles = site.distance_miles;
+      return {
+        name,
+        distanceKm:
+          miles != null && Number.isFinite(miles)
+            ? Math.round(miles * 1.60934 * 10) / 10
+            : 0,
+      } satisfies NearbyChargingSite;
+    })
+    .filter((site): site is NearbyChargingSite => site != null)
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, 8);
+
+  return sites;
 }
 
 function derivePlateNumber(vin: string, displayName?: string | null) {
@@ -117,14 +157,29 @@ export function mapTeslaVehicleToSnapshot(
     vehicle?.pf != null ||
     vehicle?.pr != null ||
     closures?.door_open != null;
+  const doorDfOpen = openFlag(vehicle?.df);
+  const doorDrOpen = openFlag(vehicle?.dr);
+  const doorPfOpen = openFlag(vehicle?.pf);
+  const doorPrOpen = openFlag(vehicle?.pr);
   const doorsOpen = hasDoorState
-    ? Boolean(vehicle?.df || vehicle?.dr || vehicle?.pf || vehicle?.pr || closures?.door_open)
+    ? Boolean(
+        doorDfOpen ||
+          doorDrOpen ||
+          doorPfOpen ||
+          doorPrOpen ||
+          closures?.door_open,
+      )
     : null;
-  const hasWindowState =
-    vehicle?.ft != null || vehicle?.rt != null || closures?.window_open != null;
-  const windowsOpen = hasWindowState
-    ? Boolean(vehicle?.ft || vehicle?.rt || closures?.window_open)
-    : null;
+  const windowsOpen =
+    closures?.window_open != null ? Boolean(closures.window_open) : null;
+  const frontTrunkOpen =
+    vehicle?.ft != null || closures?.trunk_open != null
+      ? Boolean(vehicle?.ft || closures?.trunk_open)
+      : null;
+  const rearTrunkOpen =
+    vehicle?.rt != null || closures?.rear_trunk_open != null
+      ? Boolean(vehicle?.rt || closures?.rear_trunk_open)
+      : null;
 
   let status: VehicleStatus | null = state ? mapVehicleStatus(state) : null;
   if (!hasTelemetry) {
@@ -153,9 +208,17 @@ export function mapTeslaVehicleToSnapshot(
     status,
     chargingStatus: charge?.charging_state ? mapChargingStatus(charge.charging_state) : null,
     odometerKm: vehicle?.odometer ? Math.round(vehicle.odometer * 1.60934) : undefined,
+    chargeLimitSoc: charge?.charge_limit_soc ?? null,
+    chargerPowerKw: charge?.charger_power ?? null,
     locked: vehicle?.locked ?? null,
     doorsOpen,
     windowsOpen,
+    doorDfOpen,
+    doorDrOpen,
+    doorPfOpen,
+    doorPrOpen,
+    frontTrunkOpen,
+    rearTrunkOpen,
     insideTempC: climate?.inside_temp,
     outsideTempC: climate?.outside_temp,
     climateOn: climate?.is_climate_on ?? null,
@@ -169,6 +232,17 @@ export function mapTeslaVehicleToSnapshot(
     nearbyChargingSites: [] as NearbyChargingSite[],
     lastUpdatedAt: new Date(),
   };
+}
+
+function mapAlertType(alert: TeslaAlert): EventType {
+  const text = `${alert.name ?? ""} ${alert.user_text ?? ""}`.toLowerCase();
+  if (text.includes("critical") || text.includes("fault")) {
+    return "ALERT";
+  }
+  if (text.includes("offline") || text.includes("disconnect")) {
+    return "OFFLINE";
+  }
+  return "WARNING";
 }
 
 export function mapTeslaAlertsToEvents(
@@ -305,5 +379,32 @@ export class TeslaFleetClient {
       `/api/1/vehicles/${vin}/recent_alerts`,
     );
     return data.response?.recent_alerts ?? [];
+  }
+
+  async getNearbyChargingSites(vin: string): Promise<NearbyChargingSite[]> {
+    try {
+      const data = await this.request<TeslaNearbyChargingSitesResponse>(
+        `/api/1/vehicles/${encodeURIComponent(vin)}/nearby_charging_sites`,
+      );
+      return mapNearbyChargingSites(
+        data.response?.destination_charging,
+        data.response?.superchargers,
+      );
+    } catch (error) {
+      console.warn(`nearby_charging_sites failed for ${vin}:`, error);
+      return [];
+    }
+  }
+
+  async getServiceStatus(vin: string): Promise<ServiceStatus | null> {
+    try {
+      const data = await this.request<TeslaServiceDataResponse>(
+        `/api/1/vehicles/${encodeURIComponent(vin)}/service_data`,
+      );
+      return mapServiceStatus(data.response?.service_status);
+    } catch (error) {
+      console.warn(`service_data failed for ${vin}:`, error);
+      return null;
+    }
   }
 }
