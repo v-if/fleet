@@ -48,12 +48,18 @@ export async function POST(request: Request, context: RouteContext) {
       requestId,
     });
     if (!reconnected?.ok) {
-      return NextResponse.json(reconnected ?? { error: "reconnect_failed" }, { status: 409 });
+      return NextResponse.json(
+        {
+          error: reconnected?.error ?? "reconnect_failed",
+          reconnect: reconnected,
+        },
+        { status: 409 },
+      );
     }
 
     const vk = await confirmVirtualKeyForVehicle(vehicleId);
 
-    const payload = { reconnect: reconnected, virtualKey: vk };
+    const payload = { reconnect: reconnected, virtualKey: vk, subscribe: reconnected.subscribe };
 
     await createAuditLogWithApiCall(
       {

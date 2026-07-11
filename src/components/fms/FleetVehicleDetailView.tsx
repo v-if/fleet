@@ -209,16 +209,23 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
       });
       const body = (await response.json()) as {
         error?: string;
+        subscribe?: { ok?: boolean; alreadyConfigured?: boolean; error?: string };
         virtualKey?: { ok?: boolean; error?: string };
       };
       if (!response.ok) {
-        setActionMessage(body.error ?? "Telemetry 재연결에 실패했습니다.");
+        setActionMessage(
+          body.error
+            ? `재연결 실패: ${body.error}. 연동 해지 시 Tesla config가 삭제되므로 Vehicle Command Proxy로 fleet_telemetry_config를 다시 등록해야 합니다.`
+            : "Telemetry 재연결에 실패했습니다.",
+        );
         return;
       }
       setActionMessage(
-        body.virtualKey?.ok
-          ? "Telemetry 재연결이 준비되었습니다. Baseline이 시도되었을 수 있습니다."
-          : `재연결은 반영되었습니다. Virtual Key 확인: ${body.virtualKey?.error ?? "미확인"}`,
+        body.subscribe?.alreadyConfigured
+          ? "Telemetry config가 이미 있습니다. 수신을 기다립니다."
+          : body.virtualKey?.ok
+            ? "Telemetry config 재등록·VK 확인이 완료되었습니다. 차량이 깨어 있으면 곧 스트림이 들어옵니다."
+            : `config 재등록은 반영되었습니다. Virtual Key 확인: ${body.virtualKey?.error ?? "미확인"}`,
       );
       await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       await refetch();

@@ -88,6 +88,31 @@ export function getPartnerToken(): string | null {
   return value ? value : null;
 }
 
+/** Vehicle Command Proxy base (예: https://localhost:4443). config create 서명에 필요 */
+export function getVehicleCommandProxyUrl(): string | null {
+  const value = process.env.TESLA_VEHICLE_COMMAND_PROXY_URL?.trim();
+  return value ? value.replace(/\/$/, "") : null;
+}
+
+/** fleet_telemetry_config.hostname — 기본 telemetry.bori-fleet.shop */
+export function getTelemetryPublicHost(): string {
+  return (
+    process.env.TELEMETRY_PUBLIC_HOST?.trim() ||
+    process.env.TESLA_TELEMETRY_HOSTNAME?.trim() ||
+    "telemetry.bori-fleet.shop"
+  );
+}
+
+/** Fly Telemetry 서버와 동일 CA (PEM). 재구독 create에 필요 */
+export function getTelemetryCaPem(): string | null {
+  const raw =
+    process.env.TESLA_TELEMETRY_CA_PEM?.trim() ||
+    process.env.TELEMETRY_CA_PEM?.trim() ||
+    null;
+  if (!raw) return null;
+  return raw.includes("\\n") ? raw.replace(/\\n/g, "\n") : raw;
+}
+
 /** ASLEEP→ONLINE 시 vehicle_data 쿨다운(분). 기본 30 */
 export function getRestWakeCooldownMinutes(): number {
   const minutes = Number(process.env.TESLA_REST_WAKE_COOLDOWN_MINUTES ?? "30");

@@ -4,7 +4,12 @@ import { createAuditLogWithApiCall } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { getValidTeslaAccessToken } from "@/lib/tesla/auth";
 
-import { unsubscribeFleetTelemetryForVin } from "./client";
+import {
+  createFleetTelemetryConfig,
+  getFleetTelemetryConfig,
+  unsubscribeFleetTelemetryForVin,
+  type TelemetrySubscribeResult,
+} from "./client";
 import { isTelemetryEnabled } from "./config";
 import { refreshTelemetryMetadataCounts } from "./ingress";
 
@@ -117,6 +122,144 @@ export async function unsubscribeVehicleTelemetry(
     stub: result.stub,
     error: result.error,
   };
+}
+
+async function resolveVehicleTokenContext(options: {
+  vehicleId?: string | null;
+  teslaAccountId?: string | null;
+  actorUserId?: string | null;
+}) {
+  let userAccessToken: string | null = null;
+  let teslaAccountId = options.teslaAccountId ?? null;
+  let actorUserId = options.actorUserId ?? null;
+
+  if (options.vehicleId) {
+    const vehicle = await prisma.vehicle.findUnique({
+      where: { id: options.vehicleId },
+      include: {
+        teslaAccount: {
+          select: { id: true, userId: true },
+        },
+      },
+    });
+    teslaAccountId = vehicle?.teslaAccountId ?? teslaAccountId;
+    actorUserId = vehicle?.teslaAccount?.userId ?? actorUserId;
+
+    if (vehicle?.teslaAccount?.userId) {
+      try {
+        userAccessToken = await getValidTeslaAccessToken(vehicle.teslaAccount.userId);
+      } catch {
+        userAccessToken = null;
+      }
+    }
+  }
+
+  return { userAccessToken, teslaAccountId, actorUserId };
+}
+
+/**
+ * 단절(DELETE) 이후 재구독.
+ * 1) GET으로 기존 config 확인 2) 없으면 Vehicle Command Proxy로 create
+ */
+export async function subscribeVehicleTelemetry(
+  vin: string | null | undefined,
+  options: {
+    vehicleId?: string | null;
+    teslaAccountId?: string | null;
+    actorUserId?: string | null;
+    requestId?: string | null;
+  } = {},
+): Promise<TelemetrySubscribeResult> {
+  if (!vin) {
+    return { ok: false, error: "vin_missing" };
+  }
+  if (!isTelemetryEnabled()) {
+    return { ok: true, skipped: true };
+  }
+
+  const ctx = await resolveVehicleTokenContext(options);
+  if (!ctx.userAccessToken) {
+    return { ok: false, error: "tesla_access_token_missing" };
+  }
+
+  const current = await getFleetTelemetryConfig(vin, ctx.userAccessToken, {
+    actorUserId: ctx.actorUserId,
+    teslaAccountId: ctx.teslaAccountId,
+    vehicleId: options.vehicleId ?? null,
+  });
+
+  if (current.ok && current.hasConfig) {
+    if (options.vehicleId) {
+      await prisma.telemetrySubscription.updateMany({
+        where: { vehicleId: options.vehicleId },
+        data: {
+          active: true,
+          configSynced: current.synced === true,
+          configCheckedAt: new Date(),
+          lastError: null,
+          unsubscribedAt: null,
+        },
+      });
+    }
+    return { ok: true, alreadyConfigured: true };
+  }
+
+  const created = await createFleetTelemetryConfig(vin, ctx.userAccessToken, {
+    actorUserId: ctx.actorUserId,
+    teslaAccountId: ctx.teslaAccountId,
+    vehicleId: options.vehicleId ?? null,
+  });
+
+  if (options.vehicleId) {
+    await prisma.telemetrySubscription.updateMany({
+      where: { vehicleId: options.vehicleId },
+      data: {
+        active: true,
+        configSynced: false,
+        configCheckedAt: new Date(),
+        lastError: created.ok ? null : created.error ?? "subscribe failed",
+        unsubscribedAt: null,
+      },
+    });
+  }
+
+  await createAuditLogWithApiCall(
+    {
+      actorUserId: ctx.actorUserId,
+      action: "TELEMETRY_SUBSCRIBE",
+      targetType: "Vehicle",
+      targetId: options.vehicleId ?? vin,
+      vehicleId: options.vehicleId ?? null,
+      teslaAccountId: ctx.teslaAccountId,
+      requestId: options.requestId ?? null,
+      status: created.ok ? AuditLogStatus.SUCCESS : AuditLogStatus.FAILURE,
+      summary: created.ok
+        ? `Fleet Telemetry 구독 등록: ${vin}`
+        : `Fleet Telemetry 구독 등록 실패: ${vin}`,
+      metadata: {
+        vin,
+        viaProxy: created.viaProxy ?? false,
+        statusCode: created.statusCode ?? null,
+        error: created.error ?? null,
+      },
+    },
+    {
+      direction: ApiCallDirection.OUTBOUND,
+      system: "TESLA",
+      requestId: options.requestId ?? null,
+      actorUserId: ctx.actorUserId,
+      teslaAccountId: ctx.teslaAccountId,
+      vehicleId: options.vehicleId ?? null,
+      method: "POST",
+      url: `/api/1/vehicles/fleet_telemetry_config`,
+      path: `/api/1/vehicles/fleet_telemetry_config`,
+      statusCode: created.statusCode ?? (created.ok ? 200 : 500),
+      success: created.ok,
+      errorMessage: created.error ?? null,
+    },
+  );
+
+  return created;
 }
 
 export async function ensureTelemetrySubscriptionsForAccount(teslaAccountId: string) {

@@ -351,7 +351,8 @@ pnpm telemetry:check
 | Webhook 수신 | `POST /api/tesla/telemetry` |
 | 인증(선택) | `Authorization: Bearer $TESLA_TELEMETRY_WEBHOOK_SECRET` 또는 `x-telemetry-secret` 헤더 |
 | 후처리 job | `POST /api/internal/telemetry/process` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET` |
-| 구독 해제 | unlink 시 `DELETE /api/1/vehicles/{vin}/fleet_telemetry_config` (`TESLA_PARTNER_TOKEN` 또는 사용자 토큰) |
+| 구독 해제 | unlink/disconnect 시 `DELETE /api/1/vehicles/{vin}/fleet_telemetry_config` |
+| 구독 재등록 | reconnect 시 Vehicle Command Proxy로 `POST .../fleet_telemetry_config` (`TESLA_VEHICLE_COMMAND_PROXY_URL` + `TESLA_TELEMETRY_CA_PEM`) |
 
 #### 5.4.1.1 Webhook 호출 확인 (운영 점검)
 

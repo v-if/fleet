@@ -7,7 +7,10 @@ import {
 import { createAuditLog } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { patchVehicleSyncState } from "@/lib/tesla/hybrid/sync-state";
-import { unsubscribeVehicleTelemetry } from "@/lib/tesla/telemetry/subscription";
+import {
+  subscribeVehicleTelemetry,
+  unsubscribeVehicleTelemetry,
+} from "@/lib/tesla/telemetry/subscription";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
 
 export type DisconnectTelemetryResult = {
@@ -113,11 +116,21 @@ export async function disconnectVehicleTelemetry(
   };
 }
 
-/** 단절 해제 후 온보딩 재개 (VK 확인·Baseline은 호출측/기존 API) */
+/** 단절 해제 후 온보딩 재개 — DB 활성 + Tesla fleet_telemetry_config 재등록 */
 export async function reconnectVehicleTelemetry(
   vehicleId: string,
   options: { actorUserId?: string | null; requestId?: string | null } = {},
-): Promise<{ ok: boolean; vehicleId: string; error?: string } | null> {
+): Promise<{
+  ok: boolean;
+  vehicleId: string;
+  error?: string;
+  subscribe?: {
+    ok: boolean;
+    alreadyConfigured?: boolean;
+    skipped?: boolean;
+    error?: string;
+  };
+} | null> {
   const vehicle = await prisma.vehicle.findFirst({
     where: { id: vehicleId, ...activeVehicleWhere },
   });
@@ -150,6 +163,13 @@ export async function reconnectVehicleTelemetry(
     lifecycle: VehicleLifecycle.TELEMETRY_PENDING,
   });
 
+  const subscribe = await subscribeVehicleTelemetry(vehicle.oemVehicleId, {
+    vehicleId: vehicle.id,
+    teslaAccountId: vehicle.teslaAccountId,
+    actorUserId: options.actorUserId,
+    requestId: options.requestId,
+  });
+
   await createAuditLog({
     actorUserId: options.actorUserId,
     action: "TELEMETRY_RECONNECT",
@@ -158,10 +178,26 @@ export async function reconnectVehicleTelemetry(
     vehicleId: vehicle.id,
     teslaAccountId: vehicle.teslaAccountId,
     requestId: options.requestId,
-    status: AuditLogStatus.SUCCESS,
-    summary: `Telemetry 재연결 준비 (${vehicle.oemVehicleId})`,
-    metadata: { vin: vehicle.oemVehicleId },
+    status: subscribe.ok ? AuditLogStatus.SUCCESS : AuditLogStatus.FAILURE,
+    summary: subscribe.ok
+      ? `Telemetry 재연결 (${vehicle.oemVehicleId})`
+      : `Telemetry 재연결 DB 반영·config 재등록 실패 (${vehicle.oemVehicleId})`,
+    metadata: {
+      vin: vehicle.oemVehicleId,
+      subscribeOk: subscribe.ok,
+      alreadyConfigured: subscribe.alreadyConfigured ?? false,
+      subscribeError: subscribe.error ?? null,
+    },
   });
 
-  return { ok: true, vehicleId: vehicle.id };
+  if (!subscribe.ok) {
+    return {
+      ok: false,
+      vehicleId: vehicle.id,
+      error: subscribe.error ?? "fleet_telemetry_config_recreate_failed",
+      subscribe,
+    };
+  }
+
+  return { ok: true, vehicleId: vehicle.id, subscribe };
 }
