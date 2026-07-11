@@ -22,85 +22,213 @@ type PositionedMapVehicle = MapVehicle & {
   longitude: number;
 };
 
-type KakaoMaps = {
+type NaverLatLng = unknown;
+type NaverMap = {
+  setCenter: (center: NaverLatLng) => void;
+  setZoom: (zoom: number) => void;
+};
+type NaverMarker = {
+  setMap: (map: NaverMap | null) => void;
+  setPosition: (position: NaverLatLng) => void;
+  setIcon: (icon: { content: HTMLElement; anchor?: unknown }) => void;
+  setZIndex: (zIndex: number) => void;
+};
+
+type NaverMaps = {
   maps: {
-    load: (callback: () => void) => void;
-    LatLng: new (lat: number, lng: number) => unknown;
+    LatLng: new (lat: number, lng: number) => NaverLatLng;
+    Point: new (x: number, y: number) => unknown;
     Map: new (
-      container: HTMLElement,
-      options: { center: unknown; level: number },
-    ) => {
-      setCenter: (center: unknown) => void;
-      setLevel: (level: number) => void;
-    };
-    CustomOverlay: new (options: {
-      map: unknown;
-      position: unknown;
-      content: string | HTMLElement;
-      yAnchor?: number;
+      container: string | HTMLElement,
+      options: { center: NaverLatLng; zoom: number },
+    ) => NaverMap;
+    Marker: new (options: {
+      map: NaverMap | null;
+      position: NaverLatLng;
+      icon?: { content: string | HTMLElement; anchor?: unknown };
       zIndex?: number;
-    }) => {
-      setMap: (map: unknown | null) => void;
-      setPosition: (position: unknown) => void;
-      setContent: (content: string | HTMLElement) => void;
-      setZIndex: (zIndex: number) => void;
-    };
-    event: {
-      addListener: (target: unknown, type: string, handler: () => void) => void;
-    };
+    }) => NaverMarker;
   };
 };
 
 declare global {
   interface Window {
-    kakao?: KakaoMaps;
+    naver?: NaverMaps;
+    navermap_authFailure?: () => void;
   }
 }
 
-const KAKAO_LOAD_TIMEOUT_MS = 10_000;
+const NAVER_LOAD_TIMEOUT_MS = 12_000;
+const NAVER_READY_POLL_MS = 50;
+const NAVER_READY_MAX_ATTEMPTS = 60;
 
-let kakaoLoader: Promise<KakaoMaps> | null = null;
+let naverLoader: Promise<NaverMaps> | null = null;
 
-function loadKakaoMaps(appKey: string) {
-  if (window.kakao?.maps) {
-    return Promise.resolve(window.kakao);
+function getReadyNaverMaps(): NaverMaps | null {
+  const maps = window.naver?.maps;
+  if (
+    maps &&
+    typeof maps.LatLng === "function" &&
+    typeof maps.Map === "function" &&
+    typeof maps.Marker === "function"
+  ) {
+    return window.naver as NaverMaps;
+  }
+  return null;
+}
+
+/** SDK callback은 naver.maps 할당보다 먼저 불릴 수 있어 폴링으로 대기 */
+function waitForNaverMaps(timeoutMs: number) {
+  return new Promise<NaverMaps>((resolve, reject) => {
+    const ready = getReadyNaverMaps();
+    if (ready) {
+      resolve(ready);
+      return;
+    }
+
+    let attempts = 0;
+    const started = Date.now();
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      const sdk = getReadyNaverMaps();
+      if (sdk) {
+        window.clearInterval(timer);
+        resolve(sdk);
+        return;
+      }
+      if (attempts >= NAVER_READY_MAX_ATTEMPTS || Date.now() - started >= timeoutMs) {
+        window.clearInterval(timer);
+        reject(
+          new Error(
+            "Naver maps SDK not ready (Client ID / Web 서비스 URL을 확인하세요)",
+          ),
+        );
+      }
+    }, NAVER_READY_POLL_MS);
+  });
+}
+
+/** NCP Web 서비스 URL 인증 사전 확인 (SDK와 동일하게 JSONP 사용) */
+function assertNaverMapAuth(clientId: string) {
+  return new Promise<void>((resolve, reject) => {
+    const pageUrl = `${window.location.protocol}//${window.location.host}/`;
+    const callbackName = `__naverAuthCheck_${Date.now()}`;
+    const timeoutId = window.setTimeout(() => {
+      cleanup();
+      resolve();
+    }, 5_000);
+
+    const cleanup = () => {
+      window.clearTimeout(timeoutId);
+      delete (window as unknown as Record<string, unknown>)[callbackName];
+      script.remove();
+    };
+
+    (window as unknown as Record<string, unknown>)[callbackName] = (payload: {
+      result?: unknown;
+      error?: { message?: string; details?: string };
+    }) => {
+      cleanup();
+      if (payload?.result) {
+        resolve();
+        return;
+      }
+
+      const details =
+        payload?.error?.details || payload?.error?.message || "Authentication Failed";
+      const hint =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"
+          ? "NCP Application → Web 서비스 URL에 http://localhost 를 추가하세요 (포트·path 제외)."
+          : `NCP Application → Web 서비스 URL에 ${window.location.protocol}//${window.location.host} 를 등록하세요.`;
+
+      reject(new Error(`Naver maps auth failed: ${details}. ${hint}`));
+    };
+
+    const script = document.createElement("script");
+    script.src =
+      `https://oapi.map.naver.com/v3/auth?ncpKeyId=${encodeURIComponent(clientId)}` +
+      `&url=${encodeURIComponent(pageUrl)}&time=${Date.now()}` +
+      `&callback=${callbackName}`;
+    script.onerror = () => {
+      cleanup();
+      resolve();
+    };
+    document.head.appendChild(script);
+  });
+}
+
+function resetBrokenNaverNamespace() {
+  // 이전 인증 실패 시 SDK가 naver.maps=null 로 남겨 재로드를 막음
+  if (window.naver && !getReadyNaverMaps()) {
+    try {
+      delete (window as { naver?: NaverMaps }).naver;
+    } catch {
+      (window as { naver?: NaverMaps | null }).naver = undefined;
+    }
+  }
+}
+
+function loadNaverMaps(clientId: string) {
+  const ready = getReadyNaverMaps();
+  if (ready) {
+    return Promise.resolve(ready);
   }
 
-  if (!kakaoLoader) {
-    kakaoLoader = new Promise<KakaoMaps>((resolve, reject) => {
-      const timeoutId = window.setTimeout(() => {
-        reject(new Error("Kakao maps load timed out"));
-      }, KAKAO_LOAD_TIMEOUT_MS);
+  if (!naverLoader) {
+    naverLoader = (async () => {
+      await assertNaverMapAuth(clientId);
+      resetBrokenNaverNamespace();
 
-      const script = document.createElement("script");
-      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false`;
-      script.async = true;
-      script.onload = () => {
-        if (!window.kakao?.maps) {
-          window.clearTimeout(timeoutId);
-          reject(new Error("Kakao maps SDK unavailable (check API key and domain)"));
-          return;
-        }
+      await new Promise<void>((resolve, reject) => {
+        const callbackName = `__naverMapsInit_${Date.now()}`;
+        let settled = false;
 
-        window.kakao.maps.load(() => {
+        const done = (error?: Error) => {
+          if (settled) return;
+          settled = true;
           window.clearTimeout(timeoutId);
-          if (window.kakao?.maps) {
-            resolve(window.kakao);
-          } else {
-            reject(new Error("Kakao maps failed to initialize"));
-          }
-        });
-      };
-      script.onerror = () => {
-        window.clearTimeout(timeoutId);
-        reject(new Error("Kakao maps script failed"));
-      };
-      document.head.appendChild(script);
-    });
+          delete (window as unknown as Record<string, unknown>)[callbackName];
+          window.navermap_authFailure = previousAuthFailure;
+          if (error) reject(error);
+          else resolve();
+        };
+
+        const timeoutId = window.setTimeout(() => {
+          done(new Error("Naver maps load timed out"));
+        }, NAVER_LOAD_TIMEOUT_MS);
+
+        const previousAuthFailure = window.navermap_authFailure;
+        window.navermap_authFailure = () => {
+          previousAuthFailure?.();
+          done(
+            new Error(
+              "Naver maps auth failed (Client ID 또는 Web 서비스 URL을 확인하세요)",
+            ),
+          );
+        };
+
+        // callback은 maps 할당 전에 호출되므로, 여기서는 스크립트 도착만 알리고
+        // 실제 ready는 아래에서 폴링한다.
+        (window as unknown as Record<string, unknown>)[callbackName] = () => {
+          done();
+        };
+
+        const script = document.createElement("script");
+        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${encodeURIComponent(clientId)}&callback=${callbackName}`;
+        script.async = true;
+        script.onerror = () => {
+          done(new Error("Naver maps script failed"));
+        };
+        document.head.appendChild(script);
+      });
+
+      return waitForNaverMaps(NAVER_LOAD_TIMEOUT_MS);
+    })();
   }
 
-  return kakaoLoader.catch((error) => {
-    kakaoLoader = null;
+  return naverLoader.catch((error) => {
+    naverLoader = null;
     throw error;
   });
 }
@@ -136,6 +264,13 @@ function markerHtml(vehicle: PositionedMapVehicle, selected: boolean) {
   `;
 }
 
+function markerAnchor(naver: NaverMaps, selected: boolean) {
+  // pin roughly centered horizontally, anchored at bottom of badge stack
+  const x = selected ? 20 : 16;
+  const y = selected ? 58 : 50;
+  return new naver.maps.Point(x, y);
+}
+
 export function VehicleMap({
   vehicles,
   selectedId,
@@ -144,7 +279,7 @@ export function VehicleMap({
   centerOnSelected = false,
   hero = false,
 }: VehicleMapProps) {
-  const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY?.trim();
+  const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID?.trim();
   const validVehicles = useMemo(
     () =>
       vehicles.filter(
@@ -154,8 +289,8 @@ export function VehicleMap({
     [vehicles],
   );
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<InstanceType<KakaoMaps["maps"]["Map"]> | null>(null);
-  const overlaysRef = useRef<InstanceType<KakaoMaps["maps"]["CustomOverlay"]>[]>([]);
+  const mapRef = useRef<NaverMap | null>(null);
+  const markersRef = useRef<NaverMarker[]>([]);
   const onSelectRef = useRef(onSelect);
   const vehiclesRef = useRef<PositionedMapVehicle[]>([]);
   const [ready, setReady] = useState(false);
@@ -181,65 +316,71 @@ export function VehicleMap({
   }, [onSelect, validVehicles]);
 
   useEffect(() => {
-    if (!apiKey || vehiclesRef.current.length === 0) {
+    if (!clientId || vehiclesRef.current.length === 0) {
       return;
     }
 
     const currentVehicles = vehiclesRef.current;
     let cancelled = false;
 
-    loadKakaoMaps(apiKey)
-      .then((kakao) => {
+    loadNaverMaps(clientId)
+      .then((naver) => {
         if (cancelled || !containerRef.current) return;
+        if (typeof naver.maps?.LatLng !== "function") {
+          throw new Error("Naver maps.LatLng is not ready");
+        }
 
         const centerVehicle =
           currentVehicles.find((vehicle) => vehicle.id === selectedId) ??
           currentVehicles[0];
-        const center = new kakao.maps.LatLng(
+        const center = new naver.maps.LatLng(
           centerVehicle.latitude,
           centerVehicle.longitude,
         );
 
         if (!mapRef.current) {
-          mapRef.current = new kakao.maps.Map(containerRef.current, {
+          mapRef.current = new naver.maps.Map(containerRef.current, {
             center,
-            level: hero ? 8 : 7,
+            zoom: hero ? 12 : 13,
           });
         } else if (centerOnSelected && selectedId) {
           mapRef.current.setCenter(center);
-          mapRef.current.setLevel(hero ? 6 : 5);
+          mapRef.current.setZoom(hero ? 14 : 15);
         }
 
-        overlaysRef.current.forEach((overlay) => overlay.setMap(null));
-        overlaysRef.current = [];
+        markersRef.current.forEach((marker) => marker.setMap(null));
+        markersRef.current = [];
 
         currentVehicles.forEach((vehicle) => {
-          const position = new kakao.maps.LatLng(vehicle.latitude, vehicle.longitude);
+          const position = new naver.maps.LatLng(vehicle.latitude, vehicle.longitude);
           const selected = vehicle.id === selectedId;
           const content = document.createElement("div");
           content.innerHTML = markerHtml(vehicle, selected);
           const button = content.querySelector("button");
           button?.addEventListener("click", (event) => {
             event.preventDefault();
+            event.stopPropagation();
             onSelectRef.current?.(vehicle.id);
           });
 
-          const overlay = new kakao.maps.CustomOverlay({
+          const marker = new naver.maps.Marker({
             map: mapRef.current,
             position,
-            content,
-            yAnchor: 1,
+            icon: {
+              content,
+              anchor: markerAnchor(naver, selected),
+            },
             zIndex: selected ? 10 : 1,
           });
 
-          overlaysRef.current.push(overlay);
+          markersRef.current.push(marker);
         });
 
         setUseFallback(false);
         setReady(true);
       })
       .catch((error) => {
-        console.warn("Kakao map unavailable, using fallback:", error);
+        console.warn("Naver map unavailable, using fallback:", error);
         if (!cancelled) {
           setFallbackReason("load_failed");
           setUseFallback(true);
@@ -250,10 +391,10 @@ export function VehicleMap({
     return () => {
       cancelled = true;
     };
-  }, [apiKey, centerOnSelected, hero, selectedId, vehicleSignature]);
+  }, [clientId, centerOnSelected, hero, selectedId, vehicleSignature]);
 
-  if (!apiKey || useFallback || validVehicles.length === 0) {
-    const reason = !apiKey
+  if (!clientId || useFallback || validVehicles.length === 0) {
+    const reason = !clientId
       ? "no_key"
       : validVehicles.length === 0
         ? "no_coords"

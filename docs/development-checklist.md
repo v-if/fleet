@@ -87,7 +87,7 @@
 - [x] 검색 + 필터 (상태, 미운행)
 
 ### 지도 (P0)
-- [x] Kakao Maps 연동 (키 없을 시 간이 지도 폴백)
+- [x] Naver Maps 연동 (Client ID 없을 시 간이 지도 폴백)
 - [x] 차량 위치 마커 표시
 - [x] 마커 클릭 → 차량 요약 팝업
 
@@ -102,7 +102,7 @@
 - 페이지: `/`, `/vehicles`, `/map`, `/vehicles/[id]`
 - TanStack Query 60초 폴링 (`QueryProvider`)
 - API: `GET /api/vehicles`, `GET /api/vehicles/[id]` (summary·idle·lastUpdatedAt 포함)
-- 지도: `VehicleMap`(Kakao) + `SimpleMapFallback`(API 키 없을 때)
+- 지도: `VehicleMap`(Naver Maps) + `SimpleMapFallback`(Client ID 없을 때)
 - 미운행 기준: `OFFLINE` 또는 7일 이상 미갱신 (`lib/vehicle-status.ts`)
 - 검증: `pnpm lint`, `pnpm build`, API 호출 성공
 
@@ -340,7 +340,7 @@
 - [x] Vercel Environment Variables 등록 (2026-07-07)
   - [x] `DATABASE_URL` (pooler)
   - [x] `DIRECT_URL` (Session pooler, migrate·빌드 시)
-  - [x] 기존 `VEHICLE_DATA_PROVIDER`, `TESLA_*`, `NEXT_PUBLIC_KAKAO_MAP_KEY` 유지
+  - [x] 기존 `VEHICLE_DATA_PROVIDER`, `TESLA_*` 유지 · 지도는 `NEXT_PUBLIC_NAVER_MAP_CLIENT_ID`
 - [x] Vercel 재배포 (`build` 스크립트에 `prisma migrate deploy` 포함됨, 2026-07-07)
 
 ### 데이터 초기화·검증

@@ -44,7 +44,7 @@
 | 기술 스택 | TypeScript · Next.js · Supabase(PostgreSQL) · Prisma · Vercel |
 | 로컬 DB (현재) | **Supabase PostgreSQL** — Phase 3.6 로컬·Vercel 연결·API 200 완료 (2026-07-07) |
 | 배포 상태 | **`https://bori-fleet.shop`** (Vercel) — API 200, mock·tesla 연동 / Telemetry: **`https://telemetry.bori-fleet.shop`** (Fly.io) |
-| 지도 | Kakao Maps API |
+| 지도 | Naver Maps API v3 |
 | 방법론 | AI-assisted Lean MVP (Agile Lite) |
 | 1차 목표 | 데모데이 시연 → 이후 투자 시 확장 |
 

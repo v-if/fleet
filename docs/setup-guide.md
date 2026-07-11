@@ -120,7 +120,7 @@ pnpm db:seed
 
 ### 3.5 환경 변수
 
-`.env.example` (git 포함) — Supabase·Tesla·Kakao 키는 이후 Phase에서 채운다.
+`.env.example` (git 포함) — Supabase·Tesla·Naver Maps 키는 이후 Phase에서 채운다.
 
 ### 3.6 Supabase 클라이언트 (스텁)
 
@@ -155,18 +155,18 @@ pnpm add @tanstack/react-query
 - `src/components/providers/query-provider.tsx` — 60초 폴링
 - `src/hooks/use-vehicles.ts` — `/api/vehicles`, `/api/vehicles/[id]`
 
-### 4.2 Kakao Maps
-- [Kakao Developers](https://developers.kakao.com)에서 앱 생성 → **JavaScript 키** 발급
-- `.env` / Vercel에 `NEXT_PUBLIC_KAKAO_MAP_KEY` 설정
-- **Web 플랫폼 사이트 도메인** 등록 (미등록 시 배포 환경에서 SDK `401 domain mismatched` → `script.onerror`)
-  1. [내 애플리케이션](https://developers.kakao.com/console/app) → 앱 선택
-  2. **앱 설정 → 플랫폼** → Web 플랫폼 추가
-  3. 사이트 도메인에 아래를 등록 (scheme 제외, 도메인만)
-     - `http://localhost:3000` (로컬)
-     - `bori-fleet.shop` (Production 커스텀 도메인)
-     - Preview 배포 URL을 쓸 경우 해당 `*.vercel.app` 도메인도 추가
-  4. Vercel **Production·Preview** 환경변수에 동일 JavaScript 키 설정 후 **Redeploy**
-- **키가 없으면** `SimpleMapFallback` 간이 지도로 자동 전환 (데모 가능)
+### 4.2 Naver Maps
+- [Naver Cloud Platform](https://console.ncloud.com) → AI·NAVER API Application 생성
+- **Maps → Web Dynamic Map** 사용 설정
+- Client ID를 `.env` / Vercel에 `NEXT_PUBLIC_NAVER_MAP_CLIENT_ID`로 설정  
+  (`X-NCP-APIGW-API-KEY-ID`와 동일 값. Secret은 지도 SDK에 넣지 않음)
+- **Web 서비스 URL** 등록 ([트러블슈팅](https://guide.ncloud-docs.com/docs/maps-troubleshoot.md) — 포트·path 제외)
+  - `http://localhost`
+  - `https://bori-fleet.shop`
+  - Preview 사용 시 해당 `https://*.vercel.app` 호스트도 추가
+- 스크립트: `ncpKeyId` ([Hello, World](https://navermaps.github.io/maps.js.ncp/docs/tutorial-2-Getting-Started.html))
+- Vercel 환경변수 반영 후 **Redeploy** 필요 (`NEXT_PUBLIC_*`는 빌드 타임 인라인)
+- **Client ID가 없으면** `SimpleMapFallback` 간이 지도로 자동 전환
 
 ### 4.3 주요 페이지
 | 경로 | 설명 |
@@ -678,7 +678,7 @@ Vercel 대시보드 → **bori-fleet** 프로젝트 → **Settings → Environme
 | `TESLA_FLEET_API_*` | Production, Preview | Phase 3와 동일 |
 | `NEXT_PUBLIC_APP_URL` | Production | `https://bori-fleet.shop` |
 | `TESLA_FLEET_API_REDIRECT_URI` | Production | `https://bori-fleet.shop/api/auth/tesla/callback` |
-| `NEXT_PUBLIC_KAKAO_MAP_KEY` | Production, Preview | Kakao **JavaScript** 키 — Web 플랫폼에 `bori-fleet.shop` 등록 필수 |
+| `NEXT_PUBLIC_NAVER_MAP_CLIENT_ID` | Production, Preview | NCP Maps **Client ID** — Web 서비스 URL에 `https://bori-fleet.shop` 등록 필수 |
 | `TESLA_TELEMETRY_WEBHOOK_SECRET` | Production | Fly `FMS_WEBHOOK_SECRET`과 동일 |
 | `TESLA_SYNC_CRON_SECRET` | Production | Fly `FMS_CRON_SECRET`과 동일 |
 
@@ -822,7 +822,7 @@ vercel
 - `winget` 없음 → Microsoft Store에서 "앱 설치 관리자" 설치
 - Prisma 연결 실패 → Supabase Connection String의 `?sslmode=require`·비밀번호 확인
 - Vercel "차량 목록을 불러오지 못했습니다" → `GET /api/vehicles` 500, SQLite 미지원 — [requirements-db.md](./requirements-db.md), Phase 3.6 Supabase 전환
-- Kakao 지도 안 뜸 → 도메인(localhost·배포 URL) 등록 및 JS 키 확인
+- Naver 지도 안 뜸 → NCP Web 서비스 URL(`http://localhost`, `https://bori-fleet.shop`)·`NEXT_PUBLIC_NAVER_MAP_CLIENT_ID`·Redeploy 확인
 
 ---
 

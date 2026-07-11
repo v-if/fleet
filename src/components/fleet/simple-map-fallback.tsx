@@ -111,15 +111,26 @@ export function SimpleMapFallback({
         <p className="text-sm text-muted-foreground">
           {reason === "load_failed" ? (
             <>
-              Kakao Maps SDK를 불러오지 못해 간이 지도로 표시 중입니다. Kakao Developers 앱의{" "}
-              <strong>Web 플랫폼 사이트 도메인</strong>에 현재 배포 URL(예:{" "}
-              <code className="rounded bg-muted px-1 py-0.5">bori-fleet.shop</code>)이
-              등록되어 있는지 확인하세요.
+              Naver Maps SDK를 불러오지 못해 간이 지도로 표시 중입니다. NCP Application{" "}
+              <strong>Web 서비스 URL</strong>에 현재 접속 origin을 등록하세요.
+              로컬은{" "}
+              <code className="rounded bg-muted px-1 py-0.5">http://localhost</code>
+              (포트 제외), 배포는{" "}
+              <code className="rounded bg-muted px-1 py-0.5">https://bori-fleet.shop</code>.{" "}
+              <a
+                className="underline"
+                href="https://guide.ncloud-docs.com/docs/maps-troubleshoot.md"
+                target="_blank"
+                rel="noreferrer"
+              >
+                트러블슈팅
+              </a>
+
             </>
           ) : (
             <>
-              Kakao Maps API 키가 없어 간이 지도로 표시 중입니다.{" "}
-              <code className="rounded bg-muted px-1 py-0.5">NEXT_PUBLIC_KAKAO_MAP_KEY</code>를
+              Naver Maps Client ID가 없어 간이 지도로 표시 중입니다.{" "}
+              <code className="rounded bg-muted px-1 py-0.5">NEXT_PUBLIC_NAVER_MAP_CLIENT_ID</code>를
               설정하면 실제 지도로 전환됩니다.
             </>
           )}
