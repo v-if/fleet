@@ -6,7 +6,7 @@
 |------|------|
 | 목적 | 차량 **Telemetry(푸시)** 와 FMS **Fleet API(풀)** 를 언제·어떻게 쓸지 **이벤트 주도형 하이브리드**로 정의한다 |
 | 질문 | 계정 연동·Virtual Key 이후, 어떤 기준으로 Fleet API vs Telemetry를 호출·수신할 것인가? |
-| 관련 문서 | [requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md), [requirements-fleet-telemetry.md](./requirements-fleet-telemetry.md), [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md), [requirements-tesla-api.md](./requirements-tesla-api.md) |
+| 관련 문서 | [requirements-tesla-fleet-telemetry.md](./requirements-tesla-fleet-telemetry.md), [requirements-fleet-telemetry.md](./requirements-fleet-telemetry.md), [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md), [requirements-tesla-api.md](./requirements-tesla-api.md), [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) |
 | 적용 범위 | OAuth 연동 이후 ~ 평시 관제 · ASLEEP/ONLINE 전환 · 수동 fallback |
 | 작성일 | 2026-07-11 |
 
@@ -266,7 +266,9 @@ onTelemetryReceived(vin):
 | 5 | ASLEEP 임계는 **기존 env**, 운영에서 5~15분 조정 |
 | 6 | registry(`vehicles`/`fleet_status`)는 `vehicle_data` 금지와 별개로 저빈도 허용 |
 
-**구현 문서**: [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) · [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) · development-checklist Phase 4.4
+**구현 문서**: [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) · [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) · development-checklist Phase 4.4  
+
+**실차 후속 (표시 고착)**: [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) · [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md) — Phase BF **코드 완료**. wake 직후 지연 REST만으로 해결하지 않음(준수).
 
 ---
 
@@ -279,3 +281,5 @@ onTelemetryReceived(vin):
 | 2026-07-11 | Phase 4.4.A 스키마·migrate 완료 반영 |
 | 2026-07-11 | Phase 4.4.B Sync 로직 반영 — 구현 체크리스트 §10 갱신 |
 | 2026-07-11 | Phase 4.4.E 마감 — 하이브리드 호출 체크리스트 구현 완료 |
+| 2026-07-12 | 실차 표시 고착 Phase BF 링크 (DoorState 파서·nearby stale) |
+| 2026-07-12 | Phase BF 코드 완료 반영 |

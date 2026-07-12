@@ -147,6 +147,7 @@ model VehicleSyncState {
 | 유지 | 동적 필드 전부, append 정책, `lastTelemetryAt`, `isAsleepInferred` |
 | 유지 | `lastRestSyncAt` 컬럼은 **호환용으로 남겨도 됨** — 쓰기는 `VehicleSyncState`가 SoT, Snapshot에는 REST 성공 시 미러링 가능 |
 | 변경 없음(P0) | TPMS·공조 등 기존 컬럼. Telemetry 미지원 필드는 REST 이벤트 시에만 채움 |
+| **후속 (Phase BF)** | ✅ 코드 — DoorState/typed 파서·per-door merge·TPMS/창문/충전 구독·nearby envelope+거리 클리어 ([checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md)). 실차 재구독·검수 잔여 |
 
 ### 4.6 만들지 않는 것 (의도적)
 
@@ -226,6 +227,8 @@ model VehicleSyncState {
 | [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md) | car_type/trim 매핑 |
 | [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | 작업 체크리스트 |
 | [requirements-db.md](./requirements-db.md) | DB/Supabase 운영 |
+| [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) | Snapshot Telemetry merge 고착 · Phase BF |
+| [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md) | BF-A~E 구현 체크리스트 |
 
 ---
 
@@ -239,3 +242,5 @@ model VehicleSyncState {
 | 2026-07-11 | 4.4.C 적용 — vehicles API 제원/lifecycle/freshness, baseline 재시도 엔드포인트 |
 | 2026-07-11 | 4.4.D 적용 — 목록/상세 제원·lifecycle·신선도 UI |
 | 2026-07-11 | 4.4.E 마감 — hybrid:verify, unlink SyncState, setup-guide §5.4.2 |
+| 2026-07-12 | Snapshot merge 고착 → Phase BF 링크 (§4.5) |
+| 2026-07-12 | Phase BF 코드 완료 반영 (§4.5) |

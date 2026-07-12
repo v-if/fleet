@@ -57,6 +57,8 @@ type SecurityTile = {
   label: string;
   value: string;
   tone: "ok" | "warning" | "error" | "info" | "muted";
+  /** BF-E: 소스·시각 힌트 */
+  hint?: string | null;
 };
 
 type ConnectivityStep = {
@@ -195,67 +197,78 @@ function buildSecurityTiles(vehicle: VehicleDetailDto): SecurityTile[] {
   const openTone = (value: boolean | null | undefined): SecurityTile["tone"] =>
     value ? "warning" : value == null ? "muted" : "ok";
 
+  const sourceHint = [
+    snapshot.telemetrySource ?? null,
+    snapshot.lastUpdatedAt ? formatRelativeTime(snapshot.lastUpdatedAt) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const withHint = (
+    tile: Omit<SecurityTile, "hint">,
+  ): SecurityTile => ({ ...tile, hint: sourceHint || null });
+
   return [
-    {
+    withHint({
       key: "locked",
       label: "잠금",
       value: snapshot.locked == null ? "—" : snapshot.locked ? "잠김" : "해제",
       tone: snapshot.locked === false ? "warning" : snapshot.locked == null ? "muted" : "ok",
-    },
-    {
+    }),
+    withHint({
       key: "doors",
       label: "문(종합)",
       value: openLabel(snapshot.doorsOpen),
       tone: openTone(snapshot.doorsOpen),
-    },
-    {
+    }),
+    withHint({
       key: "df",
       label: "운전석",
       value: openLabel(snapshot.doorDfOpen),
       tone: openTone(snapshot.doorDfOpen),
-    },
-    {
+    }),
+    withHint({
       key: "pf",
       label: "조수석",
       value: openLabel(snapshot.doorPfOpen),
       tone: openTone(snapshot.doorPfOpen),
-    },
-    {
+    }),
+    withHint({
       key: "dr",
       label: "좌측 후",
       value: openLabel(snapshot.doorDrOpen),
       tone: openTone(snapshot.doorDrOpen),
-    },
-    {
+    }),
+    withHint({
       key: "pr",
       label: "우측 후",
       value: openLabel(snapshot.doorPrOpen),
       tone: openTone(snapshot.doorPrOpen),
-    },
-    {
+    }),
+    withHint({
       key: "windows",
       label: "창문",
       value: openLabel(snapshot.windowsOpen),
       tone: openTone(snapshot.windowsOpen),
-    },
-    {
+    }),
+    withHint({
       key: "frunk",
       label: "프렁크",
       value: openLabel(snapshot.frontTrunkOpen),
       tone: openTone(snapshot.frontTrunkOpen),
-    },
-    {
+    }),
+    withHint({
       key: "trunk",
       label: "트렁크",
       value: openLabel(snapshot.rearTrunkOpen),
       tone: openTone(snapshot.rearTrunkOpen),
-    },
-    {
+    }),
+    withHint({
       key: "sentry",
       label: "센트리",
       value: snapshot.sentryMode == null ? "—" : snapshot.sentryMode ? "활성" : "비활성",
       tone: snapshot.sentryMode ? "info" : snapshot.sentryMode == null ? "muted" : "ok",
-    },
+    }),
   ];
 }
 
@@ -1118,6 +1131,9 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   <p className="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">
                     {tile.value}
                   </p>
+                  {tile.hint ? (
+                    <p className="mt-1 text-[11px] text-gray-400 dark:text-gray-500">{tile.hint}</p>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -1165,8 +1181,8 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               className="mb-4 text-theme-xs text-gray-500 dark:text-gray-400"
               title={formatDateTime(tpmsSourceAt)}
             >
-              출처 힌트: {tpmsSourceHint}. Telemetry 기본 구독에 없어 REST Baseline 이후 값이 유지될 수
-              있습니다.
+              출처 힌트: {tpmsSourceHint}. Telemetry `TpmsPressure*` 구독 후 재연결 시 실시간
+              갱신됩니다(미재구독이면 REST Baseline 값 유지).
             </p>
             <TpmsDiagram
               frontLeft={tpms.fl}
@@ -1182,9 +1198,17 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
             인근 충전소
           </h4>
           <p className="mb-4 text-theme-xs text-gray-500 dark:text-gray-400">
-            Baseline / wake REST 시 `nearby_charging_sites`로 갱신됩니다. 차량이 취침이면 비어 있을 수
-            있습니다.
+            수집 시점 차량 위치 기준입니다. 출발지에서 멀어지면 목록을 비우고, 주차(P)·ONLINE·쿨다운
+            후 다시 조회합니다.
           </p>
+          {snapshot?.nearbyChargingMeta?.capturedAt ? (
+            <p className="mb-3 text-theme-xs text-gray-500 dark:text-gray-400">
+              수집 지점 기준 · {formatRelativeTime(snapshot.nearbyChargingMeta.capturedAt)}
+              {snapshot.nearbyChargingMeta.capturedAt
+                ? ` (${formatDateTime(snapshot.nearbyChargingMeta.capturedAt)})`
+                : ""}
+            </p>
+          ) : null}
           {snapshot?.nearbyChargingSites && snapshot.nearbyChargingSites.length > 0 ? (
             <ul className="space-y-2">
               {snapshot.nearbyChargingSites.map((site) => (
@@ -1204,10 +1228,10 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
           ) : (
             <div className="rounded-xl border border-dashed border-gray-200 px-4 py-6 dark:border-gray-700">
               <p className="text-theme-sm text-gray-600 dark:text-gray-300">
-                표시할 인근 충전소가 없습니다.
+                주행 중 — 주차 후 갱신
               </p>
               <p className="mt-1 text-theme-xs text-gray-400">
-                차량이 깨어 있을 때 「제원 재동기화」(Baseline)를 실행하면 갱신됩니다.
+                또는 차량이 깨어 있을 때 「제원 재동기화」(Baseline)로 갱신할 수 있습니다.
               </p>
             </div>
           )}

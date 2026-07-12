@@ -762,6 +762,21 @@
 - [x] 상세 UI (충전 상세·개폐·인근 충전소)
 - [ ] 실차 Baseline 수동 검수 (체크리스트 VD-3)
 
+### Phase BF 실차 표시 데이터 버그 수정 (P0~P1) — ✅ 코드 2026-07-12
+
+> 요구: [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md)  
+> 체크리스트: [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md)  
+> 수용 VIN: `LRWYGCFJ7SC214742`  
+> 배경: 실차 검증에서 주행 중 문/트렁크·인근충전소 고착 확인. VD-3는 구독·스키마만 넣었고 **DoorState 파서/merge는 미완**이었음 → BF에서 수정.
+
+- [x] **BF-A** DoorState 파서 + per-door/trunk merge + 닫힘 `false` 명시 (P0)
+- [x] **BF-A2** typed/enum 리더 + SentryMode·Gear·ChargeState (a) 고착 제거 (P0)
+- [x] **BF-B** 인근 충전소 수집 메타·거리(2km) 클리어·UI 문구 (P1)
+- [x] **BF-C** 정차 시 nearby 재조회 · Gear 보정 REST — wake 지연-only 금지 (P1)
+- [x] **BF-D** 창문·TPMS·ChargeLimitSoc·충전기 kW·HvacPower·Version 구독/매핑 (P1, **재구독 필요**)
+- [x] **BF-E** UI 소스/시각 힌트 (P2) — PF/DR 펌웨어 보정은 보류
+- [ ] 실차 수동 검수 (체크리스트 BF-A~D) · Telemetry 재연결로 새 필드 반영
+
 ---
 
 ## Phase 5. 배포 및 데모 (M5)
@@ -859,4 +874,6 @@
 | 2026-07-12 | Phase VD-1 완료 — 차량 상세 Summary/추론 ASLEEP/위치 empty/configSynced 경고 ([requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md), [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md)) |
 | 2026-07-12 | Phase VD-2 완료 — 연동 타임라인·오류 접이·제원 접기·이벤트 resolved |
 | 2026-07-12 | Phase VD-3 완료 — Snapshot charge/doors/trunk · nearby/service/alerts · UI |
+| 2026-07-12 | Phase BF 추가 — 실차 도어/트렁크·인근충전소 고착 ([requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md), [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md)) |
+| 2026-07-12 | Phase BF 코드 완료 — DoorState/typed 파서·nearby stale·구독 확장 · 실차 검수 잔여 |
 

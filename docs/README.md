@@ -21,6 +21,9 @@
 | [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md) | 프론트 고도화 선행 — Fleet API 표시 항목 조사, **정적/동적** 분류 | 화면 고도화·제원/실시간 데이터 설계할 때 |
 | [requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md) | **차량 상세** 고도화 — 실차 DB 대조, 관리자 IA·표현·Phase (VD-1~3) | 상세 UI/UX 구현 전에 |
 | [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md) | 차량 상세 UI Phase VD-1~3 체크리스트 | VD 구현·검수할 때 |
+| [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) | 실차 검증 **도어/트렁크·인근충전소 고착** 버그 원인·수정 요구 (BF-1~3) | 표시 데이터 버그 수정 전에 |
+| [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md) | Phase BF-A~E 구현 체크리스트 (미착수) | BF 구현·실차 검수할 때 |
+| [requirements-tesla-api-bug-report-0712.md](./requirements-tesla-api-bug-report-0712.md) | 위 이슈의 **현장 관찰·가설 원문** | 재현 시나리오 참고 |
 | [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md) | Telemetry vs Fleet API **하이브리드 호출** — ASLEEP 금지·이벤트 주도 REST | 수집 전략·wake/쿨다운 설계할 때 |
 | [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | 하이브리드 **DB 설계** — Vehicle 제원 + VehicleSyncState + Snapshot 쓰기 경로 | 스키마·마이그레이션·sync 구현할 때 |
 | [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | Phase 4.4 구현 체크리스트 (A~E) | 하이브리드 데이터 작업 진척·완료 확인 |
@@ -132,3 +135,7 @@
 | 2026-07-12 | Phase VD-1 — 차량 상세 UI ([requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md), [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md)) |
 | 2026-07-12 | Phase VD-2 — 차량 상세 운영 진단 UI 완료 |
 | 2026-07-12 | Phase VD-3 — charge/doors/nearby/service/alerts 파이프·UI 완료 |
+| 2026-07-12 | requirements-tesla-api-bugfix-0712 — 실차 도어/트렁크·인근충전소 고착 BF-1~3 요구사항 (코드 미착수) |
+| 2026-07-12 | bugfix §3.1.1 — Telemetry 구독×파서×merge 전수 조사 (Sentry/Gear/창문/TPMS 등) |
+| 2026-07-12 | checklist-tesla-api-bugfix-0712 — Phase BF-A~E 체크리스트 · development-checklist Phase BF |
+| 2026-07-12 | Phase BF 코드 완료 — DoorState/typed 파서·nearby·구독 확장 (실차 검수 잔여) |

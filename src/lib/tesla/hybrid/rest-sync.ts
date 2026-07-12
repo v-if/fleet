@@ -1,4 +1,4 @@
-import { AuditLogStatus, RestSyncReason, VehicleLifecycle } from "@prisma/client";
+import { AuditLogStatus, RestSyncReason, TelemetrySource, VehicleLifecycle } from "@prisma/client";
 
 import { createAuditLog } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
@@ -13,6 +13,7 @@ import {
   mapTeslaVehicleToSnapshot,
   TeslaFleetClient,
 } from "@/lib/tesla/mapper";
+import { serializeNearbyChargingSites } from "@/lib/tesla/nearby-charging";
 import {
   getRestWakeCooldownMinutes,
   isBaselineOnReadyEnabled,
@@ -167,7 +168,11 @@ export async function writeRestSnapshot(
       serviceStatus: snapshot.serviceStatus,
       softwareVersion: snapshot.softwareVersion,
       nearbyChargingSites: snapshot.nearbyChargingSites
-        ? JSON.stringify(snapshot.nearbyChargingSites)
+        ? serializeNearbyChargingSites(snapshot.nearbyChargingSites, {
+            capturedAt: lastRestSyncAt,
+            capturedLat: snapshot.latitude ?? previousSnapshot?.latitude ?? null,
+            capturedLng: snapshot.longitude ?? previousSnapshot?.longitude ?? null,
+          })
         : null,
       lastTelemetryAt: preserveTelemetryFields
         ? (existingLastTelemetryAt ?? previousSnapshot?.lastTelemetryAt ?? null)
@@ -526,4 +531,208 @@ export async function tryBaselinesForAccount(teslaAccountId: string) {
   }
 
   return { attempted: vehicles.length, succeeded };
+}
+
+/**
+ * BF-C: Gear=P 정차 + 쿨다운 경과 시 nearby_charging_sites만 갱신 (wake 금지).
+ * vehicle_data 전체는 호출하지 않음.
+ */
+export async function maybeRefreshNearbyOnPark(
+  vehicleId: string,
+): Promise<RestSyncOnceResult> {
+  const subscription = await prisma.telemetrySubscription.findUnique({
+    where: { vehicleId },
+    select: { active: true },
+  });
+  if (subscription && !subscription.active) {
+    return { ok: false, skipped: true, error: "telemetry_disconnected", vehicleId };
+  }
+
+  const syncState = await prisma.vehicleSyncState.findUnique({ where: { vehicleId } });
+  if (syncState?.lifecycle === VehicleLifecycle.TELEMETRY_DISCONNECTED) {
+    return { ok: false, skipped: true, error: "telemetry_disconnected", vehicleId };
+  }
+
+  const cooldownMinutes = getRestWakeCooldownMinutes();
+  if (!isRestWakeCooldownElapsed(syncState?.lastRestSyncAt, cooldownMinutes)) {
+    return { ok: false, skipped: true, error: "wake_cooldown_active", vehicleId };
+  }
+
+  const ctx = await resolveTeslaUserId(vehicleId);
+  if (!ctx) {
+    return { ok: false, error: "vehicle_or_tesla_account_missing", vehicleId };
+  }
+
+  const previous = await prisma.vehicleSnapshot.findFirst({
+    where: { vehicleId },
+    orderBy: { lastUpdatedAt: "desc" },
+  });
+  if (!previous) {
+    return { ok: false, skipped: true, error: "no_snapshot", vehicleId };
+  }
+
+  const client = new TeslaFleetClient(ctx.userId);
+  try {
+    const sites = await client.getNearbyChargingSites(ctx.vin);
+    const now = new Date();
+    const nearbyJson = serializeNearbyChargingSites(sites, {
+      capturedAt: now,
+      capturedLat: previous.latitude,
+      capturedLng: previous.longitude,
+    });
+
+    await prisma.vehicleSnapshot.create({
+      data: {
+        vehicleId,
+        latitude: previous.latitude,
+        longitude: previous.longitude,
+        batteryPercent: previous.batteryPercent,
+        rangeKm: previous.rangeKm,
+        ignitionOn: previous.ignitionOn,
+        status: previous.status,
+        chargingStatus: previous.chargingStatus,
+        odometerKm: previous.odometerKm,
+        chargeLimitSoc: previous.chargeLimitSoc,
+        chargerPowerKw: previous.chargerPowerKw,
+        locked: previous.locked,
+        doorsOpen: previous.doorsOpen,
+        windowsOpen: previous.windowsOpen,
+        doorDfOpen: previous.doorDfOpen,
+        doorDrOpen: previous.doorDrOpen,
+        doorPfOpen: previous.doorPfOpen,
+        doorPrOpen: previous.doorPrOpen,
+        frontTrunkOpen: previous.frontTrunkOpen,
+        rearTrunkOpen: previous.rearTrunkOpen,
+        insideTempC: previous.insideTempC,
+        outsideTempC: previous.outsideTempC,
+        climateOn: previous.climateOn,
+        tpmsFrontLeft: previous.tpmsFrontLeft,
+        tpmsFrontRight: previous.tpmsFrontRight,
+        tpmsRearLeft: previous.tpmsRearLeft,
+        tpmsRearRight: previous.tpmsRearRight,
+        sentryMode: previous.sentryMode,
+        serviceStatus: previous.serviceStatus,
+        softwareVersion: previous.softwareVersion,
+        nearbyChargingSites: nearbyJson,
+        lastTelemetryAt: previous.lastTelemetryAt,
+        lastRestSyncAt: now,
+        telemetrySource: previous.telemetrySource ?? TelemetrySource.MIXED,
+        isAsleepInferred: previous.isAsleepInferred,
+        sleepInferredAt: previous.sleepInferredAt,
+        lastUpdatedAt: now,
+      },
+    });
+
+    await patchVehicleSyncState(vehicleId, {
+      lastRestSyncAt: now,
+      lastRestSyncReason: RestSyncReason.WAKE_COOLDOWN,
+    });
+
+    await createAuditLog({
+      action: "VEHICLE_NEARBY_REFRESH",
+      targetType: "Vehicle",
+      targetId: vehicleId,
+      vehicleId,
+      teslaAccountId: ctx.teslaAccountId,
+      status: AuditLogStatus.SUCCESS,
+      summary: `정차 시 인근 충전소 갱신 (${ctx.vin})`,
+      metadata: { vin: ctx.vin, siteCount: sites.length },
+    });
+
+    return { ok: true, reason: RestSyncReason.WAKE_COOLDOWN, vehicleId };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "nearby_refresh_failed";
+    await createAuditLog({
+      action: "VEHICLE_NEARBY_REFRESH",
+      targetType: "Vehicle",
+      targetId: vehicleId,
+      vehicleId,
+      teslaAccountId: ctx.teslaAccountId,
+      status: AuditLogStatus.FAILURE,
+      summary: `인근 충전소 갱신 실패: ${message}`,
+      metadata: { vin: ctx.vin, noWake: true },
+    });
+    return { ok: false, error: message, vehicleId };
+  }
+}
+
+/**
+ * BF-C 선택: P→비가동 전환 후 쿨다운 허용 시 동적 보정 REST 1회 (제원 미갱신).
+ */
+export async function maybeRunGearCorrectionRestSync(
+  vehicleId: string,
+): Promise<RestSyncOnceResult> {
+  const subscription = await prisma.telemetrySubscription.findUnique({
+    where: { vehicleId },
+    select: { active: true },
+  });
+  if (subscription && !subscription.active) {
+    return { ok: false, skipped: true, error: "telemetry_disconnected", vehicleId };
+  }
+
+  const syncState = await prisma.vehicleSyncState.findUnique({ where: { vehicleId } });
+  if (syncState?.lifecycle === VehicleLifecycle.TELEMETRY_DISCONNECTED) {
+    return { ok: false, skipped: true, error: "telemetry_disconnected", vehicleId };
+  }
+
+  const cooldownMinutes = getRestWakeCooldownMinutes();
+  if (!isRestWakeCooldownElapsed(syncState?.lastRestSyncAt, cooldownMinutes)) {
+    return { ok: false, skipped: true, error: "wake_cooldown_active", vehicleId };
+  }
+
+  const ctx = await resolveTeslaUserId(vehicleId);
+  if (!ctx) {
+    return { ok: false, error: "vehicle_or_tesla_account_missing", vehicleId };
+  }
+
+  const client = new TeslaFleetClient(ctx.userId);
+  try {
+    const list = await client.listVehicles();
+    const listItem = list.find(
+      (item) => item.vin.toUpperCase() === ctx.vin.toUpperCase(),
+    );
+    if (!listItem) {
+      return { ok: false, error: "vin_not_in_account", vehicleId };
+    }
+
+    const data = await client.getVehicleData(ctx.vin);
+    const snapshot = mapTeslaVehicleToSnapshot(listItem, data);
+    const [nearbyChargingSites, serviceStatus] = await Promise.all([
+      client.getNearbyChargingSites(ctx.vin),
+      client.getServiceStatus(ctx.vin),
+    ]);
+    snapshot.nearbyChargingSites = nearbyChargingSites;
+    snapshot.serviceStatus = serviceStatus;
+
+    await writeRestSnapshot(snapshot, {
+      teslaAccountId: ctx.teslaAccountId,
+      updateSpecs: false,
+      restSyncReason: RestSyncReason.WAKE_COOLDOWN,
+      lastRestSyncAt: new Date(),
+      preserveTelemetryFields: true,
+      existingLastTelemetryAt: (
+        await prisma.vehicleSnapshot.findFirst({
+          where: { vehicleId },
+          orderBy: { lastUpdatedAt: "desc" },
+          select: { lastTelemetryAt: true },
+        })
+      )?.lastTelemetryAt,
+    });
+
+    await createAuditLog({
+      action: "VEHICLE_GEAR_CORRECTION_REST",
+      targetType: "Vehicle",
+      targetId: vehicleId,
+      vehicleId,
+      teslaAccountId: ctx.teslaAccountId,
+      status: AuditLogStatus.SUCCESS,
+      summary: `Gear 전환 보정 vehicle_data 1회 (${ctx.vin})`,
+      metadata: { vin: ctx.vin, reason: "GEAR_CORRECTION" },
+    });
+
+    return { ok: true, reason: RestSyncReason.WAKE_COOLDOWN, vehicleId };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "gear_correction_failed";
+    return { ok: false, error: message, vehicleId };
+  }
 }

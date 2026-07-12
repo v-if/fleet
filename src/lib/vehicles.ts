@@ -3,7 +3,7 @@ import { activeVehicleWhere } from "@/lib/vehicle-query";
 import { isIdleVehicle } from "@/lib/vehicle-status";
 import { getSyncMetadata } from "@/lib/vehicle-sync";
 import { getVehicleProviderName } from "@/lib/vehicle-providers";
-import type { NearbyChargingSiteDto } from "@/lib/types/vehicle";
+import { parseNearbyChargingJson } from "@/lib/tesla/nearby-charging";
 import type {
   VehicleDetailDto,
   VehicleFreshnessDto,
@@ -13,17 +13,8 @@ import type {
 } from "@/lib/types/vehicle";
 import type { VehicleSnapshot, VehicleSyncState } from "@prisma/client";
 
-function parseNearbyChargingSites(json: string | null): NearbyChargingSiteDto[] {
-  if (!json) return [];
-  try {
-    const parsed = JSON.parse(json) as NearbyChargingSiteDto[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
 function serializeSnapshot(snapshot: VehicleSnapshot) {
+  const nearby = parseNearbyChargingJson(snapshot.nearbyChargingSites);
   return {
     id: snapshot.id,
     vehicleId: snapshot.vehicleId,
@@ -56,7 +47,15 @@ function serializeSnapshot(snapshot: VehicleSnapshot) {
     sentryMode: snapshot.sentryMode,
     serviceStatus: snapshot.serviceStatus,
     softwareVersion: snapshot.softwareVersion,
-    nearbyChargingSites: parseNearbyChargingSites(snapshot.nearbyChargingSites),
+    nearbyChargingSites: nearby.sites,
+    nearbyChargingMeta:
+      nearby.capturedAt || nearby.sites.length > 0
+        ? {
+            capturedAt: nearby.capturedAt,
+            capturedLat: nearby.capturedLat,
+            capturedLng: nearby.capturedLng,
+          }
+        : null,
     lastTelemetryAt: snapshot.lastTelemetryAt?.toISOString() ?? null,
     lastRestSyncAt: snapshot.lastRestSyncAt?.toISOString() ?? null,
     telemetrySource: snapshot.telemetrySource,

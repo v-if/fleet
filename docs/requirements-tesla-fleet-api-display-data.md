@@ -219,9 +219,10 @@
 | 필드 매트릭스 (시트/표) | Endpoint × 필드 × 정적/동적 × 화면 × 우선순위 | 조사 중 |
 | 데이터 모델 설계 | [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | ✅ 문서 |
 | 구현 체크리스트 | [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | ✅ Phase 4.4 A~E 완료 (2026-07-11) |
-| 스키마 PR | `Vehicle` 제원 + `VehicleSyncState` | 미착수 |
-| Sync 로직 PR | Baseline·쿨다운·제원 분리 | 미착수 |
-| UI PR | 목록·상세 고도화 | 미착수 |
+| 실차 표시 고착 수정 | [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) · [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md) | ✅ BF 코드 완료 · 실차 검수 잔여 |
+| 스키마 PR | `Vehicle` 제원 + `VehicleSyncState` | ✅ Phase 4.4 |
+| Sync 로직 PR | Baseline·쿨다운·제원 분리 | ✅ Phase 4.4 |
+| UI PR | 목록·상세 고도화 | ✅ VD-1~3 (표시 고착은 BF) |
 
 ---
 
@@ -240,3 +241,5 @@
 | 2026-07-12 | Phase VD-1 완료 — Summary/추론 ASLEEP/위치 empty/configSynced ([checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md)) |
 | 2026-07-12 | Phase VD-2 완료 — 연동 타임라인·오류·제원 접기 |
 | 2026-07-12 | Phase VD-3 완료 — Snapshot 확장·nearby/service/alerts |
+| 2026-07-12 | Telemetry×Snapshot 교차 검증 후속 — Phase BF (DoorState 파서·merge·nearby stale) |
+| 2026-07-12 | Phase BF 코드 완료 반영 |

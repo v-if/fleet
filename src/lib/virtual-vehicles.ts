@@ -12,6 +12,7 @@ import {
 
 import { createAuditLogWithApiCall } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
+import { serializeNearbyChargingSites } from "@/lib/tesla/nearby-charging";
 
 const SEOUL_BOUNDS = {
   minLat: 37.42,
@@ -148,7 +149,11 @@ export async function createVirtualTeslaAccountWithVehicles(input: CreateVirtual
         sentryMode,
         serviceStatus: randomServiceStatus(),
         softwareVersion: pickOne(SOFTWARE_VERSIONS),
-        nearbyChargingSites: JSON.stringify(randomNearbyChargingSites()),
+        nearbyChargingSites: serializeNearbyChargingSites(randomNearbyChargingSites(), {
+          capturedAt: new Date(),
+          capturedLat: null,
+          capturedLng: null,
+        }),
         lastUpdatedAt: new Date(),
       },
       events: Array.from({ length: eventCount }, () => {

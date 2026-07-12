@@ -4,7 +4,8 @@
 > **설계서**: [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md)  
 > **호출 정책**: [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md)  
 > **표시·매핑**: [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md), [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md)  
-> **Telemetry 서버**: 배포 변경 없음 — [handoff-phase44-to-fleet-telemetry.md](./handoff-phase44-to-fleet-telemetry.md)
+> **Telemetry 서버**: 배포 변경 없음 — [handoff-phase44-to-fleet-telemetry.md](./handoff-phase44-to-fleet-telemetry.md)  
+> **후속 (표시 고착)**: [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) · [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md) — Phase BF **코드 완료** (실차 검수 잔여)
 
 ---
 

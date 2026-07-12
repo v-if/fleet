@@ -69,6 +69,9 @@
 - [ ] Telemetry 재연결 후 EstBatteryRange/DoorState 구독 반영(선택)
 - [ ] `pnpm exec prisma generate` 후 `pnpm dev` 재시작 (마이그레이션 적용됨)
 
+> **알려진 후속 (VD-3 이후)**: 실차 검증에서 DoorState **파서/merge 미완**으로 주행 중 문·트렁크 고착, 인근 충전소 출발지 고착이 확인됨.  
+> → [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) · [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md) (Phase BF)
+
 ---
 
 ## 문서 이력
@@ -78,3 +81,5 @@
 | 2026-07-12 | VD-1 체크리스트 작성 · 구현 완료 반영 |
 | 2026-07-12 | VD-2 완료 — 타임라인·오류·출처·이벤트·제원 접기 |
 | 2026-07-12 | VD-3 완료 — charge/doors/trunk 스키마·nearby/service/alerts · UI |
+| 2026-07-12 | VD-3 후속 — 실차 표시 고착 → Phase BF 링크 |
+| 2026-07-12 | Phase BF 코드 완료 링크 |

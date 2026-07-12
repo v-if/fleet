@@ -48,9 +48,23 @@ const DEFAULT_TELEMETRY_FIELDS: Record<string, { interval_seconds: number }> = {
   InsideTemp: { interval_seconds: 60 },
   OutsideTemp: { interval_seconds: 60 },
   SentryMode: { interval_seconds: 60 },
-  /** VD-3: 거리·개폐 보강 (재구독/재연결 시 반영) */
   EstBatteryRange: { interval_seconds: 120 },
   DoorState: { interval_seconds: 60 },
+  /** Phase BF-D: 창문·TPMS·충전·공조 (재구독/재연결 시 반영) */
+  FdWindow: { interval_seconds: 60 },
+  FpWindow: { interval_seconds: 60 },
+  RdWindow: { interval_seconds: 60 },
+  RpWindow: { interval_seconds: 60 },
+  TpmsPressureFl: { interval_seconds: 300 },
+  TpmsPressureFr: { interval_seconds: 300 },
+  TpmsPressureRl: { interval_seconds: 300 },
+  TpmsPressureRr: { interval_seconds: 300 },
+  ChargeLimitSoc: { interval_seconds: 120 },
+  ACChargingPower: { interval_seconds: 60 },
+  DCChargingPower: { interval_seconds: 60 },
+  HvacPower: { interval_seconds: 60 },
+  /** BF-D P2: SW 버전 — REST-only도 가능하나 구독 시 Telemetry 갱신 */
+  Version: { interval_seconds: 600 },
 };
 
 export async function deleteFleetTelemetryConfig(

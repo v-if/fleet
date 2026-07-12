@@ -2,8 +2,13 @@ import { TelemetryIngressStatus, TelemetrySource, VehicleLifecycle } from "@pris
 
 import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
-import { maybeRunWakeCooldownRestSync } from "@/lib/tesla/hybrid/rest-sync";
+import {
+  maybeRefreshNearbyOnPark,
+  maybeRunGearCorrectionRestSync,
+  maybeRunWakeCooldownRestSync,
+} from "@/lib/tesla/hybrid/rest-sync";
 import { patchVehicleSyncState } from "@/lib/tesla/hybrid/sync-state";
+import { shouldClearNearbyForLocation } from "@/lib/tesla/nearby-charging";
 
 import { getTelemetryProcessBatchSize, getTelemetryStaleAfterMs, getTelemetryFreshnessMs } from "./config";
 import { refreshTelemetryMetadataCounts } from "./ingress";
@@ -63,9 +68,16 @@ function mergeSnapshotFields(
       }
     | undefined,
 ) {
+  const lat = current.latitude ?? previous?.latitude ?? null;
+  const lng = current.longitude ?? previous?.longitude ?? null;
+  let nearbyChargingSites = previous?.nearbyChargingSites ?? null;
+  if (shouldClearNearbyForLocation(nearbyChargingSites, lat, lng)) {
+    nearbyChargingSites = null;
+  }
+
   return {
-    latitude: current.latitude ?? previous?.latitude ?? null,
-    longitude: current.longitude ?? previous?.longitude ?? null,
+    latitude: lat,
+    longitude: lng,
     batteryPercent: current.batteryPercent ?? previous?.batteryPercent ?? null,
     rangeKm: current.rangeKm ?? previous?.rangeKm ?? null,
     ignitionOn: current.ignitionOn ?? previous?.ignitionOn ?? null,
@@ -75,25 +87,25 @@ function mergeSnapshotFields(
     locked: current.locked ?? previous?.locked ?? null,
     doorsOpen: current.doorsOpen ?? previous?.doorsOpen ?? null,
     windowsOpen: current.windowsOpen ?? previous?.windowsOpen ?? null,
-    chargeLimitSoc: previous?.chargeLimitSoc ?? null,
-    chargerPowerKw: previous?.chargerPowerKw ?? null,
-    doorDfOpen: previous?.doorDfOpen ?? null,
-    doorDrOpen: previous?.doorDrOpen ?? null,
-    doorPfOpen: previous?.doorPfOpen ?? null,
-    doorPrOpen: previous?.doorPrOpen ?? null,
-    frontTrunkOpen: previous?.frontTrunkOpen ?? null,
-    rearTrunkOpen: previous?.rearTrunkOpen ?? null,
+    chargeLimitSoc: current.chargeLimitSoc ?? previous?.chargeLimitSoc ?? null,
+    chargerPowerKw: current.chargerPowerKw ?? previous?.chargerPowerKw ?? null,
+    doorDfOpen: current.doorDfOpen ?? previous?.doorDfOpen ?? null,
+    doorDrOpen: current.doorDrOpen ?? previous?.doorDrOpen ?? null,
+    doorPfOpen: current.doorPfOpen ?? previous?.doorPfOpen ?? null,
+    doorPrOpen: current.doorPrOpen ?? previous?.doorPrOpen ?? null,
+    frontTrunkOpen: current.frontTrunkOpen ?? previous?.frontTrunkOpen ?? null,
+    rearTrunkOpen: current.rearTrunkOpen ?? previous?.rearTrunkOpen ?? null,
     insideTempC: current.insideTempC ?? previous?.insideTempC ?? null,
     outsideTempC: current.outsideTempC ?? previous?.outsideTempC ?? null,
     climateOn: current.climateOn ?? previous?.climateOn ?? null,
-    tpmsFrontLeft: previous?.tpmsFrontLeft ?? null,
-    tpmsFrontRight: previous?.tpmsFrontRight ?? null,
-    tpmsRearLeft: previous?.tpmsRearLeft ?? null,
-    tpmsRearRight: previous?.tpmsRearRight ?? null,
+    tpmsFrontLeft: current.tpmsFrontLeft ?? previous?.tpmsFrontLeft ?? null,
+    tpmsFrontRight: current.tpmsFrontRight ?? previous?.tpmsFrontRight ?? null,
+    tpmsRearLeft: current.tpmsRearLeft ?? previous?.tpmsRearLeft ?? null,
+    tpmsRearRight: current.tpmsRearRight ?? previous?.tpmsRearRight ?? null,
     sentryMode: current.sentryMode ?? previous?.sentryMode ?? null,
     serviceStatus: previous?.serviceStatus ?? null,
     softwareVersion: current.softwareVersion ?? previous?.softwareVersion ?? null,
-    nearbyChargingSites: previous?.nearbyChargingSites ?? null,
+    nearbyChargingSites,
   };
 }
 
@@ -115,6 +127,7 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
   const previous = vehicle.snapshots[0];
   const wasAsleep =
     previous?.isAsleepInferred === true || previous?.status === "ASLEEP";
+  const previousIgnitionOn = previous?.ignitionOn;
   const merged = mergeSnapshotFields(fields, previous);
 
   await prisma.vehicleSnapshot.create({
@@ -178,6 +191,26 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
       await maybeRunWakeCooldownRestSync(vehicleId);
     } catch (error) {
       console.warn(`Wake cooldown REST sync failed for ${vehicleId}:`, error);
+    }
+  }
+
+  // BF-C: P 정차 시 nearby 재조회 / P→비가동 시 선택적 보정 REST
+  if (!isDisconnected && fields.shiftState != null) {
+    const nowParked = fields.shiftState === "P";
+    const nowDriving = fields.shiftState !== "P";
+
+    if (nowParked) {
+      try {
+        await maybeRefreshNearbyOnPark(vehicleId);
+      } catch (error) {
+        console.warn(`Nearby refresh on park failed for ${vehicleId}:`, error);
+      }
+    } else if (nowDriving && previousIgnitionOn === false) {
+      try {
+        await maybeRunGearCorrectionRestSync(vehicleId);
+      } catch (error) {
+        console.warn(`Gear correction REST failed for ${vehicleId}:`, error);
+      }
     }
   }
 

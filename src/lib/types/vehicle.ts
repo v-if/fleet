@@ -12,6 +12,12 @@ export type NearbyChargingSiteDto = {
   distanceKm: number;
 };
 
+export type NearbyChargingMetaDto = {
+  capturedAt: string | null;
+  capturedLat: number | null;
+  capturedLng: number | null;
+};
+
 export type VehicleSnapshotDto = {
   id: string;
   vehicleId: string;
@@ -45,6 +51,7 @@ export type VehicleSnapshotDto = {
   serviceStatus: ServiceStatus | null;
   softwareVersion: string | null;
   nearbyChargingSites: NearbyChargingSiteDto[];
+  nearbyChargingMeta: NearbyChargingMetaDto | null;
   lastTelemetryAt: string | null;
   lastRestSyncAt: string | null;
   telemetrySource: "TELEMETRY" | "REST" | "MIXED" | null;
