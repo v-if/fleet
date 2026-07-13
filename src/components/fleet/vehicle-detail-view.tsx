@@ -282,6 +282,7 @@ export function VehicleDetailView({ vehicleId }: VehicleDetailViewProps) {
                       selectedId={vehicle.id}
                       height={280}
                       centerOnSelected
+                      hideSelectionCard
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground">위치 정보가 없습니다.</p>

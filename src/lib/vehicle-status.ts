@@ -3,11 +3,11 @@ import type { ChargingStatus, ServiceStatus, VehicleStatus } from "@prisma/clien
 export const IDLE_DAYS_THRESHOLD = 7;
 
 export const STATUS_LABEL: Record<VehicleStatus, string> = {
-  ONLINE: "정상",
-  OFFLINE: "오프라인",
-  ASLEEP: "취침 중",
+  ONLINE: "온라인",
+  OFFLINE: "연결 끊김",
+  ASLEEP: "주차 (절전)",
   WARNING: "주의",
-  ALERT: "이상",
+  ALERT: "경고",
 };
 
 export const CHARGING_STATUS_LABEL: Record<ChargingStatus, string> = {

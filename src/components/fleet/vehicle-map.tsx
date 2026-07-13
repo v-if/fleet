@@ -14,6 +14,8 @@ type VehicleMapProps = {
   height?: number;
   centerOnSelected?: boolean;
   hero?: boolean;
+  /** 상세 화면 등에서 번호·모델·「상세 보기」 선택 카드 숨김 */
+  hideSelectionCard?: boolean;
 };
 
 type PositionedMapVehicle = MapVehicle & {
@@ -278,6 +280,7 @@ export function VehicleMap({
   height = 420,
   centerOnSelected = false,
   hero = false,
+  hideSelectionCard = false,
 }: VehicleMapProps) {
   const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID?.trim();
   const validVehicles = useMemo(
@@ -409,6 +412,7 @@ export function VehicleMap({
           height={height}
           hero={hero}
           reason={reason}
+          hideSelectionCard={hideSelectionCard}
         />
         {vehicles.length > 0 && validVehicles.length === 0 ? (
           <p className="text-sm text-muted-foreground">
@@ -429,7 +433,7 @@ export function VehicleMap({
       {!ready ? (
         <p className="text-sm text-muted-foreground">지도를 불러오는 중...</p>
       ) : null}
-      {selectedId ? (
+      {selectedId && !hideSelectionCard ? (
         <SelectedVehicleLink vehicles={vehicles} selectedId={selectedId} />
       ) : null}
     </div>

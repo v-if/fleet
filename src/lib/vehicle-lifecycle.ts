@@ -7,9 +7,9 @@ import type { VehicleListItemDto } from "@/lib/types/vehicle";
 export const LIFECYCLE_LABEL: Record<VehicleLifecycle, string> = {
   REGISTERED: "등록됨",
   KEY_PENDING: "키 연결 대기",
-  TELEMETRY_PENDING: "Telemetry 대기",
+  TELEMETRY_PENDING: "실시간 연동 대기",
   READY: "관제 준비",
-  TELEMETRY_DISCONNECTED: "Telemetry 단절",
+  TELEMETRY_DISCONNECTED: "실시간 연동 꺼짐",
 };
 
 export const DISCONNECT_REASON_LABEL: Record<
@@ -17,7 +17,7 @@ export const DISCONNECT_REASON_LABEL: Record<
   string
 > = {
   USER_SOFTWARE: "소프트웨어 해제",
-  VK_REMOVED_OFFLINE: "가상키 제거(추정)",
+  VK_REMOVED_OFFLINE: "차량 키 제거(추정)",
   UNLINK: "플릿 제거",
 };
 
@@ -25,10 +25,10 @@ export const REST_SYNC_REASON_LABEL: Record<
   "BASELINE" | "WAKE_COOLDOWN" | "MANUAL_FALLBACK" | "SPECS_REFRESH",
   string
 > = {
-  BASELINE: "Baseline(제원·스냅샷)",
-  WAKE_COOLDOWN: "Wake 후 쿨다운 REST",
-  MANUAL_FALLBACK: "수동 폴백",
-  SPECS_REFRESH: "제원 재동기화",
+  BASELINE: "제원·초기 상태 수집",
+  WAKE_COOLDOWN: "기상 후 상세 조회",
+  MANUAL_FALLBACK: "수동 상세 조회",
+  SPECS_REFRESH: "제원 다시 불러오기",
 };
 
 export function lifecycleBadgeColor(lifecycle: VehicleLifecycle): TailAdminBadgeColor {
@@ -61,25 +61,25 @@ export function lifecycleGuidance(lifecycle: VehicleLifecycle | null | undefined
     case "REGISTERED":
       return {
         title: "차량이 등록되었습니다",
-        body: "Virtual Key 페어링 후 ‘키 연결 확인’을 진행하세요. 차량을 서버에서 깨우지 않습니다.",
+        body: "차량 키 페어링 후 ‘키 연결 확인’을 진행하세요. 서버가 차량을 깨우지 않습니다.",
         actions: ["confirm_key"],
       };
     case "KEY_PENDING":
       return {
-        title: "Virtual Key 연결이 필요합니다",
-        body: "Tesla 앱에서 Virtual Key QR/페어링을 완료한 뒤 ‘키 연결 확인’을 눌러주세요.",
+        title: "차량 키 연결이 필요합니다",
+        body: "Tesla 앱에서 차량 키(Virtual Key) 페어링을 완료한 뒤 ‘키 연결 확인’을 눌러주세요.",
         actions: ["confirm_key"],
       };
     case "TELEMETRY_PENDING":
       return {
-        title: "Telemetry 수신을 기다리는 중",
-        body: "키가 확인되었습니다. Telemetry 설정 동기화 또는 첫 수신을 기다리거나, 차량이 깨어 있을 때 Baseline을 재시도할 수 있습니다.",
+        title: "실시간 신호를 기다리는 중",
+        body: "키가 확인되었습니다. 첫 실시간 신호를 기다리거나, 차량이 깨어 있을 때 ‘제원·상태 다시 불러오기’를 시도할 수 있습니다.",
         actions: ["retry_baseline"],
       };
     case "TELEMETRY_DISCONNECTED":
       return {
-        title: "Telemetry 연동이 해제된 상태입니다",
-        body: "실시간 수신이 중지되었습니다. Virtual Key는 자동 삭제되지 않습니다. 다시 쓰려면 ‘Telemetry 다시 연결’을 진행하세요.",
+        title: "실시간 연동이 꺼진 상태입니다",
+        body: "실시간 수신이 중지되었습니다. 차량 키는 자동 삭제되지 않습니다. 다시 쓰려면 ‘실시간 연동 다시 켜기’를 진행하세요.",
         actions: ["reconnect_telemetry"],
       };
     case "READY":

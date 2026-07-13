@@ -59,8 +59,8 @@ const filterOptions: { value: StatusFilter; label: string }[] = [
   { value: "ALERT", label: "이상" },
   { value: "ABNORMAL", label: "이상상태" },
   { value: "OFFLINE", label: "오프라인" },
-  { value: "ASLEEP", label: "취침 중" },
-  { value: "TELEMETRY_DISCONNECTED", label: "Telemetry 단절" },
+  { value: "ASLEEP", label: "주차(절전)" },
+  { value: "TELEMETRY_DISCONNECTED", label: "실시간 연동 꺼짐" },
   { value: "IDLE", label: "미운행" },
 ];
 
@@ -227,7 +227,7 @@ export function FleetVehicleTable({
                         ) : null}
                         {status === "ASLEEP" && lifecycle === "READY" ? (
                           <span className="text-[10px] leading-tight text-gray-400">
-                            관제준비·취침
+                            관제준비·절전
                           </span>
                         ) : null}
                       </div>

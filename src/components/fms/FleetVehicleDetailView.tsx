@@ -7,6 +7,7 @@ import { useState } from "react";
 import { BatteryHealthGauge } from "@/components/fleet/battery-health-gauge";
 import { TpmsDiagram } from "@/components/fleet/tpms-diagram";
 import { VehicleMap } from "@/components/fleet/vehicle-map";
+import { BatteryProgressBar } from "@/components/fms/BatteryProgressBar";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
@@ -15,7 +16,6 @@ import { useRouter } from "next/navigation";
 import { useVehicleDetail, useVehicleRefresh } from "@/hooks/use-vehicles";
 import {
   chargingStatusBadgeColor,
-  providerLabel,
   vehicleStatusBadgeColor,
 } from "@/lib/fms-badge-utils";
 import { labelCarType, labelTrimBadging } from "@/lib/tesla/display-model";
@@ -27,17 +27,14 @@ import {
   formatColorBadge,
   lifecycleBadgeColor,
   lifecycleGuidance,
-  shouldShowLifecycleBadge,
 } from "@/lib/vehicle-lifecycle";
 import {
   CHARGING_STATUS_LABEL,
   SERVICE_STATUS_LABEL,
   STATUS_LABEL,
   formatDateTime,
-  formatLocationSummary,
   formatOdometer,
   formatRelativeTime,
-  formatSocPercent,
   formatTempC,
   hasValidCoordinates,
   isLowTpms,
@@ -77,54 +74,61 @@ function buildConnectivityTimeline(vehicle: VehicleDetailDto): ConnectivityStep[
   const restReason = vehicle.freshness.lastRestSyncReason
     ? REST_SYNC_REASON_LABEL[vehicle.freshness.lastRestSyncReason]
     : null;
+  const hasTelemetrySignal = Boolean(vehicle.freshness.lastTelemetryAt);
+  const configReflected =
+    Boolean(sub?.configSynced) ||
+    Boolean(sync?.telemetryConfigSyncedAt) ||
+    hasTelemetrySignal;
 
   return [
     {
       key: "subscribed",
-      label: "Telemetry 구독",
+      label: "실시간 구독",
       at: sub?.subscribedAt ?? null,
       done: Boolean(sub?.subscribedAt),
     },
     {
       key: "vk",
-      label: "Virtual Key 확인",
+      label: "차량 키 확인",
       at: sync?.virtualKeyConfirmedAt ?? null,
       done: Boolean(sync?.virtualKeyConfirmedAt),
     },
     {
       key: "config",
-      label: "Telemetry config",
+      label: "실시간 설정",
       at: sync?.telemetryConfigSyncedAt ?? sub?.configCheckedAt ?? null,
-      detail: sub
-        ? sub.configSynced
-          ? "synced"
-          : "미동기(configSynced false)"
-        : null,
-      done: Boolean(sub?.configSynced || sync?.telemetryConfigSyncedAt),
+      detail: sub ? (configReflected ? "반영됨" : "반영 대기") : null,
+      done: configReflected,
     },
     {
       key: "baseline",
-      label: "Baseline 완료",
+      label: "제원·초기 상태 수집",
       at: sync?.baselineCompletedAt ?? null,
       done: Boolean(sync?.baselineCompletedAt),
     },
     {
       key: "telemetry",
-      label: "마지막 Telemetry",
+      label: "마지막 실시간 신호",
       at: vehicle.freshness.lastTelemetryAt,
-      detail: vehicle.freshness.telemetrySource,
-      done: Boolean(vehicle.freshness.lastTelemetryAt),
+      detail: vehicle.freshness.telemetrySource
+        ? vehicle.freshness.telemetrySource === "TELEMETRY"
+          ? "실시간"
+          : vehicle.freshness.telemetrySource === "REST"
+            ? "상세 조회"
+            : "혼합"
+        : null,
+      done: hasTelemetrySignal,
     },
     {
       key: "rest",
-      label: "마지막 REST",
+      label: "마지막 상세 조회",
       at: vehicle.freshness.lastRestSyncAt,
       detail: restReason,
       done: Boolean(vehicle.freshness.lastRestSyncAt),
     },
     {
       key: "wake",
-      label: "마지막 wake 감지",
+      label: "차량 기상 감지",
       at: sync?.lastWakeDetectedAt ?? null,
       done: Boolean(sync?.lastWakeDetectedAt),
     },
@@ -183,11 +187,12 @@ function buildSecurityTiles(vehicle: VehicleDetailDto): SecurityTile[] {
   const snapshot = vehicle.snapshot;
   if (!snapshot) {
     return [
-      { key: "locked", label: "잠금", value: "—", tone: "muted" },
-      { key: "doors", label: "문", value: "—", tone: "muted" },
+      { key: "df", label: "운전석", value: "—", tone: "muted" },
+      { key: "pf", label: "조수석", value: "—", tone: "muted" },
+      { key: "dr", label: "좌측 후", value: "—", tone: "muted" },
+      { key: "pr", label: "우측 후", value: "—", tone: "muted" },
       { key: "windows", label: "창문", value: "—", tone: "muted" },
       { key: "frunk", label: "프렁크", value: "—", tone: "muted" },
-      { key: "trunk", label: "트렁크", value: "—", tone: "muted" },
       { key: "sentry", label: "센트리", value: "—", tone: "muted" },
     ];
   }
@@ -197,78 +202,109 @@ function buildSecurityTiles(vehicle: VehicleDetailDto): SecurityTile[] {
   const openTone = (value: boolean | null | undefined): SecurityTile["tone"] =>
     value ? "warning" : value == null ? "muted" : "ok";
 
-  const sourceHint = [
-    snapshot.telemetrySource ?? null,
-    snapshot.lastUpdatedAt ? formatRelativeTime(snapshot.lastUpdatedAt) : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  const withHint = (
-    tile: Omit<SecurityTile, "hint">,
-  ): SecurityTile => ({ ...tile, hint: sourceHint || null });
-
+  // UX2-20: 잠금·문종합·트렁크는 상단 퀵타일로 이동 — 여기엔 문 상세·창문·프렁크·센트리만
   return [
-    withHint({
-      key: "locked",
-      label: "잠금",
-      value: snapshot.locked == null ? "—" : snapshot.locked ? "잠김" : "해제",
-      tone: snapshot.locked === false ? "warning" : snapshot.locked == null ? "muted" : "ok",
-    }),
-    withHint({
-      key: "doors",
-      label: "문(종합)",
-      value: openLabel(snapshot.doorsOpen),
-      tone: openTone(snapshot.doorsOpen),
-    }),
-    withHint({
+    {
       key: "df",
       label: "운전석",
       value: openLabel(snapshot.doorDfOpen),
       tone: openTone(snapshot.doorDfOpen),
-    }),
-    withHint({
+    },
+    {
       key: "pf",
       label: "조수석",
       value: openLabel(snapshot.doorPfOpen),
       tone: openTone(snapshot.doorPfOpen),
-    }),
-    withHint({
+    },
+    {
       key: "dr",
       label: "좌측 후",
       value: openLabel(snapshot.doorDrOpen),
       tone: openTone(snapshot.doorDrOpen),
-    }),
-    withHint({
+    },
+    {
       key: "pr",
       label: "우측 후",
       value: openLabel(snapshot.doorPrOpen),
       tone: openTone(snapshot.doorPrOpen),
-    }),
-    withHint({
+    },
+    {
       key: "windows",
       label: "창문",
       value: openLabel(snapshot.windowsOpen),
       tone: openTone(snapshot.windowsOpen),
-    }),
-    withHint({
+    },
+    {
       key: "frunk",
       label: "프렁크",
       value: openLabel(snapshot.frontTrunkOpen),
       tone: openTone(snapshot.frontTrunkOpen),
-    }),
-    withHint({
-      key: "trunk",
-      label: "트렁크",
-      value: openLabel(snapshot.rearTrunkOpen),
-      tone: openTone(snapshot.rearTrunkOpen),
-    }),
-    withHint({
+    },
+    {
       key: "sentry",
       label: "센트리",
       value: snapshot.sentryMode == null ? "—" : snapshot.sentryMode ? "활성" : "비활성",
       tone: snapshot.sentryMode ? "info" : snapshot.sentryMode == null ? "muted" : "ok",
-    }),
+    },
+  ];
+}
+
+/** UX2-18: 상단 3×2 퀵타일 */
+function buildQuickStatusTiles(vehicle: VehicleDetailDto): SecurityTile[] {
+  const snapshot = vehicle.snapshot;
+  const openLabel = (value: boolean | null | undefined) =>
+    value == null ? "—" : value ? "개방" : "닫힘";
+  const openTone = (value: boolean | null | undefined): SecurityTile["tone"] =>
+    value ? "warning" : value == null ? "muted" : "ok";
+
+  if (!snapshot) {
+    return [
+      { key: "locked", label: "잠금", value: "—", tone: "muted" },
+      { key: "doors", label: "문(종합)", value: "—", tone: "muted" },
+      { key: "trunk", label: "트렁크", value: "—", tone: "muted" },
+      { key: "climate", label: "공조", value: "—", tone: "muted" },
+      { key: "inside", label: "실내", value: "—", tone: "muted" },
+      { key: "outside", label: "실외", value: "—", tone: "muted" },
+    ];
+  }
+
+  return [
+    {
+      key: "locked",
+      label: "잠금",
+      value: snapshot.locked == null ? "—" : snapshot.locked ? "잠김" : "해제",
+      tone: snapshot.locked === false ? "warning" : snapshot.locked == null ? "muted" : "ok",
+    },
+    {
+      key: "doors",
+      label: "문(종합)",
+      value: openLabel(snapshot.doorsOpen),
+      tone: openTone(snapshot.doorsOpen),
+    },
+    {
+      key: "trunk",
+      label: "트렁크",
+      value: openLabel(snapshot.rearTrunkOpen),
+      tone: openTone(snapshot.rearTrunkOpen),
+    },
+    {
+      key: "climate",
+      label: "공조",
+      value: snapshot.climateOn == null ? "—" : snapshot.climateOn ? "ON" : "OFF",
+      tone: snapshot.climateOn ? "info" : snapshot.climateOn == null ? "muted" : "ok",
+    },
+    {
+      key: "inside",
+      label: "실내",
+      value: formatTempC(snapshot.insideTempC),
+      tone: snapshot.insideTempC == null ? "muted" : "ok",
+    },
+    {
+      key: "outside",
+      label: "실외",
+      value: formatTempC(snapshot.outsideTempC),
+      tone: snapshot.outsideTempC == null ? "muted" : "ok",
+    },
   ];
 }
 
@@ -314,6 +350,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
   const [vinCopied, setVinCopied] = useState(false);
   const [specsExpanded, setSpecsExpanded] = useState(false);
   const [errorsExpanded, setErrorsExpanded] = useState(true);
+  const [techDetailsExpanded, setTechDetailsExpanded] = useState(false);
 
   async function handleRefresh() {
     setIsRefreshing(true);
@@ -337,7 +374,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
         setActionMessage(body.error ?? "키 연결 확인에 실패했습니다.");
         return;
       }
-      setActionMessage("Virtual Key가 확인되었습니다.");
+      setActionMessage("차량 키가 확인되었습니다.");
       await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       await refetch();
     } catch {
@@ -358,16 +395,16 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
       if (!response.ok) {
         setActionMessage(
           body.error
-            ? `Baseline 실패 (자동 wake 없음): ${body.error}`
-            : "Baseline 재시도에 실패했습니다. 차량이 깨어 있을 때 다시 시도하세요.",
+            ? `제원·상태 불러오기 실패 (자동 기상 없음): ${body.error}`
+            : "제원·상태 다시 불러오기에 실패했습니다. 차량이 깨어 있을 때 다시 시도하세요.",
         );
         return;
       }
-      setActionMessage("Baseline(제원·스냅샷) 동기화가 완료되었습니다.");
+      setActionMessage("제원·초기 상태 수집이 완료되었습니다.");
       await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       await refetch();
     } catch {
-      setActionMessage("Baseline 요청 중 오류가 발생했습니다.");
+      setActionMessage("제원·상태 요청 중 오류가 발생했습니다.");
     } finally {
       setIsRetryingBaseline(false);
     }
@@ -385,20 +422,20 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
         teslaUnsubscribe?: { ok?: boolean; error?: string };
       };
       if (!response.ok) {
-        setActionMessage(body.error ?? "Telemetry 연동 해제에 실패했습니다.");
+        setActionMessage(body.error ?? "실시간 연동 끄기에 실패했습니다.");
         return;
       }
       setConfirmDisconnectOpen(false);
       setSuccessDisconnectOpen(true);
       if (body.teslaUnsubscribe && body.teslaUnsubscribe.ok === false) {
         setActionMessage(
-          `DB는 단절 처리되었습니다. Tesla 구독 해제 재시도가 필요할 수 있습니다: ${body.teslaUnsubscribe.error ?? ""}`,
+          `연동은 꺼짐으로 처리되었습니다. Tesla 구독 해제 재시도가 필요할 수 있습니다: ${body.teslaUnsubscribe.error ?? ""}`,
         );
       }
       await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       await refetch();
     } catch {
-      setActionMessage("Telemetry 연동 해제 요청 중 오류가 발생했습니다.");
+      setActionMessage("실시간 연동 끄기 요청 중 오류가 발생했습니다.");
     } finally {
       setIsDisconnecting(false);
     }
@@ -419,22 +456,22 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
       if (!response.ok) {
         setActionMessage(
           body.error
-            ? `재연결 실패: ${body.error}. 연동 해지 시 Tesla config가 삭제되므로 Vehicle Command Proxy로 fleet_telemetry_config를 다시 등록해야 합니다.`
-            : "Telemetry 재연결에 실패했습니다.",
+            ? `실시간 연동 다시 켜기 실패: ${body.error}. 연동을 껐을 때 Tesla 설정이 삭제되므로 다시 등록이 필요합니다.`
+            : "실시간 연동 다시 켜기에 실패했습니다.",
         );
         return;
       }
       setActionMessage(
         body.subscribe?.alreadyConfigured
-          ? "Telemetry config가 이미 있습니다. 수신을 기다립니다."
+          ? "실시간 설정이 이미 있습니다. 수신을 기다립니다."
           : body.virtualKey?.ok
-            ? "Telemetry config 재등록·VK 확인이 완료되었습니다. 차량이 깨어 있으면 곧 스트림이 들어옵니다."
-            : `config 재등록은 반영되었습니다. Virtual Key 확인: ${body.virtualKey?.error ?? "미확인"}`,
+            ? "실시간 설정 등록·키 확인이 완료되었습니다. 차량이 깨어 있으면 곧 신호가 들어옵니다."
+            : `설정 등록은 반영되었습니다. 키 확인: ${body.virtualKey?.error ?? "미확인"}`,
       );
       await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       await refetch();
     } catch {
-      setActionMessage("Telemetry 재연결 요청 중 오류가 발생했습니다.");
+      setActionMessage("실시간 연동 다시 켜기 요청 중 오류가 발생했습니다.");
     } finally {
       setIsReconnecting(false);
     }
@@ -496,38 +533,63 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
   const chargingStatus = snapshot?.chargingStatus ?? "DISCONNECTED";
   const issueTags = collectIssueTags(vehicle, data.provider);
   const securityTiles = buildSecurityTiles(vehicle);
+  const quickStatusTiles = buildQuickStatusTiles(vehicle);
   const lifecycle = vehicle.syncState?.lifecycle ?? null;
   const guidance = lifecycleGuidance(lifecycle);
   const trimLabel = labelTrimBadging(vehicle.trimBadging);
   const colorLabel = formatColorBadge(vehicle);
   const carTypeLabel = labelCarType(vehicle.carType);
-  const asleepInferred = status === "ASLEEP" && snapshot?.isAsleepInferred === true;
   const hasLocation = hasValidCoordinates(snapshot?.latitude, snapshot?.longitude);
+  const hasTelemetrySignal = Boolean(vehicle.freshness.lastTelemetryAt);
   const showConfigSyncedWarning =
     vehicle.telemetrySubscription?.active === true &&
     vehicle.telemetrySubscription.configSynced === false &&
-    lifecycle !== "TELEMETRY_DISCONNECTED";
+    lifecycle !== "TELEMETRY_DISCONNECTED" &&
+    !hasTelemetrySignal;
   const dataFreshnessAt =
     vehicle.freshness.lastTelemetryAt ?? snapshot?.lastUpdatedAt ?? null;
+  const lastSignalAt =
+    vehicle.freshness.lastTelemetryAt ??
+    snapshot?.sleepInferredAt ??
+    snapshot?.lastUpdatedAt ??
+    null;
   const teslaDisplayName = vehicle.teslaDisplayName?.trim() || null;
   const connectivityTimeline = buildConnectivityTimeline(vehicle);
   const baselineLastError = vehicle.syncState?.baselineLastError?.trim() || null;
   const subscriptionLastError = vehicle.telemetrySubscription?.lastError?.trim() || null;
   const hasOpsErrors = Boolean(baselineLastError || subscriptionLastError);
-  const climateSourceHint = vehicle.freshness.lastTelemetryAt
-    ? `Telemetry · ${formatRelativeTime(vehicle.freshness.lastTelemetryAt)}`
-    : "Telemetry 미수신 — 값이 오래되었을 수 있습니다";
   const tpmsSourceAt =
     vehicle.freshness.lastRestSyncAt ??
     vehicle.syncState?.baselineCompletedAt ??
     vehicle.specsSyncedAt ??
     null;
   const tpmsSourceHint = tpmsSourceAt
-    ? `REST Baseline 유산 · ${formatRelativeTime(tpmsSourceAt)}`
-    : "REST Baseline 유산 · 동기화 시각 없음 (노후 가능)";
+    ? `마지막 상세 조회 기준 · ${formatRelativeTime(tpmsSourceAt)}`
+    : "상세 조회 시각 없음 (오래되었을 수 있음)";
   const restReasonLabel = vehicle.freshness.lastRestSyncReason
     ? REST_SYNC_REASON_LABEL[vehicle.freshness.lastRestSyncReason]
     : "-";
+  const rangeKmLabel =
+    snapshot?.rangeKm != null && Number.isFinite(snapshot.rangeKm)
+      ? `주행 가능 ${Math.round(snapshot.rangeKm).toLocaleString("ko-KR")}km`
+      : null;
+  const subscriptionStatusLabel = vehicle.telemetrySubscription
+    ? vehicle.telemetrySubscription.active
+      ? vehicle.telemetrySubscription.configSynced || hasTelemetrySignal
+        ? "활성 · 설정 반영됨"
+        : "활성 · 설정 반영 대기"
+      : vehicle.telemetrySubscription.disconnectReason
+        ? `꺼짐 · ${DISCONNECT_REASON_LABEL[vehicle.telemetrySubscription.disconnectReason]}`
+        : "비활성"
+    : "-";
+  const telemetrySourceLabel =
+    vehicle.freshness.telemetrySource === "TELEMETRY"
+      ? "실시간"
+      : vehicle.freshness.telemetrySource === "REST"
+        ? "상세 조회"
+        : vehicle.freshness.telemetrySource === "MIXED"
+          ? "혼합"
+          : (vehicle.freshness.telemetrySource ?? "-");
 
   const mapVehicle: MapVehicle[] =
     snapshot?.status != null && hasLocation
@@ -561,9 +623,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
     <>
       <FleetToolbar
         title={vehicle.plateNumber}
-        description={`${vehicle.model} (${vehicle.year})`}
-        provider={providerLabel(data.provider)}
-        lastUpdatedAt={formatDateTime(snapshot?.lastUpdatedAt ?? null)}
+        description={`${vehicle.model} · ${vehicle.year}`}
         onRefresh={() => void handleRefresh()}
         isRefreshing={isRefreshing || isFetching}
       />
@@ -583,55 +643,165 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
         </Link>
       </div>
 
-      {/* A. Summary strip — VD-1 */}
-      <div className="sticky top-0 z-20 mb-6 rounded-2xl border border-gray-200 bg-white/95 p-4 shadow-theme-xs backdrop-blur dark:border-gray-800 dark:bg-gray-900/95 lg:px-5">
-        <div className="flex flex-wrap items-center gap-2 lg:gap-3">
-          <Badge color={vehicleStatusBadgeColor(status)}>
-            {asleepInferred ? "취침 (추론)" : STATUS_LABEL[status]}
-          </Badge>
-          <span className="text-sm font-semibold text-gray-800 dark:text-white/90">
-            {formatSocPercent(snapshot?.batteryPercent ?? null)}
-          </span>
-          <Badge color={chargingStatusBadgeColor(chargingStatus)} size="sm">
-            {CHARGING_STATUS_LABEL[chargingStatus]}
-          </Badge>
-          <span
-            className={`text-theme-sm ${
-              snapshot?.locked === false
-                ? "font-medium text-warning-600 dark:text-warning-400"
-                : "text-gray-500 dark:text-gray-400"
-            }`}
-          >
-            {snapshot?.locked == null ? "잠금 —" : snapshot.locked ? "잠김" : "잠금 해제"}
-          </span>
-          {issueTags.length === 0 ? (
-            <span className="text-theme-sm text-gray-400">이상 없음</span>
-          ) : (
-            <a
-              href="#vehicle-security"
-              className="text-theme-sm font-medium text-error-600 hover:underline dark:text-error-400"
-            >
-              이슈 {issueTags.length}
-            </a>
-          )}
-          <span
-            className="ml-auto text-theme-xs text-gray-400"
-            title={formatDateTime(dataFreshnessAt)}
-          >
-            데이터 {formatRelativeTime(dataFreshnessAt)}
-            {vehicle.freshness.telemetrySource
-              ? ` · ${vehicle.freshness.telemetrySource}`
-              : ""}
-          </span>
+      {/* UX2-F: 실시간 차량 정보 | 현재 위치 */}
+      <div className="mb-6 grid gap-6 xl:grid-cols-2">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+          <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+            실시간 차량 정보
+          </h4>
+          <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+            <Badge color={vehicleStatusBadgeColor(status)}>
+              {STATUS_LABEL[status]}
+            </Badge>
+            <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+              <div className="min-w-[7.5rem] max-w-[11rem] flex-1 sm:flex-none">
+                <BatteryProgressBar percent={snapshot?.batteryPercent ?? null} />
+              </div>
+              {rangeKmLabel ? (
+                <span className="shrink-0 text-theme-sm font-medium text-gray-700 dark:text-gray-300">
+                  {rangeKmLabel}
+                </span>
+              ) : null}
+            </div>
+            {chargingStatus !== "DISCONNECTED" ? (
+              <Badge color={chargingStatusBadgeColor(chargingStatus)} size="sm">
+                {CHARGING_STATUS_LABEL[chargingStatus]}
+              </Badge>
+            ) : null}
+            {issueTags.length === 0 ? (
+              <span className="text-theme-sm text-gray-400">이상 없음</span>
+            ) : (
+              <a
+                href="#vehicle-security"
+                className="text-theme-sm font-medium text-error-600 hover:underline dark:text-error-400"
+              >
+                이슈 {issueTags.length}
+              </a>
+            )}
+            {status !== "ASLEEP" ? (
+              <span
+                className="ml-auto text-theme-xs text-gray-400"
+                title={formatDateTime(dataFreshnessAt)}
+              >
+                데이터 {formatRelativeTime(dataFreshnessAt)}
+              </span>
+            ) : null}
+          </div>
+          {status === "ASLEEP" && lastSignalAt ? (
+            <p className="mt-2 text-theme-xs text-gray-500 dark:text-gray-400">
+              마지막 신호:{" "}
+              <span title={formatDateTime(lastSignalAt)}>
+                {formatRelativeTime(lastSignalAt)}
+              </span>{" "}
+              (절전 모드)
+            </p>
+          ) : null}
+
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            {quickStatusTiles.map((tile) => (
+              <div
+                key={tile.key}
+                className={`rounded-xl border px-3 py-3 sm:px-4 ${securityToneClass(tile.tone)}`}
+              >
+                <p className="text-xs text-gray-500 dark:text-gray-400">{tile.label}</p>
+                <p className="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">
+                  {tile.value}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {tpms ? (
+            <div className="mt-5 border-t border-gray-100 pt-5 dark:border-gray-800">
+              <h5 className="mb-2 text-sm font-semibold text-gray-800 dark:text-white/90">TPMS</h5>
+              <p
+                className="mb-3 text-theme-xs text-gray-500 dark:text-gray-400"
+                title={formatDateTime(tpmsSourceAt)}
+              >
+                출처: {tpmsSourceHint}
+              </p>
+              <TpmsDiagram
+                frontLeft={tpms.fl}
+                frontRight={tpms.fr}
+                rearLeft={tpms.rl}
+                rearRight={tpms.rr}
+              />
+            </div>
+          ) : null}
         </div>
-        {asleepInferred && snapshot?.sleepInferredAt ? (
-          <p className="mt-2 text-theme-xs text-gray-500 dark:text-gray-400">
-            Telemetry 공백으로 취침을 추론했습니다 ·{" "}
-            <span title={formatDateTime(snapshot.sleepInferredAt)}>
-              {formatRelativeTime(snapshot.sleepInferredAt)}
-            </span>
-          </p>
-        ) : null}
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+          <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+            현재 위치
+          </h4>
+          {mapVehicle.length > 0 ? (
+            <VehicleMap
+              vehicles={mapVehicle}
+              selectedId={vehicle.id}
+              height={260}
+              centerOnSelected
+              hideSelectionCard
+            />
+          ) : (
+            <div className="flex min-h-[260px] flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center dark:border-gray-700 dark:bg-white/[0.02]">
+              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                위치가 아직 없어요
+              </p>
+              <p className="mt-2 max-w-sm text-theme-sm text-gray-500 dark:text-gray-400">
+                주차(절전) 중에는 위치가 비어 있을 수 있어요. 운행이 시작되면 실시간으로
+                갱신됩니다. 추정 좌표는 사용하지 않습니다.
+              </p>
+              {status === "ASLEEP" ? (
+                <p className="mt-3 text-theme-xs text-gray-400">
+                  현재 주차(절전) · 깨어난 뒤 위치 수신을 확인하세요.
+                </p>
+              ) : null}
+            </div>
+          )}
+          <div className="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+              <h5 className="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
+                인근 충전소
+              </h5>
+              {snapshot?.nearbyChargingMeta?.capturedAt ? (
+                <p className="text-theme-xs text-gray-500 dark:text-gray-400">
+                  수집 {formatRelativeTime(snapshot.nearbyChargingMeta.capturedAt)}
+                  {snapshot.nearbyChargingMeta.capturedAt
+                    ? ` · ${formatDateTime(snapshot.nearbyChargingMeta.capturedAt)}`
+                    : ""}
+                </p>
+              ) : null}
+            </div>
+            {mapVehicle.length === 0 ? (
+              <p className="text-theme-xs text-gray-400">위치가 없어 목록을 표시할 수 없습니다.</p>
+            ) : snapshot?.nearbyChargingSites && snapshot.nearbyChargingSites.length > 0 ? (
+              <ul className="space-y-2">
+                {snapshot.nearbyChargingSites.slice(0, 5).map((site) => (
+                  <li
+                    key={`${site.name}-${site.distanceKm}`}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 px-3 py-2.5 dark:border-gray-800"
+                  >
+                    <span className="text-theme-sm font-medium text-gray-800 dark:text-white/90">
+                      {site.name}
+                    </span>
+                    <span className="shrink-0 text-theme-xs text-gray-500">
+                      {site.distanceKm.toLocaleString("ko-KR")} km
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="rounded-xl border border-dashed border-gray-200 px-3 py-4 dark:border-gray-700">
+                <p className="text-theme-sm text-gray-600 dark:text-gray-300">
+                  주행 중 — 주차 후 갱신
+                </p>
+                <p className="mt-1 text-theme-xs text-gray-400">
+                  또는 차량이 깨어 있을 때 「제원·상태 다시 불러오기」로 갱신할 수 있습니다.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -665,7 +835,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   onClick={() => void handleRetryBaseline()}
                   disabled={isRetryingBaseline}
                 >
-                  {isRetryingBaseline ? "Baseline 중..." : "Baseline 재시도"}
+                  {isRetryingBaseline ? "불러오는 중..." : "제원·상태 다시 불러오기"}
                 </Button>
               ) : null}
               {guidance.actions.includes("reconnect_telemetry") ? (
@@ -674,7 +844,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   onClick={() => void handleReconnectTelemetry()}
                   disabled={isReconnecting}
                 >
-                  {isReconnecting ? "재연결 중..." : "Telemetry 다시 연결"}
+                  {isReconnecting ? "연결 중..." : "실시간 연동 다시 켜기"}
                 </Button>
               ) : null}
               <Link href="/settings">
@@ -696,15 +866,14 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
         {showConfigSyncedWarning ? (
           <div className="rounded-2xl border border-warning-200 bg-warning-50 p-5 dark:border-warning-500/30 dark:bg-warning-500/10 lg:p-6">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge color="warning">configSynced false</Badge>
+              <Badge color="warning">수신 지연 가능</Badge>
               <h4 className="text-base font-semibold text-gray-800 dark:text-white/90">
-                Telemetry 설정 동기화 미확인
+                실시간 데이터 지연 가능
               </h4>
             </div>
             <p className="mt-2 text-theme-sm text-gray-600 dark:text-gray-300">
-              구독은 활성이지만 Tesla 쪽 fleet_telemetry_config synced 상태가 확인되지 않았습니다.
-              스트림이 비거나 지연되면 「Telemetry 다시 연결」 또는 제원/Baseline 재시도를
-              검토하세요.
+              실시간 연동은 켜져 있지만 최근 신호가 없습니다. 「실시간 연동 다시 켜기」 또는
+              차량이 깨어 있을 때 「제원·상태 다시 불러오기」를 시도해 보세요.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Button
@@ -712,7 +881,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                 onClick={() => void handleReconnectTelemetry()}
                 disabled={isReconnecting}
               >
-                {isReconnecting ? "재연결 중..." : "Telemetry 다시 연결"}
+                {isReconnecting ? "연결 중..." : "실시간 연동 다시 켜기"}
               </Button>
               <a href="#vehicle-ops">
                 <Button size="sm" variant="outline">
@@ -722,56 +891,6 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
             </div>
           </div>
         ) : null}
-
-        <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-col items-center gap-6 xl:flex-row">
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-brand-50 dark:border-gray-800 dark:bg-brand-500/10">
-                <span className="text-2xl font-bold text-brand-500">
-                  {vehicle.plateNumber.slice(0, 2)}
-                </span>
-              </div>
-              <div className="text-center xl:text-left">
-                <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-                  {vehicle.plateNumber}
-                </h4>
-                <div className="flex flex-col items-center gap-2 xl:flex-row">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {vehicle.model} · {vehicle.year}
-                  </p>
-                  <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    VIN {vehicle.oemVehicleId ?? "-"}
-                  </p>
-                </div>
-                <div className="mt-3 flex flex-wrap justify-center gap-2 xl:justify-start">
-                  <Badge color={vehicleStatusBadgeColor(status)}>
-                    {asleepInferred ? "취침 (추론)" : STATUS_LABEL[status]}
-                  </Badge>
-                  {lifecycle === "READY" ? (
-                    <Badge color="success">{LIFECYCLE_LABEL.READY}</Badge>
-                  ) : shouldShowLifecycleBadge(lifecycle) && lifecycle ? (
-                    <Badge color={lifecycleBadgeColor(lifecycle)}>
-                      {LIFECYCLE_LABEL[lifecycle]}
-                    </Badge>
-                  ) : null}
-                  {trimLabel ? <Badge color="light">{trimLabel}</Badge> : null}
-                  {colorLabel ? <Badge color="light">{colorLabel}</Badge> : null}
-                  <Badge color={chargingStatusBadgeColor(chargingStatus)}>
-                    {CHARGING_STATUS_LABEL[chargingStatus]}
-                  </Badge>
-                </div>
-                {status === "ASLEEP" && lifecycle === "READY" ? (
-                  <p className="mt-2 text-theme-xs text-gray-400">
-                    {asleepInferred
-                      ? "관제 준비(READY)이며 취침은 Telemetry 공백으로 추론된 상태입니다. 서버가 차량을 깨우지 않습니다."
-                      : "관제 준비(READY) 상태이며 현재 운행 상태는 취침(ASLEEP)입니다. 서버가 차량을 깨우지 않습니다."}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
           <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
@@ -787,9 +906,9 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                 </h4>
                 {!specsExpanded ? (
                   <p className="mt-1 text-theme-sm text-gray-500 dark:text-gray-400">
-                    {vehicle.model}
-                    {colorLabel ? ` · ${colorLabel}` : ""}
-                    {vehicle.oemVehicleId ? ` · ${vehicle.oemVehicleId.slice(-6)}` : ""}
+                    {vehicle.oemVehicleId
+                      ? `VIN ···${vehicle.oemVehicleId.slice(-6)}`
+                      : "제원 보기"}
                   </p>
                 ) : null}
               </div>
@@ -868,7 +987,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   onClick={() => setConfirmDisconnectOpen(true)}
                   disabled={isDisconnecting}
                 >
-                  Telemetry 연동 끊기
+                  실시간 연동 끄기
                 </Button>
               ) : (
                 <Button
@@ -876,7 +995,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   onClick={() => void handleReconnectTelemetry()}
                   disabled={isReconnecting}
                 >
-                  {isReconnecting ? "재연결 중..." : "Telemetry 다시 연결"}
+                  {isReconnecting ? "연결 중..." : "실시간 연동 다시 켜기"}
                 </Button>
               )}
               <Button
@@ -885,7 +1004,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                 onClick={() => void handleRetryBaseline()}
                 disabled={isRetryingBaseline || lifecycle === "TELEMETRY_DISCONNECTED"}
               >
-                {isRetryingBaseline ? "동기화 중..." : "제원 재동기화"}
+                {isRetryingBaseline ? "불러오는 중..." : "제원·상태 다시 불러오기"}
               </Button>
               <Button
                 size="sm"
@@ -939,36 +1058,73 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
             </h5>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <InfoField
-                label="마지막 Telemetry"
+                label="마지막 실시간 신호"
                 value={formatDateTime(vehicle.freshness.lastTelemetryAt)}
               />
               <InfoField
-                label="마지막 REST"
+                label="마지막 상세 조회"
                 value={formatDateTime(vehicle.freshness.lastRestSyncAt)}
               />
-              <InfoField label="REST 사유" value={restReasonLabel} />
+              <InfoField label="상세 조회 사유" value={restReasonLabel} />
+              <InfoField label="데이터 출처" value={telemetrySourceLabel} />
+              <InfoField label="구독" value={subscriptionStatusLabel} />
               <InfoField
-                label="소스"
-                value={vehicle.freshness.telemetrySource ?? "-"}
-              />
-              <InfoField
-                label="구독"
-                value={
-                  vehicle.telemetrySubscription
-                    ? vehicle.telemetrySubscription.active
-                      ? vehicle.telemetrySubscription.configSynced
-                        ? "활성 · config synced"
-                        : "활성 · config 미동기"
-                      : vehicle.telemetrySubscription.disconnectReason
-                        ? `단절 · ${DISCONNECT_REASON_LABEL[vehicle.telemetrySubscription.disconnectReason]}`
-                        : "비활성"
-                    : "-"
-                }
-              />
-              <InfoField
-                label="단절 시각"
+                label="연동 끔 시각"
                 value={formatDateTime(vehicle.telemetrySubscription?.disconnectedAt ?? null)}
               />
+            </div>
+
+            <div className="mt-6 rounded-xl border border-gray-100 dark:border-gray-800">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                onClick={() => setTechDetailsExpanded((open) => !open)}
+                aria-expanded={techDetailsExpanded}
+              >
+                <span className="text-sm font-semibold text-gray-800 dark:text-white/90">
+                  기술 상세
+                </span>
+                <span className="text-theme-sm text-brand-500">
+                  {techDetailsExpanded ? "접기" : "펼치기"}
+                </span>
+              </button>
+              {techDetailsExpanded ? (
+                <div className="space-y-3 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+                  <InfoField label="lifecycle" value={lifecycle ?? "-"} />
+                  <InfoField
+                    label="configSynced"
+                    value={
+                      vehicle.telemetrySubscription
+                        ? String(vehicle.telemetrySubscription.configSynced)
+                        : "-"
+                    }
+                  />
+                  <InfoField
+                    label="configCheckedAt"
+                    value={formatDateTime(
+                      vehicle.telemetrySubscription?.configCheckedAt ?? null,
+                    )}
+                  />
+                  <InfoField
+                    label="telemetryConfigSyncedAt"
+                    value={formatDateTime(vehicle.syncState?.telemetryConfigSyncedAt ?? null)}
+                  />
+                  <InfoField
+                    label="lastRestSyncReason"
+                    value={vehicle.freshness.lastRestSyncReason ?? "-"}
+                  />
+                  <InfoField
+                    label="telemetrySource"
+                    value={vehicle.freshness.telemetrySource ?? "-"}
+                  />
+                  <InfoField
+                    label="isAsleepInferred"
+                    value={snapshot?.isAsleepInferred == null ? "-" : String(snapshot.isAsleepInferred)}
+                  />
+                  <InfoField label="VIN" value={vehicle.oemVehicleId ?? "-"} />
+                  <InfoField label="provider" value={data.provider} />
+                </div>
+              ) : null}
             </div>
 
             <div className="mt-6 rounded-xl border border-gray-100 dark:border-gray-800">
@@ -996,18 +1152,18 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                 <div className="space-y-3 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
                   {!hasOpsErrors ? (
                     <p className="text-theme-sm text-gray-500">
-                      저장된 Baseline/구독 오류가 없습니다.
+                      저장된 제원 수집/구독 오류가 없습니다.
                     </p>
                   ) : null}
                   {baselineLastError ? (
                     <div>
-                      <p className="text-theme-xs font-medium text-gray-500">baselineLastError</p>
+                      <p className="text-theme-xs font-medium text-gray-500">제원·상태 수집 오류</p>
                       <p className="mt-1 break-all text-theme-sm text-gray-700 dark:text-gray-300">
                         {baselineLastError}
                       </p>
                       {vehicle.syncState?.baselineCompletedAt ? (
                         <p className="mt-1 text-theme-xs text-gray-400">
-                          이후 Baseline 완료:{" "}
+                          이후 수집 완료:{" "}
                           {formatRelativeTime(vehicle.syncState.baselineCompletedAt)}
                         </p>
                       ) : null}
@@ -1015,9 +1171,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   ) : null}
                   {subscriptionLastError ? (
                     <div>
-                      <p className="text-theme-xs font-medium text-gray-500">
-                        subscription.lastError
-                      </p>
+                      <p className="text-theme-xs font-medium text-gray-500">구독 오류</p>
                       <p className="mt-1 break-all text-theme-sm text-gray-700 dark:text-gray-300">
                         {subscriptionLastError}
                       </p>
@@ -1029,7 +1183,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
           </div>
         </div>
 
-        {/* B + C Situation / Location */}
+        {/* 배터리 · 잠금 상세 */}
         <div className="grid gap-6 xl:grid-cols-2">
           <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
             <h4 className="mb-6 text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -1069,59 +1223,24 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
-            <h4 className="mb-6 text-lg font-semibold text-gray-800 dark:text-white/90">
-              현재 위치
-            </h4>
-            {mapVehicle.length > 0 ? (
-              <>
-                <VehicleMap
-                  vehicles={mapVehicle}
-                  selectedId={vehicle.id}
-                  height={280}
-                  centerOnSelected
-                />
-                <p className="mt-2 text-theme-xs text-gray-400">
-                  {formatLocationSummary(snapshot?.latitude, snapshot?.longitude)}
-                </p>
-              </>
-            ) : (
-              <div className="flex min-h-[280px] flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center dark:border-gray-700 dark:bg-white/[0.02]">
-                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  위치 데이터 없음
-                </p>
-                <p className="mt-2 max-w-sm text-theme-sm text-gray-500 dark:text-gray-400">
-                  위도·경도가 없어 지도를 표시하지 않습니다. 추정 좌표는 사용하지 않습니다.
-                  Telemetry에 Location이 구독되어 있으며, 취침·공백 시 null이 유지됩니다. 깨어난 뒤
-                  스트림 또는 Baseline으로 갱신하세요.
-                </p>
-                {asleepInferred ? (
-                  <p className="mt-3 text-theme-xs text-gray-400">
-                    현재 상태: 취침(추론) · 깨어난 뒤 Location 수신을 확인하세요.
-                  </p>
-                ) : null}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* D Security + Climate */}
-        <div className="grid gap-6 xl:grid-cols-2">
           <div
             id="vehicle-security"
             className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6"
           >
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                잠금 · 개폐
+                문 · 창문 상세
               </h4>
               {issueTags.length > 0 ? (
                 <span className="text-theme-xs text-gray-500">
-                  요약 이슈 {issueTags.length}건 (상세는 아래·이벤트)
+                  요약 이슈 {issueTags.length}건
                 </span>
               ) : null}
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
+            <p className="mb-4 text-theme-xs text-gray-500 dark:text-gray-400">
+              잠금·문(종합)·트렁크·공조는 상단 퀵타일을 보세요.
+            </p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {securityTiles.map((tile) => (
                 <div
                   key={tile.key}
@@ -1131,9 +1250,6 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   <p className="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">
                     {tile.value}
                   </p>
-                  {tile.hint ? (
-                    <p className="mt-1 text-[11px] text-gray-400 dark:text-gray-500">{tile.hint}</p>
-                  ) : null}
                 </div>
               ))}
             </div>
@@ -1155,86 +1271,6 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               </div>
             ) : null}
           </div>
-
-          <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
-            <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-              공조 · 온도
-            </h4>
-            <p className="mb-4 text-theme-xs text-gray-500 dark:text-gray-400">
-              출처 힌트: {climateSourceHint}
-            </p>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <InfoField
-                label="공조"
-                value={snapshot?.climateOn == null ? "-" : snapshot.climateOn ? "ON" : "OFF"}
-              />
-              <InfoField label="실내" value={formatTempC(snapshot?.insideTempC ?? null)} />
-              <InfoField label="실외" value={formatTempC(snapshot?.outsideTempC ?? null)} />
-            </div>
-          </div>
-        </div>
-
-        {tpms ? (
-          <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
-            <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">TPMS</h4>
-            <p
-              className="mb-4 text-theme-xs text-gray-500 dark:text-gray-400"
-              title={formatDateTime(tpmsSourceAt)}
-            >
-              출처 힌트: {tpmsSourceHint}. Telemetry `TpmsPressure*` 구독 후 재연결 시 실시간
-              갱신됩니다(미재구독이면 REST Baseline 값 유지).
-            </p>
-            <TpmsDiagram
-              frontLeft={tpms.fl}
-              frontRight={tpms.fr}
-              rearLeft={tpms.rl}
-              rearRight={tpms.rr}
-            />
-          </div>
-        ) : null}
-
-        <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
-          <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-            인근 충전소
-          </h4>
-          <p className="mb-4 text-theme-xs text-gray-500 dark:text-gray-400">
-            수집 시점 차량 위치 기준입니다. 출발지에서 멀어지면 목록을 비우고, 주차(P)·ONLINE·쿨다운
-            후 다시 조회합니다.
-          </p>
-          {snapshot?.nearbyChargingMeta?.capturedAt ? (
-            <p className="mb-3 text-theme-xs text-gray-500 dark:text-gray-400">
-              수집 지점 기준 · {formatRelativeTime(snapshot.nearbyChargingMeta.capturedAt)}
-              {snapshot.nearbyChargingMeta.capturedAt
-                ? ` (${formatDateTime(snapshot.nearbyChargingMeta.capturedAt)})`
-                : ""}
-            </p>
-          ) : null}
-          {snapshot?.nearbyChargingSites && snapshot.nearbyChargingSites.length > 0 ? (
-            <ul className="space-y-2">
-              {snapshot.nearbyChargingSites.map((site) => (
-                <li
-                  key={`${site.name}-${site.distanceKm}`}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 px-4 py-3 dark:border-gray-800"
-                >
-                  <span className="text-theme-sm font-medium text-gray-800 dark:text-white/90">
-                    {site.name}
-                  </span>
-                  <span className="text-theme-xs text-gray-500">
-                    {site.distanceKm.toLocaleString("ko-KR")} km
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="rounded-xl border border-dashed border-gray-200 px-4 py-6 dark:border-gray-700">
-              <p className="text-theme-sm text-gray-600 dark:text-gray-300">
-                주행 중 — 주차 후 갱신
-              </p>
-              <p className="mt-1 text-theme-xs text-gray-400">
-                또는 차량이 깨어 있을 때 「제원 재동기화」(Baseline)로 갱신할 수 있습니다.
-              </p>
-            </div>
-          )}
         </div>
 
         <div id="vehicle-events" className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
@@ -1300,11 +1336,11 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
         className="max-w-lg p-6"
       >
         <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">
-          Telemetry 연동 끊기
+          실시간 연동 끄기
         </h3>
         <p className="text-theme-sm text-gray-600 dark:text-gray-300">
-          이 차량의 <strong>실시간 Telemetry 수신이 중지</strong>됩니다. Virtual Key는 자동
-          삭제되지 않습니다. 과금·프라이버시 목적의 구독 해지에 가깝습니다.
+          이 차량의 <strong>실시간 수신이 중지</strong>됩니다. 차량 키는 자동 삭제되지 않습니다.
+          과금·프라이버시 목적의 연동 해지에 가깝습니다.
         </p>
         <div className="mt-6 flex flex-wrap justify-end gap-2">
           <Button
@@ -1320,7 +1356,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
             onClick={() => void handleDisconnectTelemetry()}
             disabled={isDisconnecting}
           >
-            {isDisconnecting ? "해제 중..." : "연동 끊기"}
+            {isDisconnecting ? "끄는 중..." : "연동 끄기"}
           </Button>
         </div>
       </Modal>
@@ -1331,10 +1367,10 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
         className="max-w-lg p-6"
       >
         <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">
-          Telemetry 연동 해제 완료
+          실시간 연동 끔 완료
         </h3>
         <p className="text-theme-sm text-gray-600 dark:text-gray-300">
-          보리차 FMS와의 Telemetry 연동이 해제되었습니다. 완벽한 보안을 위해 Tesla 모바일 앱
+          보리차 FMS와의 실시간 연동이 해제되었습니다. 완벽한 보안을 위해 Tesla 모바일 앱
           또는 차량 화면의 <strong>안전</strong> 메뉴에서 <strong>bori-fleet Virtual Key</strong>를
           함께 삭제해 주세요.
         </p>
@@ -1354,7 +1390,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
           플릿에서 제거
         </h3>
         <p className="text-theme-sm text-gray-600 dark:text-gray-300">
-          목록에서 이 차량이 제거되며 Telemetry 구독도 해제됩니다. Virtual Key는 자동 삭제되지
+          목록에서 이 차량이 제거되며 실시간 구독도 해제됩니다. 차량 키는 자동 삭제되지
           않습니다.
         </p>
         <div className="mt-6 flex flex-wrap justify-end gap-2">

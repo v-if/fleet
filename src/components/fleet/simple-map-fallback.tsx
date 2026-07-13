@@ -14,6 +14,7 @@ type SimpleMapFallbackProps = {
   height?: number;
   hero?: boolean;
   reason?: "no_key" | "load_failed" | "no_coords";
+  hideSelectionCard?: boolean;
 };
 
 type PositionedMapVehicle = MapVehicle & {
@@ -42,6 +43,7 @@ export function SimpleMapFallback({
   height = 420,
   hero = false,
   reason = "no_key",
+  hideSelectionCard = false,
 }: SimpleMapFallbackProps) {
   const markers = useMemo(
     () =>
@@ -141,7 +143,7 @@ export function SimpleMapFallback({
           현재 차량에서 유효한 위치 좌표를 받지 못해 지도를 표시할 수 없습니다.
         </p>
       ) : null}
-      {selectedId ? (
+      {selectedId && !hideSelectionCard ? (
         <SelectedVehicleSummary vehicles={vehicles} selectedId={selectedId} />
       ) : null}
     </div>

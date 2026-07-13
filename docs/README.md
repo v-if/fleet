@@ -20,9 +20,12 @@
 | [requirements-tesla-api.md](./requirements-tesla-api.md) | 테슬라 Fleet API 조회/제어 기능 정리, FMS 화면 적용안 | 데이터 연동·제어 기능 설계할 때 |
 | [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md) | 프론트 고도화 선행 — Fleet API 표시 항목 조사, **정적/동적** 분류 | 화면 고도화·제원/실시간 데이터 설계할 때 |
 | [requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md) | **차량 상세** 고도화 — 실차 DB 대조, 관리자 IA·표현·Phase (VD-1~3) | 상세 UI/UX 구현 전에 |
+| [requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md) | 차량 상세 **표시 문구·배치** — VD-UX2 (A~G 완료) | 카피·위치 카드 검수 |
+| [checklist-vehicle-detail-ui2.md](./checklist-vehicle-detail-ui2.md) | Phase UX2-A~G ✅ · 실차 수동 검수 남음 | UX2 구현·실차 검수할 때 |
 | [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md) | 차량 상세 UI Phase VD-1~3 체크리스트 | VD 구현·검수할 때 |
 | [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) | 실차 검증 **도어/트렁크·인근충전소 고착** 버그 원인·수정 요구 (BF-1~3) | 표시 데이터 버그 수정 전에 |
 | [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md) | Phase BF-A~E 구현 체크리스트 (미착수) | BF 구현·실차 검수할 때 |
+| [checklist-onboarding-e2e-reset.md](./checklist-onboarding-e2e-reset.md) | 온보딩 E2E용 DB 리셋 · 유지/삭제 · 사용자 할 일 | 첫 연동부터 재검증할 때 |
 | [requirements-tesla-api-bug-report-0712.md](./requirements-tesla-api-bug-report-0712.md) | 위 이슈의 **현장 관찰·가설 원문** | 재현 시나리오 참고 |
 | [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md) | Telemetry vs Fleet API **하이브리드 호출** — ASLEEP 금지·이벤트 주도 REST | 수집 전략·wake/쿨다운 설계할 때 |
 | [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | 하이브리드 **DB 설계** — Vehicle 제원 + VehicleSyncState + Snapshot 쓰기 경로 | 스키마·마이그레이션·sync 구현할 때 |
@@ -139,3 +142,14 @@
 | 2026-07-12 | bugfix §3.1.1 — Telemetry 구독×파서×merge 전수 조사 (Sentry/Gear/창문/TPMS 등) |
 | 2026-07-12 | checklist-tesla-api-bugfix-0712 — Phase BF-A~E 체크리스트 · development-checklist Phase BF |
 | 2026-07-12 | Phase BF 코드 완료 — DoorState/typed 파서·nearby·구독 확장 (실차 검수 잔여) |
+| 2026-07-12 | 온보딩 E2E 리셋 가이드 · `reset-fms-data.mjs` (--confirm/--unsubscribe) |
+| 2026-07-13 | requirements-vehicle-detail-ui2 — 상세 표시 문구(법인 관리자 언어) VD-UX2 |
+| 2026-07-13 | checklist-vehicle-detail-ui2 · development-checklist Phase UX2 (미착수) |
+| 2026-07-13 | Phase UX2 구현 완료 — 체크리스트·요구사항 상태 갱신 |
+| 2026-07-13 | UX2-D(UX2-9~11) 후속 — 툴바·상단 중복 권고를 체크리스트·관련 문서에 반영 |
+| 2026-07-13 | UX2-D 구현 완료 반영 |
+| 2026-07-13 | UX2-E(UX2-12~15) 구현 완료 반영 |
+| 2026-07-13 | UX2-F(UX2-16~20) 후속 — 상단 2열·퀵타일·TPMS 권고 반영 |
+| 2026-07-13 | UX2-F 구현 완료 반영 |
+| 2026-07-13 | UX2-G(UX2-21~22) 후속 — 위치 캡션·인근충전소 권고 반영 |
+| 2026-07-13 | UX2-G 구현 완료 — hideSelectionCard · 맵 아래 인근충전소 |

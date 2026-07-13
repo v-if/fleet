@@ -182,6 +182,28 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
     });
   }
 
+  // UX2-C: 스트림 수신이 확인되면 config 반영으로 간주 (Tesla synced GET 대기 없이)
+  if (!isDisconnected) {
+    const needsConfigMark =
+      vehicle.telemetrySubscription?.configSynced !== true ||
+      vehicle.syncState?.telemetryConfigSyncedAt == null;
+    if (needsConfigMark) {
+      await prisma.telemetrySubscription.updateMany({
+        where: { vehicleId },
+        data: {
+          configSynced: true,
+          configCheckedAt: fields.eventAt,
+          lastError: null,
+        },
+      });
+      if (vehicle.syncState?.telemetryConfigSyncedAt == null) {
+        await patchVehicleSyncState(vehicleId, {
+          telemetryConfigSyncedAt: fields.eventAt,
+        });
+      }
+    }
+  }
+
   if (wasAsleep && !isDisconnected) {
     await patchVehicleSyncState(vehicleId, {
       lastWakeDetectedAt: fields.eventAt,

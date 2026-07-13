@@ -68,7 +68,7 @@ const metrics: MetricConfig[] = [
   },
   {
     key: "telemetryDisconnected",
-    label: "Telemetry 단절",
+    label: "실시간 연동 꺼짐",
     icon: AlertIcon,
     badgeColor: "warning",
     href: "/vehicles?filter=telemetry_disconnected",

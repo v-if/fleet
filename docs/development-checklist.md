@@ -777,6 +777,21 @@
 - [x] **BF-E** UI 소스/시각 힌트 (P2) — PF/DR 펌웨어 보정은 보류
 - [ ] 실차 수동 검수 (체크리스트 BF-A~D) · Telemetry 재연결로 새 필드 반영
 
+### Phase UX2 차량 상세 표시 문구·표현 (P0~P1) — ✅ A~G 완료
+
+> 요구: [requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md)  
+> 체크리스트: [checklist-vehicle-detail-ui2.md](./checklist-vehicle-detail-ui2.md)  
+> 수용 VIN: `LRWYGCFJ7SC214742`  
+> A~G: 카피 · 툴바 · Summary · 상단 2열·퀵타일 · 위치 캡션·인근충전소.
+
+- [x] **UX2-A** 주차(절전)·마지막 신호 · configSynced 경고 완화 · 타임라인 카피 (P0)
+- [x] **UX2-B** 버튼·모달·출처·목록/지도 라벨 한글화 (P1)
+- [x] **UX2-C** 기술 상세 접기 · Telemetry 수신 시 configSynced 갱신 (P2)
+- [x] **UX2-D** 툴바 Provider·「갱신」미표시 · 헤더/제원 중복 제거 (UX2-9~11)
+- [x] **UX2-E** Summary SOC 프로그레스 · 충전/잠금 조건부 · 신선도 한 줄 (UX2-12~15)
+- [x] **UX2-F** 상단 2열·주행km·3×2 퀵타일·TPMS 이동 (UX2-16~20)
+- [x] **UX2-G** 위치 캡션 숨김 · 인근충전소 맵 아래 (UX2-21~22)
+- [ ] 실차 수동 검수 (체크리스트 UX2-A~G)
 ---
 
 ## Phase 5. 배포 및 데모 (M5)
@@ -876,4 +891,13 @@
 | 2026-07-12 | Phase VD-3 완료 — Snapshot charge/doors/trunk · nearby/service/alerts · UI |
 | 2026-07-12 | Phase BF 추가 — 실차 도어/트렁크·인근충전소 고착 ([requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md), [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md)) |
 | 2026-07-12 | Phase BF 코드 완료 — DoorState/typed 파서·nearby stale·구독 확장 · 실차 검수 잔여 |
+| 2026-07-13 | Phase UX2 추가 — 상세 표시 문구 ([requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md), [checklist-vehicle-detail-ui2.md](./checklist-vehicle-detail-ui2.md)) |
+| 2026-07-13 | Phase UX2 구현 완료 (A~C) — 실차 수동 검수 남음 |
+| 2026-07-13 | Phase UX2-D 후속 추가 — UX2-9~11 툴바·상단 중복 (미착수) |
+| 2026-07-13 | Phase UX2-D 구현 완료 (UX2-9~11) |
+| 2026-07-13 | Phase UX2-E 구현 완료 (UX2-12~15 Summary 밀도) |
+| 2026-07-13 | Phase UX2-F 후속 추가 — UX2-16~20 상단 2열·퀵타일 (미착수) |
+| 2026-07-13 | Phase UX2-F 구현 완료 (UX2-16~20) |
+| 2026-07-13 | Phase UX2-G 후속 추가 — UX2-21~22 위치·인근충전소 (미착수) |
+| 2026-07-13 | Phase UX2-G 구현 완료 (UX2-21~22) |
 

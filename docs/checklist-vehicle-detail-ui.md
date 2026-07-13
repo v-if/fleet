@@ -72,6 +72,13 @@
 > **알려진 후속 (VD-3 이후)**: 실차 검증에서 DoorState **파서/merge 미완**으로 주행 중 문·트렁크 고착, 인근 충전소 출발지 고착이 확인됨.  
 > → [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) · [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md) (Phase BF)
 
+> **후속 (표현·배치)**: UX2 A~G ✅ — [checklist-vehicle-detail-ui2.md](./checklist-vehicle-detail-ui2.md) · 실차 수동 검수 남음.  
+> → [requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md) · [checklist-vehicle-detail-ui2.md](./checklist-vehicle-detail-ui2.md)
+
+### VD-1 수동 검수 메모 (UX2 이후)
+
+UX2-A 적용 후 Summary는 `주차 (절전)`·`마지막 신호`로 바뀌며, 수신 중 configSynced 경고는 기본 숨김. VD-1 수동 검수 항목의 「취침(추론)」「configSynced false 시 경고」는 **UX2 체크리스트로 이관**.
+
 ---
 
 ## 문서 이력
@@ -83,3 +90,11 @@
 | 2026-07-12 | VD-3 완료 — charge/doors/trunk 스키마·nearby/service/alerts · UI |
 | 2026-07-12 | VD-3 후속 — 실차 표시 고착 → Phase BF 링크 |
 | 2026-07-12 | Phase BF 코드 완료 링크 |
+| 2026-07-13 | 후속 표현 Phase UX2 링크 ([checklist-vehicle-detail-ui2.md](./checklist-vehicle-detail-ui2.md)) |
+| 2026-07-13 | UX2-D(UX2-9~11) 후속 안내 |
+| 2026-07-13 | UX2-D 구현 완료 반영 |
+| 2026-07-13 | UX2-E 구현 완료 반영 |
+| 2026-07-13 | UX2-F 후속 안내 |
+| 2026-07-13 | UX2-F 구현 완료 반영 |
+| 2026-07-13 | UX2-G 후속 안내 |
+| 2026-07-13 | UX2-G 구현 완료 반영 |

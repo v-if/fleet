@@ -56,7 +56,7 @@ export function FleetAttentionPanel({
               이상 상태 차량
             </h3>
             <p className="text-theme-sm text-gray-500 dark:text-gray-400">
-              오프라인 {counts.offline} · 취침 {counts.asleep} · 주의 {counts.warning} · 이상 {counts.alert}
+              오프라인 {counts.offline} · 주차(절전) {counts.asleep} · 주의 {counts.warning} · 이상 {counts.alert}
             </p>
           </div>
           <Link
