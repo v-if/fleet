@@ -8,6 +8,7 @@ import { BatteryHealthGauge } from "@/components/fleet/battery-health-gauge";
 import { TpmsDiagram } from "@/components/fleet/tpms-diagram";
 import { VehicleMap } from "@/components/fleet/vehicle-map";
 import { BatteryProgressBar } from "@/components/fms/BatteryProgressBar";
+import { TelemetryValueMonitorCard } from "@/components/fms/TelemetryValueMonitorCard";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
@@ -644,6 +645,9 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
       </div>
 
       {/* UX2-F: 실시간 차량 정보 | 현재 위치 */}
+      {vehicle.telemetryValueMonitor ? (
+        <TelemetryValueMonitorCard lines={vehicle.telemetryValueMonitor.lines} />
+      ) : null}
       <div className="mb-6 grid gap-6 xl:grid-cols-2">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
           <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">

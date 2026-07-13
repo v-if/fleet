@@ -4,6 +4,8 @@ import { isIdleVehicle } from "@/lib/vehicle-status";
 import { getSyncMetadata } from "@/lib/vehicle-sync";
 import { getVehicleProviderName } from "@/lib/vehicle-providers";
 import { parseNearbyChargingJson } from "@/lib/tesla/nearby-charging";
+import { isTelemetryValueMonitorEnabled } from "@/lib/tesla/telemetry/config";
+import { listTelemetryMonitorLinesForVehicle } from "@/lib/tesla/telemetry/value-monitor";
 import type {
   VehicleDetailDto,
   VehicleFreshnessDto,
@@ -227,6 +229,14 @@ export async function getVehicleDetail(
 
   const base = toListItem(vehicle);
   const subscription = vehicle.telemetrySubscription;
+  const telemetryValueMonitor = isTelemetryValueMonitorEnabled()
+    ? {
+        lines: await listTelemetryMonitorLinesForVehicle({
+          vehicleId: vehicle.id,
+          vin: vehicle.oemVehicleId,
+        }),
+      }
+    : null;
 
   return {
     ...base,
@@ -252,5 +262,6 @@ export async function getVehicleDetail(
           lastError: subscription.lastError,
         }
       : null,
+    telemetryValueMonitor,
   };
 }

@@ -149,6 +149,17 @@ export type VehicleDetailDto = VehicleListItemDto & {
   updatedAt: string;
   events: VehicleEventDto[];
   telemetrySubscription: VehicleTelemetrySubscriptionDto | null;
+  /** 개발용 Telemetry 수신 모니터. flag OFF면 null */
+  telemetryValueMonitor: {
+    lines: Array<{
+      displayAt: string;
+      field: string;
+      value: string;
+      text: string;
+      ingressId: string;
+      occurredAt: string;
+    }>;
+  } | null;
 };
 
 export type VehicleDetailResponse = {

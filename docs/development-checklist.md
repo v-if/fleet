@@ -792,6 +792,15 @@
 - [x] **UX2-F** 상단 2열·주행km·3×2 퀵타일·TPMS 이동 (UX2-16~20)
 - [x] **UX2-G** 위치 캡션 숨김 · 인근충전소 맵 아래 (UX2-21~22)
 - [ ] 실차 수동 검수 (체크리스트 UX2-A~G)
+
+### Telemetry Value Monitor (개발) — 요구1 ✅
+
+> [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md)
+
+- [x] **요구1** 상세 「Telemetry 수신 로그 (개발)」— Ingress 펼친 줄 20 · KST · flag
+- [ ] **요구2** REST/Telemetry 값 색 구분 (미착수)
+- [ ] 실차 모니터 대조 검수
+
 ---
 
 ## Phase 5. 배포 및 데모 (M5)
@@ -900,4 +909,5 @@
 | 2026-07-13 | Phase UX2-F 구현 완료 (UX2-16~20) |
 | 2026-07-13 | Phase UX2-G 후속 추가 — UX2-21~22 위치·인근충전소 (미착수) |
 | 2026-07-13 | Phase UX2-G 구현 완료 (UX2-21~22) |
+| 2026-07-13 | Telemetry Value Monitor 요구1 구현 (Ingress 모니터 카드) |
 

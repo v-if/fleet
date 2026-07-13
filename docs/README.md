@@ -28,6 +28,7 @@
 | [checklist-onboarding-e2e-reset.md](./checklist-onboarding-e2e-reset.md) | 온보딩 E2E용 DB 리셋 · 유지/삭제 · 사용자 할 일 | 첫 연동부터 재검증할 때 |
 | [requirements-tesla-api-bug-report-0712.md](./requirements-tesla-api-bug-report-0712.md) | 위 이슈의 **현장 관찰·가설 원문** | 재현 시나리오 참고 |
 | [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md) | Telemetry vs Fleet API **하이브리드 호출** — ASLEEP 금지·이벤트 주도 REST | 수집 전략·wake/쿨다운 설계할 때 |
+| [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md) | 상세 **Telemetry 수신 로그(개발)** — 요구1 ✅ · 요구2 미착수 | 수신·매핑 검증 UI |
 | [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | 하이브리드 **DB 설계** — Vehicle 제원 + VehicleSyncState + Snapshot 쓰기 경로 | 스키마·마이그레이션·sync 구현할 때 |
 | [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | Phase 4.4 구현 체크리스트 (A~E) | 하이브리드 데이터 작업 진척·완료 확인 |
 | [handoff-phase44-to-fleet-telemetry.md](./handoff-phase44-to-fleet-telemetry.md) | Phase 4.4 → **Telemetry 서버 전달 사항** (배포 불필요·인지/선택 과제) | Telemetry 담당에 공유·이슈 붙일 때 |
@@ -153,3 +154,4 @@
 | 2026-07-13 | UX2-F 구현 완료 반영 |
 | 2026-07-13 | UX2-G(UX2-21~22) 후속 — 위치 캡션·인근충전소 권고 반영 |
 | 2026-07-13 | UX2-G 구현 완료 — hideSelectionCard · 맵 아래 인근충전소 |
+| 2026-07-13 | Telemetry value-monitor 요구1 — 상세 수신 로그(개발) |

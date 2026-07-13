@@ -130,3 +130,21 @@ export function isBaselineOnReadyEnabled(): boolean {
   }
   return true;
 }
+
+/**
+ * 차량 상세 Telemetry payload 모니터(개발용).
+ * `NEXT_PUBLIC_TELEMETRY_VALUE_MONITOR` / `TELEMETRY_VALUE_MONITOR`
+ * — true/1 강제 ON, false/0 강제 OFF, 미설정 시 non-production만 ON.
+ */
+export function isTelemetryValueMonitorEnabled(): boolean {
+  const value =
+    process.env.NEXT_PUBLIC_TELEMETRY_VALUE_MONITOR?.trim() ||
+    process.env.TELEMETRY_VALUE_MONITOR?.trim();
+  if (value === "true" || value === "1") {
+    return true;
+  }
+  if (value === "false" || value === "0") {
+    return false;
+  }
+  return process.env.NODE_ENV !== "production";
+}
