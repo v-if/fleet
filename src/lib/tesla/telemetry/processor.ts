@@ -495,7 +495,8 @@ export async function inferAsleepVehicles() {
         telemetrySource: snapshot.telemetrySource,
         isAsleepInferred: true,
         sleepInferredAt: new Date(),
-        lastUpdatedAt: snapshot.lastUpdatedAt,
+        // AS-4: 최신 Snapshot으로 선택되도록 now (신선도 문구는 lastTelemetryAt/sleepInferredAt)
+        lastUpdatedAt: new Date(),
       },
     });
     updated += 1;

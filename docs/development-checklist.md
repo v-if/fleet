@@ -819,6 +819,27 @@
 - [x] **CC-D** 완속/급속 (`chargingPowerKind`)
 - [ ] `prisma migrate` · 실차 충전 세션 수동 검수
 
+### Phase CI 차체·TPMS 통합 다이어그램 — ✅ A~D
+
+> [requirements-car-info-card.md](./requirements-car-info-card.md) · [checklist-car-info-card.md](./checklist-car-info-card.md) · [sample-html/vehicle-sample.html](./sample-html/vehicle-sample.html)
+
+- [x] **CI-A** 「타이어 · 차체」제목 · PSI 다이어그램
+- [x] **CI-B** (중간) 퀵타일 4칸 — **CI-D로 대체**
+- [x] **CI-C** sample HTML — 글래스 루프 차체 · 측면 타이어바
+- [x] **CI-D** 3×2: 잠금·변속·감시모드·공조·실내·실외 · 다이어그램에서 온도·변속 제거
+- [ ] **CI-E** §10 개선 (개폐 시인성·타일 강조·신선도 등) — 미착수
+- [ ] 실차 수동 검수
+
+### Phase AS 주차(절전)/ONLINE 표시 정합 — Hobby 안1 ✅ · Pro 안2 보류
+
+> [requirements-vehicle-asleep-status.md](./requirements-vehicle-asleep-status.md) · [checklist-vehicle-asleep-status.md](./checklist-vehicle-asleep-status.md)
+
+- [x] **AS-4** ASLEEP `lastUpdatedAt: now`
+- [x] **AS-H** Hobby 안1 — 목록·상세 GET `inferAsleepVehicles`
+- [x] **AS-A** `vercel.json` Cron 준비 (Hobby 운영 비의존 · **Pro 보류**)
+- [ ] **AS-B** Pro — Cron 실가동 후 GET infer 제거
+- [ ] **AS-C** 실차 검수 (Hobby=안1 기준)
+
 ---
 
 ## Phase 5. 배포 및 데모 (M5)
@@ -931,4 +952,12 @@
 | 2026-07-14 | Phase MM2-A~B 구현 — Snapshot `shiftState` |
 | 2026-07-14 | Phase CC-A~B 구현 — 충전 서브카드 |
 | 2026-07-14 | Phase CC-D 구현 — chargingPowerKind 완속/급속 |
+| 2026-07-14 | Phase CI-A~B 구현 — 타이어·차체 다이어그램 · 퀵타일 4칸 |
+| 2026-07-14 | Phase CI-C 구현 — vehicle-sample.html 차체·타이어 고도화 |
+| 2026-07-14 | Phase CI-D 구현 — 3×2 퀵타일(잠금·감시모드·공조·변속·실내·실외) |
+| 2026-07-14 | CI-D 순서 변경 — 잠금·변속·감시모드·공조·실내·실외 |
+| 2026-07-14 | CI §10 카드 평가 · CI-E 개선 후보 |
+| 2026-07-15 | Phase AS 요구 — 목록/상세 절전 불일치 · 안 2 Cron SoT (미착수) |
+| 2026-07-15 | Phase AS-A~B 구현 — vercel.json Cron · lastUpdatedAt · 목록 infer 제거 |
+| 2026-07-15 | Phase AS — Hobby 안1 채택 · Pro Cron 보류 · 상세 GET infer |
 

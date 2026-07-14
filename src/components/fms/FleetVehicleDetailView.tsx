@@ -196,7 +196,6 @@ function buildSecurityTiles(vehicle: VehicleDetailDto): SecurityTile[] {
       { key: "pr", label: "우측 후", value: "—", tone: "muted" },
       { key: "windows", label: "창문", value: "—", tone: "muted" },
       { key: "frunk", label: "프렁크", value: "—", tone: "muted" },
-      { key: "sentry", label: "센트리", value: "—", tone: "muted" },
     ];
   }
 
@@ -205,7 +204,7 @@ function buildSecurityTiles(vehicle: VehicleDetailDto): SecurityTile[] {
   const openTone = (value: boolean | null | undefined): SecurityTile["tone"] =>
     value ? "warning" : value == null ? "muted" : "ok";
 
-  // UX2-20: 잠금·문종합·트렁크는 상단 퀵타일로 이동 — 여기엔 문 상세·창문·프렁크·센트리만
+  // CI-D: 잠금·감시모드는 상단 퀵타일 — 여기엔 문 상세·창문·프렁크만
   return [
     {
       key: "df",
@@ -243,33 +242,33 @@ function buildSecurityTiles(vehicle: VehicleDetailDto): SecurityTile[] {
       value: openLabel(snapshot.frontTrunkOpen),
       tone: openTone(snapshot.frontTrunkOpen),
     },
-    {
-      key: "sentry",
-      label: "센트리",
-      value: snapshot.sentryMode == null ? "—" : snapshot.sentryMode ? "활성" : "비활성",
-      tone: snapshot.sentryMode ? "info" : snapshot.sentryMode == null ? "muted" : "ok",
-    },
   ];
 }
 
-/** UX2-18: 상단 3×2 퀵타일 */
+const SHIFT_TILE_KO: Record<string, string> = {
+  P: "주차",
+  R: "후진",
+  N: "중립",
+  D: "주행",
+};
+
+/** CI-D: 3×2 퀵타일 — 잠금 · 변속 · 감시모드 · 공조 · 실내 · 실외 */
 function buildQuickStatusTiles(vehicle: VehicleDetailDto): SecurityTile[] {
   const snapshot = vehicle.snapshot;
-  const openLabel = (value: boolean | null | undefined) =>
-    value == null ? "—" : value ? "개방" : "닫힘";
-  const openTone = (value: boolean | null | undefined): SecurityTile["tone"] =>
-    value ? "warning" : value == null ? "muted" : "ok";
 
   if (!snapshot) {
     return [
       { key: "locked", label: "잠금", value: "—", tone: "muted" },
-      { key: "doors", label: "문(종합)", value: "—", tone: "muted" },
-      { key: "trunk", label: "트렁크", value: "—", tone: "muted" },
+      { key: "shift", label: "변속", value: "—", tone: "muted" },
+      { key: "sentry", label: "감시모드", value: "—", tone: "muted" },
       { key: "climate", label: "공조", value: "—", tone: "muted" },
       { key: "inside", label: "실내", value: "—", tone: "muted" },
       { key: "outside", label: "실외", value: "—", tone: "muted" },
     ];
   }
+
+  const shiftRaw = snapshot.shiftState?.trim().toUpperCase() ?? "";
+  const shiftToken = SHIFT_TILE_KO[shiftRaw] ? shiftRaw : shiftRaw ? shiftRaw.slice(0, 1) : "—";
 
   return [
     {
@@ -279,16 +278,16 @@ function buildQuickStatusTiles(vehicle: VehicleDetailDto): SecurityTile[] {
       tone: snapshot.locked === false ? "warning" : snapshot.locked == null ? "muted" : "ok",
     },
     {
-      key: "doors",
-      label: "문(종합)",
-      value: openLabel(snapshot.doorsOpen),
-      tone: openTone(snapshot.doorsOpen),
+      key: "shift",
+      label: "변속",
+      value: shiftToken,
+      tone: shiftToken === "—" ? "muted" : "ok",
     },
     {
-      key: "trunk",
-      label: "트렁크",
-      value: openLabel(snapshot.rearTrunkOpen),
-      tone: openTone(snapshot.rearTrunkOpen),
+      key: "sentry",
+      label: "감시모드",
+      value: snapshot.sentryMode == null ? "—" : snapshot.sentryMode ? "활성" : "비활성",
+      tone: snapshot.sentryMode ? "info" : snapshot.sentryMode == null ? "muted" : "ok",
     },
     {
       key: "climate",
@@ -621,6 +620,11 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
         rr: convertTeslaTpmsToPsi(snapshot.tpmsRearRight, data.provider),
       }
     : null;
+  /** CI: TPMS 값이 하나라도 있으면 「타이어 · 차체」구역 표시 */
+  const showBodyDiagram = Boolean(
+    tpms &&
+      (tpms.fl != null || tpms.fr != null || tpms.rl != null || tpms.rr != null),
+  );
 
   return (
     <>
@@ -716,16 +720,25 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                 className={`rounded-xl border px-3 py-3 sm:px-4 ${securityToneClass(tile.tone)}`}
               >
                 <p className="text-xs text-gray-500 dark:text-gray-400">{tile.label}</p>
-                <p className="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">
+                <p
+                  className="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90"
+                  title={
+                    tile.key === "shift" && tile.value !== "—"
+                      ? SHIFT_TILE_KO[tile.value]
+                      : undefined
+                  }
+                >
                   {tile.value}
                 </p>
               </div>
             ))}
           </div>
 
-          {tpms ? (
+          {showBodyDiagram && tpms ? (
             <div className="mt-5 border-t border-gray-100 pt-5 dark:border-gray-800">
-              <h5 className="mb-2 text-sm font-semibold text-gray-800 dark:text-white/90">TPMS</h5>
+              <h5 className="mb-2 text-sm font-semibold text-gray-800 dark:text-white/90">
+                타이어 · 차체
+              </h5>
               <p
                 className="mb-3 text-theme-xs text-gray-500 dark:text-gray-400"
                 title={formatDateTime(tpmsSourceAt)}
@@ -1211,10 +1224,6 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               <InfoField
                 label="시동"
                 value={snapshot?.ignitionOn == null ? "-" : snapshot.ignitionOn ? "ON" : "OFF"}
-              />
-              <InfoField
-                label="변속"
-                value={snapshot?.shiftState ?? "-"}
               />
               <InfoField
                 label="정비"

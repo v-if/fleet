@@ -16,6 +16,11 @@ import {
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Phase AS — Telemetry 후처리 + ASLEEP/ONLINE 추론 SoT.
+ * Vercel Cron: GET 이 경로를 2분마다 호출 (vercel.json).
+ * 인증: Authorization Bearer = TESLA_SYNC_CRON_SECRET 또는 CRON_SECRET.
+ */
 function isAuthorized(request: Request) {
   const secret = getSyncCronSecret();
   if (!secret) {

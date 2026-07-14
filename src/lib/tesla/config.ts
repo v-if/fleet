@@ -85,5 +85,10 @@ export function getSyncPollIntervalMs(): number {
 }
 
 export function getSyncCronSecret(): string | null {
-  return process.env.TESLA_SYNC_CRON_SECRET ?? null;
+  // Vercel Cron은 CRON_SECRET 사용 시 Authorization: Bearer 자동 주입
+  const value =
+    process.env.TESLA_SYNC_CRON_SECRET?.trim() ||
+    process.env.CRON_SECRET?.trim() ||
+    null;
+  return value ? value : null;
 }

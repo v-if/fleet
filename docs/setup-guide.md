@@ -350,7 +350,8 @@ pnpm telemetry:check
 |------|-----|
 | Webhook 수신 | `POST /api/tesla/telemetry` |
 | 인증(선택) | `Authorization: Bearer $TESLA_TELEMETRY_WEBHOOK_SECRET` 또는 `x-telemetry-secret` 헤더 |
-| 후처리 job | `POST /api/internal/telemetry/process` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET` |
+| 후처리 job | `GET`/`POST /api/internal/telemetry/process` + `Authorization: Bearer $TESLA_SYNC_CRON_SECRET` (또는 Vercel `CRON_SECRET`) |
+| ASLEEP SoT (Phase AS) | **Hobby: 안1** — 목록·상세 GET에서 `inferAsleepVehicles`. **Pro: 안2** Cron 2분 → process (`vercel.json` 준비·보류) |
 | 구독 해제 | unlink/disconnect 시 `DELETE /api/1/vehicles/{vin}/fleet_telemetry_config` |
 | 구독 재등록 | reconnect → Vehicle Command Proxy `POST .../fleet_telemetry_config` |
 | Command Proxy (Fly) | **`https://bori-cmd-proxy.fly.dev`** — [handoff-fms.md](./handoff-fms.md) |
@@ -790,8 +791,39 @@ vercel
 ```
 - Vercel 대시보드에 `.env.local`의 값들을 Environment Variables로 등록 (Service Role 키는 서버 전용)
 
-### 7.2 Vercel Cron
-- `vercel.json`에 cron 설정 추가 → 주기적 데이터 동기화 API 호출
+### 7.2 Vercel Cron (Phase AS · Telemetry 후처리)
+
+`vercel.json`:
+
+```json
+{
+  "crons": [
+    {
+      "path": "/api/internal/telemetry/process",
+      "schedule": "*/2 * * * *"
+    }
+  ]
+}
+```
+
+| 항목 | 내용 |
+|------|------|
+| 역할 | pending Telemetry ingress 처리 + **`inferAsleepVehicles`** (주차 절전 / ONLINE SoT) |
+| 주기 | 2분 (`TESLA_TELEMETRY_STALE_AFTER_SECONDS` 기본 300초보다 짧음) |
+| 인증 | Production에 `CRON_SECRET` 또는 `TESLA_SYNC_CRON_SECRET` 설정(둘 다 쓰면 **동일 값** 권장). Vercel Cron은 `CRON_SECRET` 있으면 Bearer 자동 주입 |
+| 호출 | Cron은 **GET** — route의 `GET`이 `POST`와 동일 처리 |
+| 확인 | Vercel Dashboard → Project → Cron Jobs · 응답 JSON `asleepUpdated` |
+| 플랜 | **Hobby:** Cron 비의존(안1). **Pro:** 2분 Cron SoT(안2) |
+| Hobby 현행 | 목록·상세 GET에서 `inferAsleepVehicles` — [requirements-vehicle-asleep-status.md](./requirements-vehicle-asleep-status.md) §3.1 |
+
+수동 스모크 (Pro Cron / 장애 복구):
+
+```powershell
+$h = @{ Authorization = "Bearer $env:TESLA_SYNC_CRON_SECRET" }
+Invoke-RestMethod -Method GET "https://bori-fleet.shop/api/internal/telemetry/process" -Headers $h
+```
+
+> Hobby에서는 Cron에 의존하지 않는다. Pro 전환 시에만 GET infer를 제거하고 Cron Jobs를 모니터링한다.
 
 ### 7.3 Supabase production
 - production 프로젝트/스키마 분리, 접근 정책(RLS) 점검
@@ -866,3 +898,5 @@ vercel
 | 2026-07-10 | §5.4.1.3 P0 사용자 작업 — secret 동기화·화면 리허설·Fly 상태 점검 |
 | 2026-07-11 | Phase 4.4 — `TESLA_REST_WAKE_COOLDOWN_MINUTES`/`TESLA_BASELINE_ON_READY` env · §5.4.2 하이브리드 온보딩 |
 | 2026-07-12 | §5.4.1 Command Proxy Production — `bori-cmd-proxy.fly.dev` · [handoff-fms.md](./handoff-fms.md) |
+| 2026-07-15 | §7.2 Vercel Cron — Telemetry process / ASLEEP SoT (Phase AS) |
+| 2026-07-15 | §7.2 — Hobby 안1 · Pro Cron 보류 명시 |

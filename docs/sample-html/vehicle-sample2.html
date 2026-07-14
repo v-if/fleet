@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FMS · 타이어 · 차체 (sample2)</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    :root {
+      --fms-ink: #1f2937;
+      --fms-ok: #059669;
+      --fms-warn: #d97706;
+      --fms-tire: #1c1f26;
+    }
+    body {
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR",
+        -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, #eef2f7 0%, transparent 55%),
+        #f3f4f6;
+    }
+    .tpms-card {
+      box-shadow:
+        0 1px 2px rgba(15, 23, 42, 0.04),
+        0 12px 28px -16px rgba(15, 23, 42, 0.12);
+    }
+    .vehicle-shell {
+      filter: drop-shadow(0 10px 14px rgba(15, 23, 42, 0.08));
+    }
+    .tire-block {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 2px 4px rgba(0, 0, 0, 0.35);
+    }
+    .tire-block.is-warn {
+      animation: tire-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes tire-pulse {
+      0%,
+      100% {
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          0 0 0 0 rgba(217, 119, 6, 0);
+      }
+      50% {
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          0 0 0 3px rgba(217, 119, 6, 0.22);
+      }
+    }
+    .reading-ok {
+      color: var(--fms-ink);
+    }
+    .reading-warn {
+      color: var(--fms-warn);
+    }
+    .badge-ok {
+      color: var(--fms-ok);
+      background: #ecfdf5;
+    }
+    .badge-warn {
+      color: var(--fms-warn);
+      background: #fffbeb;
+    }
+  </style>
+</head>
+<body class="flex min-h-screen items-center justify-center p-4 sm:p-8">
+
+  <!--
+    FMS 「실시간 차량 정보」> 「타이어 · 차체」샘플 v2
+    - sample1 대비: SVG 차체(미러·램프·도어·글래스), 관제용 수치·위치 라벨
+    - 원칙: 디테일은 실루엣에, 의사결정은 PSI · 정상/주의에
+  -->
+  <div class="tpms-card w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
+    <div class="border-t border-gray-100 pt-5">
+      <div class="mb-1 flex items-baseline justify-between gap-2">
+        <h5 class="text-sm font-semibold text-gray-800">타이어 · 차체</h5>
+        <span class="text-[11px] font-medium text-amber-600">주의 1</span>
+      </div>
+      <p class="mb-4 text-[11px] leading-relaxed text-gray-400" title="2026. 7. 14. 오후 8:32:26">
+        출처: 마지막 상세 조회 기준 · 35분 전
+      </p>
+
+      <div class="relative mx-auto w-full max-w-[340px] select-none py-2">
+        <p class="mb-3 text-center text-[11px] tracking-wide text-gray-400">
+          단위 PSI · 임계 미만 시 주의
+        </p>
+
+        <div class="relative mx-auto h-[280px] w-full">
+
+          <!-- 차체 SVG -->
+          <div class="vehicle-shell absolute top-1/2 left-1/2 w-[108px] -translate-x-1/2 -translate-y-1/2">
+            <svg
+              viewBox="0 0 120 280"
+              width="108"
+              height="252"
+              role="img"
+              aria-label="차량 탑뷰 실루엣"
+            >
+              <defs>
+                <linearGradient id="paintBody" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#d5d9e0" />
+                  <stop offset="45%" stop-color="#eef0f3" />
+                  <stop offset="100%" stop-color="#d2d6de" />
+                </linearGradient>
+                <linearGradient id="paintGlass" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#b8c4d1" stop-opacity="0.55" />
+                  <stop offset="55%" stop-color="#8fa0b3" stop-opacity="0.45" />
+                  <stop offset="100%" stop-color="#6d7f93" stop-opacity="0.35" />
+                </linearGradient>
+                <linearGradient id="paintRoof" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#a9b7c8" stop-opacity="0.5" />
+                  <stop offset="100%" stop-color="#7a8b9e" stop-opacity="0.38" />
+                </linearGradient>
+              </defs>
+
+              <!-- 사이드 미러 -->
+              <rect x="8" y="78" width="10" height="6" rx="2" fill="#9aa3af" />
+              <rect x="102" y="78" width="10" height="6" rx="2" fill="#9aa3af" />
+              <rect x="14" y="79" width="6" height="4" rx="1" fill="#cbd5e1" />
+              <rect x="100" y="79" width="6" height="4" rx="1" fill="#cbd5e1" />
+
+              <!-- 본체 EV 탑뷰 비율 -->
+              <path
+                d="M 28 18
+                   C 28 10, 36 4, 60 4
+                   C 84 4, 92 10, 92 18
+                   L 94 70
+                   L 96 200
+                   C 96 236, 88 262, 60 268
+                   C 32 262, 24 236, 24 200
+                   L 26 70
+                   Z"
+                fill="url(#paintBody)"
+                stroke="#b0b7c2"
+                stroke-width="1.25"
+              />
+
+              <!-- 보닛 라인 -->
+              <path
+                d="M 40 22 C 48 16, 72 16, 80 22"
+                fill="none"
+                stroke="#c5ccd6"
+                stroke-width="1"
+                stroke-linecap="round"
+              />
+              <path
+                d="M 44 36 L 76 36"
+                fill="none"
+                stroke="#d1d5db"
+                stroke-width="0.8"
+                opacity="0.9"
+              />
+
+              <!-- 헤드램프 -->
+              <path
+                d="M 32 28 C 34 22, 40 20, 44 24 L 42 32 Z"
+                fill="#f8fafc"
+                stroke="#cbd5e1"
+                stroke-width="0.6"
+                opacity="0.95"
+              />
+              <path
+                d="M 88 28 C 86 22, 80 20, 76 24 L 78 32 Z"
+                fill="#f8fafc"
+                stroke="#cbd5e1"
+                stroke-width="0.6"
+                opacity="0.95"
+              />
+
+              <!-- 앞유리 -->
+              <path
+                d="M 34 48
+                   C 40 42, 80 42, 86 48
+                   L 88 78
+                   C 80 84, 40 84, 32 78
+                   Z"
+                fill="url(#paintGlass)"
+                stroke="#94a3b8"
+                stroke-width="0.7"
+                opacity="0.95"
+              />
+              <path
+                d="M 36 52 L 84 52"
+                stroke="#e2e8f0"
+                stroke-width="0.6"
+                opacity="0.7"
+              />
+
+              <!-- 파노라마 글래스 루프 -->
+              <path
+                d="M 34 92
+                   L 86 92
+                   L 88 168
+                   C 80 176, 40 176, 32 168
+                   Z"
+                fill="url(#paintRoof)"
+                stroke="#94a3b8"
+                stroke-width="0.7"
+              />
+              <path
+                d="M 36 128 L 84 128"
+                stroke="#cbd5e1"
+                stroke-width="0.6"
+                opacity="0.55"
+              />
+
+              <!-- 도어 라인 · 핸들 힌트 -->
+              <path d="M 28 88 L 28 170" stroke="#a8b0bc" stroke-width="0.7" opacity="0.55" />
+              <path d="M 92 88 L 92 170" stroke="#a8b0bc" stroke-width="0.7" opacity="0.55" />
+              <path
+                d="M 30 130 L 34 130"
+                stroke="#9ca3af"
+                stroke-width="1.2"
+                stroke-linecap="round"
+                opacity="0.45"
+              />
+              <path
+                d="M 90 130 L 86 130"
+                stroke="#9ca3af"
+                stroke-width="1.2"
+                stroke-linecap="round"
+                opacity="0.45"
+              />
+
+              <!-- 리어 글래스 -->
+              <path
+                d="M 36 184
+                   C 44 192, 76 192, 84 184
+                   L 82 214
+                   C 74 222, 46 222, 38 214
+                   Z"
+                fill="url(#paintGlass)"
+                stroke="#94a3b8"
+                stroke-width="0.7"
+                opacity="0.9"
+              />
+
+              <!-- 테일램프 -->
+              <rect x="34" y="248" width="14" height="5" rx="1.5" fill="#f87171" opacity="0.75" />
+              <rect x="72" y="248" width="14" height="5" rx="1.5" fill="#f87171" opacity="0.75" />
+
+              <!-- 충전 포트 (우측 후방, subtle) -->
+              <rect x="90" y="198" width="3" height="10" rx="1" fill="#94a3b8" opacity="0.7" />
+
+              <!-- 전면 센서 -->
+              <ellipse cx="60" cy="14" rx="5" ry="2.5" fill="#94a3b8" opacity="0.35" />
+            </svg>
+          </div>
+
+          <!-- 전좌 -->
+          <div class="absolute top-[42px] left-0 flex w-[118px] items-center justify-end gap-2.5">
+            <div class="flex flex-col items-end gap-0.5">
+              <span class="text-[10px] text-gray-400">전좌</span>
+              <span class="reading-ok text-base font-bold tabular-nums leading-none">42</span>
+              <span class="badge-ok rounded px-1.5 py-0.5 text-[10px] font-semibold">정상</span>
+            </div>
+            <div
+              class="tire-block flex h-11 w-[15px] items-center justify-center rounded-[5px] border border-gray-700 bg-[var(--fms-tire)]"
+            >
+              <div class="h-7 w-[3px] rounded-sm bg-gray-500/70"></div>
+            </div>
+          </div>
+
+          <!-- 전우 -->
+          <div class="absolute top-[42px] right-0 flex w-[118px] items-center justify-start gap-2.5">
+            <div
+              class="tire-block flex h-11 w-[15px] items-center justify-center rounded-[5px] border border-gray-700 bg-[var(--fms-tire)]"
+            >
+              <div class="h-7 w-[3px] rounded-sm bg-gray-500/70"></div>
+            </div>
+            <div class="flex flex-col items-start gap-0.5">
+              <span class="text-[10px] text-gray-400">전우</span>
+              <span class="reading-ok text-base font-bold tabular-nums leading-none">42</span>
+              <span class="badge-ok rounded px-1.5 py-0.5 text-[10px] font-semibold">정상</span>
+            </div>
+          </div>
+
+          <!-- 후좌 (저압) -->
+          <div class="absolute bottom-[48px] left-0 flex w-[118px] items-center justify-end gap-2.5">
+            <div class="flex flex-col items-end gap-0.5">
+              <span class="text-[10px] text-gray-400">후좌</span>
+              <span class="reading-warn text-base font-bold tabular-nums leading-none">31</span>
+              <span class="badge-warn rounded px-1.5 py-0.5 text-[10px] font-semibold">주의</span>
+            </div>
+            <div
+              class="tire-block is-warn flex h-11 w-[15px] items-center justify-center rounded-[5px] border border-amber-500/90 bg-[var(--fms-tire)]"
+            >
+              <div class="h-7 w-[3px] rounded-sm bg-amber-400/70"></div>
+            </div>
+          </div>
+
+          <!-- 후우 -->
+          <div class="absolute bottom-[48px] right-0 flex w-[118px] items-center justify-start gap-2.5">
+            <div
+              class="tire-block flex h-11 w-[15px] items-center justify-center rounded-[5px] border border-gray-700 bg-[var(--fms-tire)]"
+            >
+              <div class="h-7 w-[3px] rounded-sm bg-gray-500/70"></div>
+            </div>
+            <div class="flex flex-col items-start gap-0.5">
+              <span class="text-[10px] text-gray-400">후우</span>
+              <span class="reading-ok text-base font-bold tabular-nums leading-none">41</span>
+              <span class="badge-ok rounded px-1.5 py-0.5 text-[10px] font-semibold">정상</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 관제 요약: 이상만 노출 -->
+        <div class="mt-1 flex items-start gap-2 rounded-xl border border-amber-100 bg-amber-50/70 px-3 py-2.5">
+          <span
+            class="mt-0.5 inline-block size-1.5 shrink-0 rounded-full bg-amber-500"
+            aria-hidden="true"
+          ></span>
+          <p class="text-[11px] leading-snug text-amber-900/80">
+            <span class="font-semibold">후좌 31 PSI</span>
+            — 권장 하한(35) 미만. 현장 점검 또는 재조회를 권장합니다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

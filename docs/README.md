@@ -23,6 +23,10 @@
 | [requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md) | 차량 상세 **표시 문구·배치** — VD-UX2 (A~G 완료) | 카피·위치 카드 검수 |
 | [requirements-charging-card.md](./requirements-charging-card.md) | 상세 「충전 중」서브카드 (CC-A~D ✅) — 완속/급속 포함 | 충전 UX · migrate·실차 검수 |
 | [checklist-charging-card.md](./checklist-charging-card.md) | Phase CC 체크리스트 · 실차 검수 남음 | CC 구현·검수 |
+| [requirements-car-info-card.md](./requirements-car-info-card.md) | 상세 3×2+TPMS (CI-A~D ✅) · **§10 카드 평가·CI-E 후보** | 차체·퀵타일 · 개선 검토 |
+| [checklist-car-info-card.md](./checklist-car-info-card.md) | Phase CI 체크리스트 · 실차 검수 남음 | CI 구현·검수 |
+| [requirements-vehicle-asleep-status.md](./requirements-vehicle-asleep-status.md) | 절전/ONLINE 정합 · **Hobby=안1** · **Pro Cron=보류** | 목록·상세 뱃지 |
+| [checklist-vehicle-asleep-status.md](./checklist-vehicle-asleep-status.md) | Phase AS-H ✅ · AS-B(Pro) 보류 · AS-C 검수 | AS 검수 |
 | [checklist-vehicle-detail-ui2.md](./checklist-vehicle-detail-ui2.md) | Phase UX2-A~G ✅ · 실차 수동 검수 남음 | UX2 구현·실차 검수할 때 |
 | [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md) | 차량 상세 UI Phase VD-1~3 체크리스트 | VD 구현·검수할 때 |
 | [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) | 실차 검증 **도어/트렁크·인근충전소 고착** 버그 원인·수정 요구 (BF-1~3) | 표시 데이터 버그 수정 전에 |
@@ -165,3 +169,12 @@
 | 2026-07-14 | Phase CC-A~B 구현 — ChargingSessionCard · checklist |
 | 2026-07-14 | charging-card §5.4 — 완속/급속 표시 요구 (CC-D 미착수) |
 | 2026-07-14 | Phase CC-D 구현 — chargingPowerKind · 완속/급속 UI |
+| 2026-07-14 | requirements-car-info-card — TPMS+온도+Gear 다이어그램 요구 (미착수) |
+| 2026-07-14 | Phase CI-A~B 구현 — 타이어·차체 다이어그램 · 퀵타일 4칸 |
+| 2026-07-14 | Phase CI-C 구현 — vehicle-sample.html 차체·타이어 고도화 |
+| 2026-07-14 | Phase CI-D 구현 — 3×2 퀵타일(잠금·감시모드·공조·변속·실내·실외) |
+| 2026-07-14 | CI-D 순서 변경 — 잠금·변속·감시모드·공조·실내·실외 |
+| 2026-07-14 | requirements-car-info-card §10 — 「실시간 차량 정보」카드 평가·개선안 |
+| 2026-07-15 | requirements-vehicle-asleep-status — 목록/상세 절전 불일치 · 안 2 요구 (미착수) |
+| 2026-07-15 | Phase AS-A~B 구현 — vercel Cron · lastUpdatedAt · 목록 GET infer 제거 |
+| 2026-07-15 | Phase AS — Hobby는 안1(목록·상세 infer) · 안2 Cron은 Pro 보류 |
