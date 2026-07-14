@@ -42,7 +42,7 @@
 
 | # | 항목 | 상태 | 비고 |
 |---|------|:----:|------|
-| 1 | `vercel.json` `*/2` → process | ✅ 커밋 | Hobby에서 2분 동작 **기대하지 않음** |
+| 1 | `vercel.json` cron | ☐ Pro 시 추가 | Hobby: **비움** (`*/2`면 배포 스킵) |
 | 2 | process endpoint · secret | ✅ | Pro에서 Jobs 확인 |
 | 3 | setup-guide §7.2 | ✅ | |
 

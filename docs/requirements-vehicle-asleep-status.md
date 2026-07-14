@@ -167,7 +167,7 @@
 - `src/app/api/vehicles/route.ts` — infer  
 - `src/app/api/vehicles/[id]/route.ts` — infer  
 - `processor.ts` — AS-4 `lastUpdatedAt`  
-- `vercel.json` — Pro용으로 유지(삭제 금지)
+- `vercel.json` — Pro용 cron은 **Hobby에서 `*/2` 넣으면 Git 배포가 조용히 스킵됨** → 현행 파일은 `{}`. Pro 전환 시 cron 재등록 (checklist AS-B)
 
 **Pro 전환 체크리스트 요지**  
 1. Production Cron Jobs 2분 확인  
@@ -182,3 +182,4 @@
 |------|------|
 | 2026-07-15 | 불일치 분석 · 안 2(+3) 요구 · AS-A~B 구현 |
 | 2026-07-15 | **Hobby → 안 1 채택** · **안 2(Cron) Pro까지 보류** · AS-H 반영 |
+| 2026-07-15 | Hobby `*/2` cron → Git 배포 스킵 확인 · `vercel.json` cron 제거 |

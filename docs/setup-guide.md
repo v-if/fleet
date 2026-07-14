@@ -791,9 +791,12 @@ vercel
 ```
 - Vercel 대시보드에 `.env.local`의 값들을 Environment Variables로 등록 (Service Role 키는 서버 전용)
 
-### 7.2 Vercel Cron (Phase AS · Telemetry 후처리)
+### 7.2 Vercel Cron (Phase AS · **Pro 전용**, Hobby 보류)
 
-`vercel.json`:
+> **주의 (Hobby):** `vercel.json`에 하루 1회를 넘는 cron(`*/2 * * * *` 등)이 있으면 **Git 푸시 배포가 생성되지 않고 조용히 스킵**될 수 있다.  
+> 현재 저장소 `vercel.json`은 cron 없이 `{}` — Hobby·안1 운영용. Pro 전환 시 아래 설정을 다시 넣는다.
+
+Pro용 예시 (`vercel.json`):
 
 ```json
 {
@@ -805,7 +808,6 @@ vercel
   ]
 }
 ```
-
 | 항목 | 내용 |
 |------|------|
 | 역할 | pending Telemetry ingress 처리 + **`inferAsleepVehicles`** (주차 절전 / ONLINE SoT) |
@@ -900,3 +902,4 @@ Invoke-RestMethod -Method GET "https://bori-fleet.shop/api/internal/telemetry/pr
 | 2026-07-12 | §5.4.1 Command Proxy Production — `bori-cmd-proxy.fly.dev` · [handoff-fms.md](./handoff-fms.md) |
 | 2026-07-15 | §7.2 Vercel Cron — Telemetry process / ASLEEP SoT (Phase AS) |
 | 2026-07-15 | §7.2 — Hobby 안1 · Pro Cron 보류 명시 |
+| 2026-07-15 | §7.2 — Hobby `*/2` cron이 Git 배포 스킵하는 이슈·vercel.json 비움 |
