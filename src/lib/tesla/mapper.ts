@@ -4,6 +4,7 @@ import type { ChargingStatus, EventType, ServiceStatus, VehicleStatus } from "@p
 import { createApiCallLog, createRequestId, sanitizeBody, sanitizeHeaders } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { buildDisplayModel } from "@/lib/tesla/display-model";
+import { normalizeShiftState } from "@/lib/tesla/shift-state";
 import { getValidTeslaAccessToken } from "./auth";
 import { getTeslaRegionConfig } from "./config";
 import type {
@@ -191,6 +192,11 @@ export function mapTeslaVehicleToSnapshot(
     status = status === "ONLINE" ? "WARNING" : status;
   }
 
+  const shiftState =
+    drive?.shift_state !== undefined && drive?.shift_state !== null
+      ? (normalizeShiftState(drive.shift_state) ?? null)
+      : null;
+
   return {
     plateNumber: derivePlateNumber(vin, data.display_name ?? listItem.display_name),
     model: deriveModel(data.vehicle_config),
@@ -204,7 +210,8 @@ export function mapTeslaVehicleToSnapshot(
     longitude,
     batteryPercent,
     rangeKm: rangeKm ? Math.round(rangeKm * 1.60934) : undefined,
-    ignitionOn: drive?.shift_state != null ? drive.shift_state !== "P" : null,
+    shiftState,
+    ignitionOn: shiftState != null ? shiftState !== "P" : null,
     status,
     chargingStatus: charge?.charging_state ? mapChargingStatus(charge.charging_state) : null,
     odometerKm: vehicle?.odometer ? Math.round(vehicle.odometer * 1.60934) : undefined,

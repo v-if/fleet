@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 
 import type { ChargingStatus, VehicleStatus } from "@prisma/client";
 
+import { normalizeShiftState } from "@/lib/tesla/shift-state";
+
 import type {
   ParsedTelemetryFields,
   TelemetryDoorsValue,
@@ -128,30 +130,19 @@ function readChargingStatus(
   return undefined;
 }
 
-/** ShiftState → P/R/N/D */
+/** ShiftState / Gear → P/R/N/D */
 function readShiftState(value: TelemetryFieldValue | unknown): string | undefined {
   if (value == null) return undefined;
   const asString = readString(value);
   if (asString) {
-    const token = asString.replace(/^ShiftState/i, "").toUpperCase();
-    if (["P", "R", "N", "D", "SNA"].includes(token)) return token === "SNA" ? "P" : token;
-    if (["PARK", "REVERSE", "NEUTRAL", "DRIVE"].includes(token)) {
-      return token[0]!;
-    }
-    return asString.length === 1 ? asString.toUpperCase() : undefined;
+    return normalizeShiftState(asString);
   }
 
   if (typeof value === "object") {
     const field = value as TelemetryFieldValue;
     const typed = enumToken(field.shiftStateValue);
-    if (!typed) return undefined;
-    // proto: Unknown=0 Invalid=1 P=2 R=3 N=4 D=5 SNA=6
-    if (/^\d+$/.test(typed)) {
-      const n = Number(typed);
-      return ({ 2: "P", 3: "R", 4: "N", 5: "D", 6: "P" } as Record<number, string>)[n];
-    }
-    const token = typed.replace(/^ShiftState/i, "").toUpperCase();
-    if (["P", "R", "N", "D"].includes(token)) return token;
+    if (typed == null) return undefined;
+    return normalizeShiftState(typed);
   }
   return undefined;
 }

@@ -1205,6 +1205,10 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                 value={snapshot?.ignitionOn == null ? "-" : snapshot.ignitionOn ? "ON" : "OFF"}
               />
               <InfoField
+                label="변속"
+                value={snapshot?.shiftState ?? "-"}
+              />
+              <InfoField
                 label="정비"
                 value={snapshot?.serviceStatus ? SERVICE_STATUS_LABEL[snapshot.serviceStatus] : "-"}
               />

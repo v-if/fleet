@@ -48,6 +48,7 @@ function mergeSnapshotFields(
         windowsOpen: boolean | null;
         chargeLimitSoc?: number | null;
         chargerPowerKw?: number | null;
+        shiftState?: string | null;
         doorDfOpen?: boolean | null;
         doorDrOpen?: boolean | null;
         doorPfOpen?: boolean | null;
@@ -89,6 +90,7 @@ function mergeSnapshotFields(
     windowsOpen: current.windowsOpen ?? previous?.windowsOpen ?? null,
     chargeLimitSoc: current.chargeLimitSoc ?? previous?.chargeLimitSoc ?? null,
     chargerPowerKw: current.chargerPowerKw ?? previous?.chargerPowerKw ?? null,
+    shiftState: current.shiftState ?? previous?.shiftState ?? null,
     doorDfOpen: current.doorDfOpen ?? previous?.doorDfOpen ?? null,
     doorDrOpen: current.doorDrOpen ?? previous?.doorDrOpen ?? null,
     doorPfOpen: current.doorPfOpen ?? previous?.doorPfOpen ?? null,
@@ -412,6 +414,7 @@ export async function inferAsleepVehicles() {
             odometerKm: snapshot.odometerKm,
             chargeLimitSoc: snapshot.chargeLimitSoc,
             chargerPowerKw: snapshot.chargerPowerKw,
+            shiftState: snapshot.shiftState,
             locked: snapshot.locked,
             doorsOpen: snapshot.doorsOpen,
             windowsOpen: snapshot.windowsOpen,
@@ -462,6 +465,7 @@ export async function inferAsleepVehicles() {
         odometerKm: snapshot.odometerKm,
         chargeLimitSoc: snapshot.chargeLimitSoc,
         chargerPowerKw: snapshot.chargerPowerKw,
+        shiftState: snapshot.shiftState,
         locked: snapshot.locked,
         doorsOpen: snapshot.doorsOpen,
         windowsOpen: snapshot.windowsOpen,

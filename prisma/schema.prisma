@@ -258,6 +258,8 @@ model VehicleSnapshot {
   chargeLimitSoc      Float?
   /// charge_state.charger_power (kW)
   chargerPowerKw      Float?
+  /// drive_state.shift_state / Telemetry Gear — 정규화 P|R|N|D
+  shiftState          String?
   locked              Boolean?
   doorsOpen           Boolean?
   windowsOpen         Boolean?

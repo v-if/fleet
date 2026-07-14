@@ -37,6 +37,8 @@
 | [requirements-tesla-vehicle-command-proxy.md](./requirements-tesla-vehicle-command-proxy.md) | **Command Proxy** 요구·인수 (Proxy 측 배포 완료) | Proxy/재연동 create·Vercel env |
 | [handoff-fms.md](./handoff-fms.md) | Proxy→**FMS** 인수인계 — `bori-cmd-proxy` URL·Vercel env·E2E 잔여 | Vercel에 Proxy URL 넣을 때 |
 | [requirements-tesla-fleet-api-model-mapping.md](./requirements-tesla-fleet-api-model-mapping.md) | `car_type`·`trim_badging` → 화면 모델명 매핑 | 차량 제원 표시·Vehicle 컬럼 추가할 때 |
+| [requirements-tesla-fleet-api-model-mapping2.md](./requirements-tesla-fleet-api-model-mapping2.md) | 동적 필드 — `chargerPowerKw`·**`shiftState`**(Gear) REST/Telemetry 매핑 (MM2-A~B ✅) | Snapshot 변속 저장·충전기 kW 정합 |
+| [checklist-tesla-fleet-api-model-mapping2.md](./checklist-tesla-fleet-api-model-mapping2.md) | Phase MM2 체크리스트 · migrate·실차 검수 남음 | MM2 구현·검수 |
 | [requirements-front-design.md](./requirements-front-design.md) | Pleos Fleet UI 벤치마킹, 프론트 구성·디자인 개선 요구사항 | 화면 UI/UX 개선할 때 |
 | [requirements-dashboard-design.md](./requirements-dashboard-design.md) | TailAdmin 템플릿 벤치마킹, 디자인 토큰·컴포넌트 마감 개선 요구사항 (Phase 3.7) · **전면 템플릿 적용** (Phase 3.8) | 대시보드·목록·상세 디자인 다듬을 때 |
 | [development-checklist.md](./development-checklist.md) | Phase별(M1~M5) 개발 체크리스트 | 개발 진행·진척 관리할 때 |
@@ -155,3 +157,5 @@
 | 2026-07-13 | UX2-G(UX2-21~22) 후속 — 위치 캡션·인근충전소 권고 반영 |
 | 2026-07-13 | UX2-G 구현 완료 — hideSelectionCard · 맵 아래 인근충전소 |
 | 2026-07-13 | Telemetry value-monitor 요구1 — 상세 수신 로그(개발) |
+| 2026-07-14 | requirements-tesla-fleet-api-model-mapping2 — shiftState·충전기 kW 매핑 요구 (미착수) |
+| 2026-07-14 | MM2-A~B 구현 완료 — shiftState Snapshot·checklist |

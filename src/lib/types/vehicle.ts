@@ -31,6 +31,8 @@ export type VehicleSnapshotDto = {
   odometerKm: number | null;
   chargeLimitSoc: number | null;
   chargerPowerKw: number | null;
+  /** 정규화 P|R|N|D */
+  shiftState: string | null;
   locked: boolean | null;
   doorsOpen: boolean | null;
   windowsOpen: boolean | null;

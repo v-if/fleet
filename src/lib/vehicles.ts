@@ -30,6 +30,7 @@ function serializeSnapshot(snapshot: VehicleSnapshot) {
     odometerKm: snapshot.odometerKm,
     chargeLimitSoc: snapshot.chargeLimitSoc ?? null,
     chargerPowerKw: snapshot.chargerPowerKw ?? null,
+    shiftState: snapshot.shiftState ?? null,
     locked: snapshot.locked,
     doorsOpen: snapshot.doorsOpen,
     windowsOpen: snapshot.windowsOpen,

@@ -148,6 +148,7 @@ model VehicleSyncState {
 | 유지 | `lastRestSyncAt` 컬럼은 **호환용으로 남겨도 됨** — 쓰기는 `VehicleSyncState`가 SoT, Snapshot에는 REST 성공 시 미러링 가능 |
 | 변경 없음(P0) | TPMS·공조 등 기존 컬럼. Telemetry 미지원 필드는 REST 이벤트 시에만 채움 |
 | **후속 (Phase BF)** | ✅ 코드 — DoorState/typed 파서·per-door merge·TPMS/창문/충전 구독·nearby envelope+거리 클리어 ([checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md)). 실차 재구독·검수 잔여 |
+| **Phase MM2** | ✅ `shiftState`(`String?`, 정규화 P\|R\|N\|D) — REST `shift_state` / Telemetry `Gear` ([mapping2](./requirements-tesla-fleet-api-model-mapping2.md)) |
 
 ### 4.6 만들지 않는 것 (의도적)
 
@@ -242,5 +243,6 @@ model VehicleSyncState {
 | 2026-07-11 | 4.4.C 적용 — vehicles API 제원/lifecycle/freshness, baseline 재시도 엔드포인트 |
 | 2026-07-11 | 4.4.D 적용 — 목록/상세 제원·lifecycle·신선도 UI |
 | 2026-07-11 | 4.4.E 마감 — hybrid:verify, unlink SyncState, setup-guide §5.4.2 |
+| 2026-07-14 | Phase MM2 — Snapshot `shiftState` |
 | 2026-07-12 | Snapshot merge 고착 → Phase BF 링크 (§4.5) |
 | 2026-07-12 | Phase BF 코드 완료 반영 (§4.5) |

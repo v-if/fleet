@@ -801,6 +801,15 @@
 - [ ] **요구2** REST/Telemetry 값 색 구분 (미착수)
 - [ ] 실차 모니터 대조 검수
 
+### Phase MM2 Snapshot 변속·충전기 매핑 — ✅ A~B
+
+> [requirements-tesla-fleet-api-model-mapping2.md](./requirements-tesla-fleet-api-model-mapping2.md) · [checklist-tesla-fleet-api-model-mapping2.md](./checklist-tesla-fleet-api-model-mapping2.md)
+
+- [x] **MM2-A** `shiftState` 스키마 · REST/Telemetry normalize·merge
+- [x] **MM2-B** DTO·상세 「변속」 · `chargerPowerKw` 회귀
+- [ ] **MM2-C** AC/DC 분리 (보류)
+- [ ] `prisma migrate` · 실차 검수
+
 ---
 
 ## Phase 5. 배포 및 데모 (M5)
@@ -910,4 +919,5 @@
 | 2026-07-13 | Phase UX2-G 후속 추가 — UX2-21~22 위치·인근충전소 (미착수) |
 | 2026-07-13 | Phase UX2-G 구현 완료 (UX2-21~22) |
 | 2026-07-13 | Telemetry Value Monitor 요구1 구현 (Ingress 모니터 카드) |
+| 2026-07-14 | Phase MM2-A~B 구현 — Snapshot `shiftState` |
 
