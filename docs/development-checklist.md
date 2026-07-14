@@ -840,6 +840,15 @@
 - [ ] **AS-B** Pro — Cron 실가동 후 GET infer 제거
 - [ ] **AS-C** 실차 검수 (Hobby=안1 기준)
 
+### Phase LN Snapshot 위경도 null — LN-R 코드 ✅ · 실차 ☐
+
+> [requirements-vehicle-location-null.md](./requirements-vehicle-location-null.md) · [checklist-vehicle-location-null.md](./checklist-vehicle-location-null.md)
+
+- [x] **LN-Doc** Snapshot TELEMETRY(○)→REST(×)→TELEMETRY(×) · **wake REST overwrite 확정**
+- [x] **LN-R** `mergeSnapshotCoordinates` + `writeRestSnapshot` (LN-7) · `npm run ln:verify` (LN-8)
+- [ ] **LN-QA** 실차 검수 (`LRWYGCFJ7SC214742`)
+- [ ] **LN-A/B/C** 파서·lastUpdatedAt·ASLEEP fallback (선택·본 건 비필수)
+
 ---
 
 ## Phase 5. 배포 및 데모 (M5)
@@ -960,4 +969,7 @@
 | 2026-07-15 | Phase AS 요구 — 목록/상세 절전 불일치 · 안 2 Cron SoT (미착수) |
 | 2026-07-15 | Phase AS-A~B 구현 — vercel.json Cron · lastUpdatedAt · 목록 infer 제거 |
 | 2026-07-15 | Phase AS — Hobby 안1 채택 · Pro Cron 보류 · 상세 GET infer |
+| 2026-07-15 | Phase LN 문서 — Snapshot 위경도 null (파서·lastUpdatedAt) |
+| 2026-07-15 | Phase LN — **LN-R 확정** (wake REST overwrite) · LN-7 우선 |
+| 2026-07-15 | Phase LN-R 구현 — mergeSnapshotCoordinates · ln:verify · LN-QA 남음 |
 

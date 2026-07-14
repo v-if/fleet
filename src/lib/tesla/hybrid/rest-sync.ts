@@ -3,6 +3,7 @@ import { AuditLogStatus, RestSyncReason, TelemetrySource, VehicleLifecycle } fro
 import { createAuditLog } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { buildDisplayModel } from "@/lib/tesla/display-model";
+import { mergeSnapshotCoordinates } from "@/lib/tesla/hybrid/coordinates";
 import {
   ensureVehicleSyncState,
   isRestWakeCooldownElapsed,
@@ -77,7 +78,7 @@ export async function writeRestSnapshot(
         })
       : null;
 
-  const previousSnapshot = existing?.snapshots[0];
+  let previousSnapshot = existing?.snapshots[0];
   const now = lastRestSyncAt;
 
   const registryFields = {
@@ -130,6 +131,20 @@ export async function writeRestSnapshot(
 
   await ensureVehicleSyncState(vehicle.id);
 
+  // plate upsert 등 existing 조회를 못 한 경우에도 직전 Snapshot으로 좌표 merge (LN-R)
+  if (!previousSnapshot) {
+    previousSnapshot =
+      (await prisma.vehicleSnapshot.findFirst({
+        where: { vehicleId: vehicle.id },
+        orderBy: { lastUpdatedAt: "desc" },
+      })) ?? undefined;
+  }
+
+  const { latitude, longitude } = mergeSnapshotCoordinates(
+    snapshot,
+    previousSnapshot,
+  );
+
   const resolvedTelemetrySource =
     preserveTelemetryFields && previousSnapshot?.telemetrySource === "TELEMETRY"
       ? "MIXED"
@@ -138,8 +153,8 @@ export async function writeRestSnapshot(
   await prisma.vehicleSnapshot.create({
     data: {
       vehicleId: vehicle.id,
-      latitude: snapshot.latitude,
-      longitude: snapshot.longitude,
+      latitude,
+      longitude,
       batteryPercent: snapshot.batteryPercent,
       rangeKm: snapshot.rangeKm,
       ignitionOn: snapshot.ignitionOn,
@@ -175,8 +190,8 @@ export async function writeRestSnapshot(
       nearbyChargingSites: snapshot.nearbyChargingSites
         ? serializeNearbyChargingSites(snapshot.nearbyChargingSites, {
             capturedAt: lastRestSyncAt,
-            capturedLat: snapshot.latitude ?? previousSnapshot?.latitude ?? null,
-            capturedLng: snapshot.longitude ?? previousSnapshot?.longitude ?? null,
+            capturedLat: latitude,
+            capturedLng: longitude,
           })
         : null,
       lastTelemetryAt: preserveTelemetryFields

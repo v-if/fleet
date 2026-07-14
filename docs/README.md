@@ -27,6 +27,8 @@
 | [checklist-car-info-card.md](./checklist-car-info-card.md) | Phase CI 체크리스트 · 실차 검수 남음 | CI 구현·검수 |
 | [requirements-vehicle-asleep-status.md](./requirements-vehicle-asleep-status.md) | 절전/ONLINE 정합 · **Hobby=안1** · **Pro Cron=보류** | 목록·상세 뱃지 |
 | [checklist-vehicle-asleep-status.md](./checklist-vehicle-asleep-status.md) | Phase AS-H ✅ · AS-B(Pro) 보류 · AS-C 검수 | AS 검수 |
+| [requirements-vehicle-location-null.md](./requirements-vehicle-location-null.md) | **LN-R ✅** — REST null GPS 시 이전 좌표 유지 | 위치 유실 · `writeRestSnapshot` |
+| [checklist-vehicle-location-null.md](./checklist-vehicle-location-null.md) | Phase LN-R 코드 ✅ · LN-QA 실차 ☐ | LN 검수 |
 | [checklist-vehicle-detail-ui2.md](./checklist-vehicle-detail-ui2.md) | Phase UX2-A~G ✅ · 실차 수동 검수 남음 | UX2 구현·실차 검수할 때 |
 | [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md) | 차량 상세 UI Phase VD-1~3 체크리스트 | VD 구현·검수할 때 |
 | [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) | 실차 검증 **도어/트렁크·인근충전소 고착** 버그 원인·수정 요구 (BF-1~3) | 표시 데이터 버그 수정 전에 |
@@ -178,3 +180,6 @@
 | 2026-07-15 | requirements-vehicle-asleep-status — 목록/상세 절전 불일치 · 안 2 요구 (미착수) |
 | 2026-07-15 | Phase AS-A~B 구현 — vercel Cron · lastUpdatedAt · 목록 GET infer 제거 |
 | 2026-07-15 | Phase AS — Hobby는 안1(목록·상세 infer) · 안2 Cron은 Pro 보류 |
+| 2026-07-15 | requirements/checklist-vehicle-location-null — Snapshot 위경도 null (LN) |
+| 2026-07-15 | LN — REST overwrite(LN-R) 확정 · 문서 개정 |
+| 2026-07-15 | LN-R 구현 — `mergeSnapshotCoordinates` · `npm run ln:verify` |

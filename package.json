@@ -19,6 +19,7 @@
     "telemetry:check": "powershell -ExecutionPolicy Bypass -File scripts/telemetry-webhook-check.ps1",
     "telemetry:db": "node --env-file=.env scripts/telemetry-db-check.mjs",
     "hybrid:verify": "node --env-file=.env scripts/verify-hybrid-phase44.cjs",
+    "ln:verify": "node --import tsx scripts/verify-ln-rest-coordinates.mjs",
     "disconnect:verify": "node --env-file=.env --import tsx scripts/verify-phase45-disconnect.ts",
     "db:reset-data": "node --env-file=.env scripts/reset-fms-data.mjs"
   },

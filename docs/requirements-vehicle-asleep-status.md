@@ -5,7 +5,7 @@
 | 목적 | 목록과 상세의 「주차 (절전)」/`ONLINE` 뱃지가 **동일 Snapshot**을 보도록 Telemetry 부재 추론 경로를 정합한다 |
 | 증상 | Telemetry 무신호인데 목록은 「주차 (절전)」, 상세는 `ONLINE` 유지 · 상세 새로고침 후에야 맞춤 |
 | 적용 | `GET /api/vehicles` · `GET /api/vehicles/[id]` · `inferAsleepVehicles` · (Pro) Cron → `/api/internal/telemetry/process` |
-| 관련 | [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md), [checklist-vehicle-asleep-status.md](./checklist-vehicle-asleep-status.md) |
+| 관련 | [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md), [checklist-vehicle-asleep-status.md](./checklist-vehicle-asleep-status.md), [requirements-vehicle-location-null.md](./requirements-vehicle-location-null.md) (AS-4 ↔ LN-B) |
 | **현행 채택** | **안 1 (Hobby)** — 목록·상세 GET에서 `inferAsleepVehicles` |
 | **종착 (보류)** | **안 2 (Pro Cron)** — `vercel.json` 준비됨 · **Vercel Pro 업그레이드 시 활성화** |
 | 상태 | Hobby 안1 운영 · 안2/AS-B(목록 infer 제거)는 Pro까지 **보류** · AS-4(`lastUpdatedAt`)는 유지 |
