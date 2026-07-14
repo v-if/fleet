@@ -810,6 +810,15 @@
 - [ ] **MM2-C** AC/DC 분리 (보류)
 - [ ] `prisma migrate` · 실차 검수
 
+### Phase CC 충전 중 서브카드 — ✅ A~B
+
+> [requirements-charging-card.md](./requirements-charging-card.md) · [checklist-charging-card.md](./checklist-charging-card.md)
+
+- [x] **CC-A** 퀵타일 위 충전 카드 · `CHARGING` · 메트릭 · SOC 줄 뱃지 제거
+- [x] **CC-B** `COMPLETE`/`STOPPED` 확장
+- [x] **CC-D** 완속/급속 (`chargingPowerKind`)
+- [ ] `prisma migrate` · 실차 충전 세션 수동 검수
+
 ---
 
 ## Phase 5. 배포 및 데모 (M5)
@@ -920,4 +929,6 @@
 | 2026-07-13 | Phase UX2-G 구현 완료 (UX2-21~22) |
 | 2026-07-13 | Telemetry Value Monitor 요구1 구현 (Ingress 모니터 카드) |
 | 2026-07-14 | Phase MM2-A~B 구현 — Snapshot `shiftState` |
+| 2026-07-14 | Phase CC-A~B 구현 — 충전 서브카드 |
+| 2026-07-14 | Phase CC-D 구현 — chargingPowerKind 완속/급속 |
 

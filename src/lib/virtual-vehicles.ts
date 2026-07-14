@@ -134,6 +134,8 @@ export async function createVirtualTeslaAccountWithVehicles(input: CreateVirtual
         rangeKm: randomInt(90, 520),
         ignitionOn: pickOne([true, false, false]),
         shiftState: pickOne(["P", "P", "D", "R", "N"]),
+        chargerPowerKw: pickOne([null, 6.3, 11, 48]),
+        chargingPowerKind: pickOne([null, "AC", "AC", "DC"]),
         status,
         chargingStatus,
         odometerKm: randomInt(3000, 45000),

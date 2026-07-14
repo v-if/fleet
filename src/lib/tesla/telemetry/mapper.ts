@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import type { ChargingStatus, VehicleStatus } from "@prisma/client";
 
 import { normalizeShiftState } from "@/lib/tesla/shift-state";
+import { resolveChargingPowerFromTelemetry } from "@/lib/tesla/charging-power";
 
 import type {
   ParsedTelemetryFields,
@@ -428,8 +429,9 @@ export function parseTelemetryMessage(message: TelemetryMessage): ParsedTelemetr
   );
   const acPower = readNumber(getDataField(data, ["ACChargingPower", "ac_charging_power"]));
   const dcPower = readNumber(getDataField(data, ["DCChargingPower", "dc_charging_power"]));
-  const chargerPowerKw =
-    dcPower != null && dcPower > 0 ? dcPower : acPower != null ? acPower : undefined;
+  const chargingPower = resolveChargingPowerFromTelemetry(acPower, dcPower);
+  const chargerPowerKw = chargingPower?.chargerPowerKw;
+  const chargingPowerKind = chargingPower?.chargingPowerKind;
 
   const tpmsFrontLeft = readNumber(
     getDataField(data, ["TpmsPressureFl", "tpms_pressure_fl"]),
@@ -492,6 +494,7 @@ export function parseTelemetryMessage(message: TelemetryMessage): ParsedTelemetr
     ...doorFields,
     chargeLimitSoc: chargeLimitSoc ?? null,
     chargerPowerKw: chargerPowerKw ?? null,
+    chargingPowerKind: chargingPowerKind ?? null,
     insideTempC,
     outsideTempC,
     climateOn: climateOn ?? null,

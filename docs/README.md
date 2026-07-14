@@ -21,6 +21,8 @@
 | [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md) | 프론트 고도화 선행 — Fleet API 표시 항목 조사, **정적/동적** 분류 | 화면 고도화·제원/실시간 데이터 설계할 때 |
 | [requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md) | **차량 상세** 고도화 — 실차 DB 대조, 관리자 IA·표현·Phase (VD-1~3) | 상세 UI/UX 구현 전에 |
 | [requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md) | 차량 상세 **표시 문구·배치** — VD-UX2 (A~G 완료) | 카피·위치 카드 검수 |
+| [requirements-charging-card.md](./requirements-charging-card.md) | 상세 「충전 중」서브카드 (CC-A~D ✅) — 완속/급속 포함 | 충전 UX · migrate·실차 검수 |
+| [checklist-charging-card.md](./checklist-charging-card.md) | Phase CC 체크리스트 · 실차 검수 남음 | CC 구현·검수 |
 | [checklist-vehicle-detail-ui2.md](./checklist-vehicle-detail-ui2.md) | Phase UX2-A~G ✅ · 실차 수동 검수 남음 | UX2 구현·실차 검수할 때 |
 | [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md) | 차량 상세 UI Phase VD-1~3 체크리스트 | VD 구현·검수할 때 |
 | [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) | 실차 검증 **도어/트렁크·인근충전소 고착** 버그 원인·수정 요구 (BF-1~3) | 표시 데이터 버그 수정 전에 |
@@ -159,3 +161,7 @@
 | 2026-07-13 | Telemetry value-monitor 요구1 — 상세 수신 로그(개발) |
 | 2026-07-14 | requirements-tesla-fleet-api-model-mapping2 — shiftState·충전기 kW 매핑 요구 (미착수) |
 | 2026-07-14 | MM2-A~B 구현 완료 — shiftState Snapshot·checklist |
+| 2026-07-14 | requirements-charging-card — 충전 서브카드 UX 요구 (미착수) |
+| 2026-07-14 | Phase CC-A~B 구현 — ChargingSessionCard · checklist |
+| 2026-07-14 | charging-card §5.4 — 완속/급속 표시 요구 (CC-D 미착수) |
+| 2026-07-14 | Phase CC-D 구현 — chargingPowerKind · 완속/급속 UI |

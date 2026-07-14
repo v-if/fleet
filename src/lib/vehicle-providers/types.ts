@@ -30,6 +30,8 @@ export type VehicleSnapshotData = {
   odometerKm?: number;
   chargeLimitSoc?: number | null;
   chargerPowerKw?: number | null;
+  /** AC | DC — Telemetry. REST는 보통 null */
+  chargingPowerKind?: string | null;
   /** 정규화 P|R|N|D — drive_state.shift_state / Gear */
   shiftState?: string | null;
   locked?: boolean | null;

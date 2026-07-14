@@ -136,7 +136,7 @@ AC vs DC를 화면에 꼭 구분해야 하면 후속으로 `chargingPowerKind` (
 | **MM2-3** | Telemetry `Gear` → merge 시 `shiftState` 갱신 (`ignitionOn`과 정합) | P1 | ✅ |
 | **MM2-4** | DTO·상세(또는 기술 상세)에 `shiftState` 노출 (개발 검증용 최소) | P2 | ✅ |
 | **MM2-5** | `chargerPowerKw` REST/Telemetry 매핑·coalesce **문서·회귀만 확인** (스키마 변경 없음) | P2 | ✅ As-Is |
-| **MM2-6** | (후속·비권고) AC/DC 분리 컬럼 또는 `chargingPowerKind` | P3 | ☐ 보류 |
+| **MM2-6** | Snapshot `chargingPowerKind` (`AC`\|`DC`) — Telemetry coalesce · UI [charging-card CC-D](./requirements-charging-card.md) | P1 | ✅ |
 
 데이터 모델·수집 “새 API”는 없음. **컬럼 1개 + 쓰기 경로 보강**이 핵심.
 
@@ -168,7 +168,7 @@ AC vs DC를 화면에 꼭 구분해야 하면 후속으로 `chargingPowerKind` (
 |-------|------|
 | **MM2-A** | MM2-1~3 — 스키마·REST·Telemetry 쓰기 |
 | **MM2-B** | MM2-4~5 — UI/DTO·충전기 회귀 |
-| **MM2-C** (후속) | MM2-6 — AC/DC 구분 필요 시에만 |
+| **MM2-C** | MM2-6 — `chargingPowerKind` · 충전 카드 완속/급속 — ✅ (CC-D) |
 
 체크리스트는 착수 시 `checklist-…` 분리 또는 [development-checklist.md](./development-checklist.md)에 Phase 한 줄 추가.
 

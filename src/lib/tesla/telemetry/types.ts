@@ -67,6 +67,8 @@ export type ParsedTelemetryFields = {
   rearTrunkOpen?: boolean | null;
   chargeLimitSoc?: number | null;
   chargerPowerKw?: number | null;
+  /** AC=완속 · DC=급속 */
+  chargingPowerKind?: "AC" | "DC" | null;
   insideTempC?: number;
   outsideTempC?: number;
   climateOn?: boolean | null;

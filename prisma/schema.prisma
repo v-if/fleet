@@ -258,6 +258,8 @@ model VehicleSnapshot {
   chargeLimitSoc      Float?
   /// charge_state.charger_power (kW)
   chargerPowerKw      Float?
+  /// Telemetry AC/DC — `AC`|`DC` · REST는 null(미상)
+  chargingPowerKind   String?
   /// drive_state.shift_state / Telemetry Gear — 정규화 P|R|N|D
   shiftState          String?
   locked              Boolean?

@@ -8,6 +8,10 @@ import { BatteryHealthGauge } from "@/components/fleet/battery-health-gauge";
 import { TpmsDiagram } from "@/components/fleet/tpms-diagram";
 import { VehicleMap } from "@/components/fleet/vehicle-map";
 import { BatteryProgressBar } from "@/components/fms/BatteryProgressBar";
+import {
+  ChargingSessionCard,
+  shouldShowChargingSessionCard,
+} from "@/components/fms/ChargingSessionCard";
 import { TelemetryValueMonitorCard } from "@/components/fms/TelemetryValueMonitorCard";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
@@ -16,7 +20,6 @@ import { FleetToolbar } from "@/components/fms/FleetToolbar";
 import { useRouter } from "next/navigation";
 import { useVehicleDetail, useVehicleRefresh } from "@/hooks/use-vehicles";
 import {
-  chargingStatusBadgeColor,
   vehicleStatusBadgeColor,
 } from "@/lib/fms-badge-utils";
 import { labelCarType, labelTrimBadging } from "@/lib/tesla/display-model";
@@ -30,7 +33,6 @@ import {
   lifecycleGuidance,
 } from "@/lib/vehicle-lifecycle";
 import {
-  CHARGING_STATUS_LABEL,
   SERVICE_STATUS_LABEL,
   STATUS_LABEL,
   formatDateTime,
@@ -667,11 +669,6 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                 </span>
               ) : null}
             </div>
-            {chargingStatus !== "DISCONNECTED" ? (
-              <Badge color={chargingStatusBadgeColor(chargingStatus)} size="sm">
-                {CHARGING_STATUS_LABEL[chargingStatus]}
-              </Badge>
-            ) : null}
             {issueTags.length === 0 ? (
               <span className="text-theme-sm text-gray-400">이상 없음</span>
             ) : (
@@ -699,6 +696,17 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               </span>{" "}
               (절전 모드)
             </p>
+          ) : null}
+
+          {shouldShowChargingSessionCard(chargingStatus) ? (
+            <ChargingSessionCard
+              chargingStatus={chargingStatus}
+              batteryPercent={snapshot?.batteryPercent}
+              rangeKm={snapshot?.rangeKm}
+              chargerPowerKw={snapshot?.chargerPowerKw}
+              chargeLimitSoc={snapshot?.chargeLimitSoc}
+              chargingPowerKind={snapshot?.chargingPowerKind}
+            />
           ) : null}
 
           <div className="mt-4 grid grid-cols-3 gap-3">

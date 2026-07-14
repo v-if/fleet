@@ -148,6 +148,10 @@ export async function writeRestSnapshot(
       odometerKm: snapshot.odometerKm,
       chargeLimitSoc: snapshot.chargeLimitSoc ?? null,
       chargerPowerKw: snapshot.chargerPowerKw ?? null,
+      /** REST는 AC/DC 미상 — Telemetry 유지 시 이전 kind 보존 */
+      chargingPowerKind: preserveTelemetryFields
+        ? (previousSnapshot?.chargingPowerKind ?? null)
+        : (snapshot.chargingPowerKind ?? null),
       shiftState: snapshot.shiftState ?? null,
       locked: snapshot.locked,
       doorsOpen: snapshot.doorsOpen,
@@ -595,6 +599,7 @@ export async function maybeRefreshNearbyOnPark(
         odometerKm: previous.odometerKm,
         chargeLimitSoc: previous.chargeLimitSoc,
         chargerPowerKw: previous.chargerPowerKw,
+        chargingPowerKind: previous.chargingPowerKind,
         shiftState: previous.shiftState,
         locked: previous.locked,
         doorsOpen: previous.doorsOpen,

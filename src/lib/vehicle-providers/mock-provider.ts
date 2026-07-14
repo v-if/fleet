@@ -402,6 +402,7 @@ function toSnapshot(vehicle: MockVehicleSeed): VehicleSnapshotData {
     odometerKm: vehicle.odometerKm,
     chargeLimitSoc: null,
     chargerPowerKw: null,
+    chargingPowerKind: null,
     shiftState: null,
     locked: vehicle.locked,
     doorsOpen: vehicle.doorsOpen,
