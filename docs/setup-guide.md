@@ -354,6 +354,7 @@ pnpm telemetry:check
 | ASLEEP SoT (Phase AS) | **Hobby: 안1** — 목록·상세 GET에서 `inferAsleepVehicles`. **Pro: 안2** Cron 2분 → process (`vercel.json` 준비·보류) |
 | 구독 해제 | unlink/disconnect 시 `DELETE /api/1/vehicles/{vin}/fleet_telemetry_config` |
 | 구독 재등록 | reconnect → Vehicle Command Proxy `POST .../fleet_telemetry_config` |
+| 구독 fields · create | [requirements-tesla-fleet-telemetry-config.md](./requirements-tesla-fleet-telemetry-config.md) (현행) · **확장:** [requirements-tesla-fleet-telemetry-config-add-field.md](./requirements-tesla-fleet-telemetry-config-add-field.md) · [checklist](./checklist-tesla-fleet-telemetry-config-add-field.md) |
 | Command Proxy (Fly) | **`https://bori-cmd-proxy.fly.dev`** — [handoff-fms.md](./handoff-fms.md) |
 | Vercel (필수) | `TESLA_VEHICLE_COMMAND_PROXY_URL=https://bori-cmd-proxy.fly.dev` |
 | Vercel (필수) | `TESLA_TELEMETRY_CA_PEM` = Telemetry와 **동일** CA (신규 금지) |
@@ -903,3 +904,4 @@ Invoke-RestMethod -Method GET "https://bori-fleet.shop/api/internal/telemetry/pr
 | 2026-07-15 | §7.2 Vercel Cron — Telemetry process / ASLEEP SoT (Phase AS) |
 | 2026-07-15 | §7.2 — Hobby 안1 · Pro Cron 보류 명시 |
 | 2026-07-15 | §7.2 — Hobby `*/2` cron이 Git 배포 스킵하는 이슈·vercel.json 비움 |
+| 2026-07-15 | §5.4.1 구독 fields — CAF 확장 요구·체크리스트 링크 |

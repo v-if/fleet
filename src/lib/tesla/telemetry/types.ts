@@ -82,4 +82,27 @@ export type ParsedTelemetryFields = {
   status?: VehicleStatus | null;
   /** DoorState 필드가 패킷에 포함됨 (닫힘 false 명시용) */
   doorStatePresent?: boolean;
+  /** CAF P1 */
+  vehicleSpeedKmh?: number | null;
+  gpsHeading?: number | null;
+  detailedChargeState?: string | null;
+  timeToFullChargeHours?: number | null;
+  chargeAmps?: number | null;
+  chargePortDoorOpen?: boolean | null;
+  chargePortLatch?: string | null;
+  fastChargerPresent?: boolean | null;
+  tpmsHardWarnings?: string | null;
+  tpmsSoftWarnings?: string | null;
+  destinationName?: string | null;
+  destinationLatitude?: number | null;
+  destinationLongitude?: number | null;
+  minutesToArrival?: number | null;
+  milesToArrival?: number | null;
+  expectedEnergyPercentAtArrival?: number | null;
+  preconditioningEnabled?: boolean | null;
+  valetModeEnabled?: boolean | null;
+  serviceModeEnabled?: boolean | null;
+  softwareUpdateDownloadPercent?: number | null;
+  softwareUpdateInstallPercent?: number | null;
+  softwareUpdateVersion?: string | null;
 };

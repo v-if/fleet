@@ -710,7 +710,32 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               chargerPowerKw={snapshot?.chargerPowerKw}
               chargeLimitSoc={snapshot?.chargeLimitSoc}
               chargingPowerKind={snapshot?.chargingPowerKind}
+              timeToFullChargeHours={snapshot?.timeToFullChargeHours}
+              chargeAmps={snapshot?.chargeAmps}
+              chargePortDoorOpen={snapshot?.chargePortDoorOpen}
+              fastChargerPresent={snapshot?.fastChargerPresent}
+              detailedChargeState={snapshot?.detailedChargeState}
             />
+          ) : null}
+
+          {snapshot?.tpmsHardWarnings ? (
+            <p className="mt-3 rounded-lg border border-error-200 bg-error-50 px-3 py-2 text-theme-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-300">
+              타이어 경고(Hard): {snapshot.tpmsHardWarnings}
+            </p>
+          ) : null}
+
+          {snapshot?.vehicleSpeedKmh != null &&
+          Number.isFinite(snapshot.vehicleSpeedKmh) &&
+          snapshot.vehicleSpeedKmh > 0 ? (
+            <p className="mt-3 text-theme-sm text-gray-600 dark:text-gray-300">
+              속도{" "}
+              <span className="font-semibold text-gray-800 dark:text-white/90">
+                {Math.round(snapshot.vehicleSpeedKmh)} km/h
+              </span>
+              {snapshot.gpsHeading != null && Number.isFinite(snapshot.gpsHeading) ? (
+                <span className="text-gray-400"> · 방위 {Math.round(snapshot.gpsHeading)}°</span>
+              ) : null}
+            </p>
           ) : null}
 
           <div className="mt-4 grid grid-cols-3 gap-3">
@@ -783,6 +808,52 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               ) : null}
             </div>
           )}
+
+          {snapshot?.destinationName ? (
+            <div className="mt-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-white/[0.02]">
+              <p className="text-theme-xs text-gray-500 dark:text-gray-400">목적지</p>
+              <p className="mt-0.5 text-theme-sm font-semibold text-gray-800 dark:text-white/90">
+                {snapshot.destinationName}
+              </p>
+              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-theme-xs text-gray-600 dark:text-gray-300">
+                {snapshot.minutesToArrival != null &&
+                Number.isFinite(snapshot.minutesToArrival) ? (
+                  <span>
+                    ETA {Math.max(0, Math.round(snapshot.minutesToArrival))}분
+                  </span>
+                ) : null}
+                {snapshot.milesToArrival != null && Number.isFinite(snapshot.milesToArrival) ? (
+                  <span>
+                    잔여 {Math.round(snapshot.milesToArrival * 1.60934)} km
+                  </span>
+                ) : null}
+                {snapshot.expectedEnergyPercentAtArrival != null &&
+                Number.isFinite(snapshot.expectedEnergyPercentAtArrival) ? (
+                  <span>
+                    도착 시 약 {Math.round(snapshot.expectedEnergyPercentAtArrival)}%
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
+          {(snapshot?.softwareUpdateDownloadPercent != null ||
+            snapshot?.softwareUpdateInstallPercent != null ||
+            snapshot?.softwareUpdateVersion) && (
+            <p className="mt-3 text-theme-xs text-gray-500 dark:text-gray-400">
+              OTA
+              {snapshot.softwareUpdateVersion
+                ? ` ${snapshot.softwareUpdateVersion}`
+                : ""}
+              {snapshot.softwareUpdateDownloadPercent != null
+                ? ` · 다운로드 ${snapshot.softwareUpdateDownloadPercent}%`
+                : ""}
+              {snapshot.softwareUpdateInstallPercent != null
+                ? ` · 설치 ${snapshot.softwareUpdateInstallPercent}%`
+                : ""}
+            </p>
+          )}
+
           <div className="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
             <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
               <h5 className="text-theme-sm font-semibold text-gray-800 dark:text-white/90">

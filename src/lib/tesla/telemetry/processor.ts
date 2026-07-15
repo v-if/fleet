@@ -11,6 +11,7 @@ import { patchVehicleSyncState } from "@/lib/tesla/hybrid/sync-state";
 import { shouldClearNearbyForLocation } from "@/lib/tesla/nearby-charging";
 
 import { getTelemetryProcessBatchSize, getTelemetryStaleAfterMs, getTelemetryFreshnessMs } from "./config";
+import { mergeCafSnapshotFields, pickCafSnapshotFields } from "./caf-fields";
 import { refreshTelemetryMetadataCounts } from "./ingress";
 import { extractTelemetryMessages, parseTelemetryMessage } from "./mapper";
 import type { ParsedTelemetryFields } from "./types";
@@ -110,6 +111,7 @@ function mergeSnapshotFields(
     serviceStatus: previous?.serviceStatus ?? null,
     softwareVersion: current.softwareVersion ?? previous?.softwareVersion ?? null,
     nearbyChargingSites,
+    ...mergeCafSnapshotFields(current, previous as import("./caf-fields").CafSnapshotCoords | undefined),
   };
 }
 
@@ -438,6 +440,7 @@ export async function inferAsleepVehicles() {
             serviceStatus: snapshot.serviceStatus,
             softwareVersion: snapshot.softwareVersion,
             nearbyChargingSites: snapshot.nearbyChargingSites,
+            ...pickCafSnapshotFields(snapshot),
             lastTelemetryAt: snapshot.lastTelemetryAt,
             lastRestSyncAt: snapshot.lastRestSyncAt,
             telemetrySource: snapshot.telemetrySource,
@@ -490,6 +493,7 @@ export async function inferAsleepVehicles() {
         serviceStatus: snapshot.serviceStatus,
         softwareVersion: snapshot.softwareVersion,
         nearbyChargingSites: snapshot.nearbyChargingSites,
+        ...pickCafSnapshotFields(snapshot),
         lastTelemetryAt: snapshot.lastTelemetryAt,
         lastRestSyncAt: snapshot.lastRestSyncAt,
         telemetrySource: snapshot.telemetrySource,

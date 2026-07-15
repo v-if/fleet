@@ -36,6 +36,9 @@
 | [checklist-onboarding-e2e-reset.md](./checklist-onboarding-e2e-reset.md) | 온보딩 E2E용 DB 리셋 · 유지/삭제 · 사용자 할 일 | 첫 연동부터 재검증할 때 |
 | [requirements-tesla-api-bug-report-0712.md](./requirements-tesla-api-bug-report-0712.md) | 위 이슈의 **현장 관찰·가설 원문** | 재현 시나리오 참고 |
 | [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md) | Telemetry vs Fleet API **하이브리드 호출** — ASLEEP 금지·이벤트 주도 REST | 수집 전략·wake/쿨다운 설계할 때 |
+| [requirements-tesla-fleet-telemetry-config.md](./requirements-tesla-fleet-telemetry-config.md) | **fleet_telemetry_config** create · **CAF 44키** | 구독·재구독 |
+| [requirements-tesla-fleet-telemetry-config-add-field.md](./requirements-tesla-fleet-telemetry-config-add-field.md) | **CAF** P0/P1·REST-1 · 코드 ✅ | 필드 확장 |
+| [checklist-tesla-fleet-telemetry-config-add-field.md](./checklist-tesla-fleet-telemetry-config-add-field.md) | Phase CAF-2~4 ✅ · CAF-6 실차 ☐ | CAF 검수 |
 | [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md) | 상세 **Telemetry 수신 로그(개발)** — 요구1 ✅ · 요구2 미착수 | 수신·매핑 검증 UI |
 | [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | 하이브리드 **DB 설계** — Vehicle 제원 + VehicleSyncState + Snapshot 쓰기 경로 | 스키마·마이그레이션·sync 구현할 때 |
 | [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | Phase 4.4 구현 체크리스트 (A~E) | 하이브리드 데이터 작업 진척·완료 확인 |
@@ -183,3 +186,7 @@
 | 2026-07-15 | requirements/checklist-vehicle-location-null — Snapshot 위경도 null (LN) |
 | 2026-07-15 | LN — REST overwrite(LN-R) 확정 · 문서 개정 |
 | 2026-07-15 | LN-R 구현 — `mergeSnapshotCoordinates` · `npm run ln:verify` |
+| 2026-07-15 | requirements-tesla-fleet-telemetry-config — 구독 fields·create 문서 |
+| 2026-07-15 | CAF — Telemetry P0/P1·REST-1 제원 분리 요구 (config-add-field) |
+| 2026-07-15 | CAF 체크리스트 · hybrid/setup/개발 체크리스트 연결 |
+| 2026-07-15 | CAF-2~4 구현 반영 (44키 · migrate · UI) |

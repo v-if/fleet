@@ -280,6 +280,29 @@ model VehicleSnapshot {
   tpmsFrontRight      Float?
   tpmsRearLeft        Float?
   tpmsRearRight       Float?
+  /// CAF P1
+  vehicleSpeedKmh     Float?
+  gpsHeading          Float?
+  detailedChargeState String?
+  timeToFullChargeHours Float?
+  chargeAmps          Float?
+  chargePortDoorOpen  Boolean?
+  chargePortLatch     String?
+  fastChargerPresent  Boolean?
+  tpmsHardWarnings    String?
+  tpmsSoftWarnings    String?
+  destinationName     String?
+  destinationLatitude Float?
+  destinationLongitude Float?
+  minutesToArrival    Float?
+  milesToArrival      Float?
+  expectedEnergyPercentAtArrival Float?
+  preconditioningEnabled Boolean?
+  valetModeEnabled    Boolean?
+  serviceModeEnabled  Boolean?
+  softwareUpdateDownloadPercent Int?
+  softwareUpdateInstallPercent Int?
+  softwareUpdateVersion String?
   sentryMode          Boolean?
   serviceStatus       ServiceStatus?
   softwareVersion     String?

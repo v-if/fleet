@@ -48,6 +48,32 @@ function readString(value: TelemetryFieldValue | unknown): string | undefined {
   return field.stringValue;
 }
 
+function readUsableString(value: TelemetryFieldValue | unknown): string | undefined {
+  const raw = readString(value);
+  if (!raw) return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed || /^invalid$/i.test(trimmed)) return undefined;
+  return trimmed;
+}
+
+function readUsableEnumToken(value: TelemetryFieldValue | unknown): string | undefined {
+  if (value == null) return undefined;
+  const asString = readUsableString(value);
+  if (asString) return asString;
+  if (typeof value === "object") {
+    const field = value as TelemetryFieldValue;
+    const typed =
+      enumToken(field.chargingValue) ??
+      enumToken(field.stringValue) ??
+      enumToken(
+        field.intValue != null ? String(field.intValue) : undefined,
+      );
+    if (!typed || /^invalid$/i.test(typed)) return undefined;
+    return typed;
+  }
+  return undefined;
+}
+
 function readLocation(
   value: TelemetryFieldValue | unknown,
 ): { latitude?: number; longitude?: number } | undefined {
@@ -74,11 +100,15 @@ function enumToken(value: string | number | undefined): string | undefined {
 
 function mapChargingStatus(value: string | undefined): ChargingStatus | null {
   if (!value) return null;
-  const normalized = value.replace(/^ChargingState/i, "").toUpperCase();
+  const normalized = value
+    .replace(/^DetailedChargeState/i, "")
+    .replace(/^ChargingState/i, "")
+    .toUpperCase();
   switch (normalized) {
     case "CHARGING":
     case "ENABLE":
     case "STARTING":
+    case "CONNECTED":
       return "CHARGING";
     case "COMPLETE":
     case "COMPLETED":
@@ -386,9 +416,13 @@ export function parseTelemetryMessage(message: TelemetryMessage): ParsedTelemetr
   const rangeMiles = readNumber(
     getDataField(data, ["EstBatteryRange", "RatedRange", "est_battery_range"]),
   );
-  const chargingStatus = readChargingStatus(
-    getDataField(data, ["ChargeState", "charging_state", "DetailedChargeState"]),
-  );
+  const detailedRaw = getDataField(data, ["DetailedChargeState"]);
+  const chargeStateRaw = getDataField(data, ["ChargeState", "charging_state"]);
+  const detailedChargeStatus = readChargingStatus(detailedRaw);
+  const basicChargeStatus = readChargingStatus(chargeStateRaw);
+  const chargingStatus = detailedChargeStatus ?? basicChargeStatus;
+  const detailedChargeState = readUsableEnumToken(detailedRaw) ?? null;
+
   const shiftState = readShiftState(
     getDataField(data, ["Gear", "ShiftState", "shift_state", "gear"]),
   );
@@ -420,7 +454,8 @@ export function parseTelemetryMessage(message: TelemetryMessage): ParsedTelemetr
   );
   const odometerMiles = readNumber(getDataField(data, ["Odometer", "odometer"]));
   const sentryMode = readSentryMode(getDataField(data, ["SentryMode", "sentry_mode"]));
-  const softwareVersion = readString(
+  // REST-1: Version 구독 제거 — 잔여 패킷 키만 허용
+  const softwareVersion = readUsableString(
     getDataField(data, ["Version", "SoftwareVersion", "car_version"]),
   );
 
@@ -444,6 +479,66 @@ export function parseTelemetryMessage(message: TelemetryMessage): ParsedTelemetr
   );
   const tpmsRearRight = readNumber(
     getDataField(data, ["TpmsPressureRr", "tpms_pressure_rr"]),
+  );
+
+  const speedMph = readNumber(getDataField(data, ["VehicleSpeed", "vehicle_speed"]));
+  const vehicleSpeedKmh =
+    speedMph != null ? Math.round(speedMph * 1.60934 * 10) / 10 : undefined;
+  const gpsHeading = readNumber(getDataField(data, ["GpsHeading", "heading"]));
+  const timeToFullChargeHours = readNumber(
+    getDataField(data, ["TimeToFullCharge", "time_to_full_charge"]),
+  );
+  const chargeAmps = readNumber(getDataField(data, ["ChargeAmps", "charge_amps"]));
+  const chargePortDoorOpen = readBoolean(
+    getDataField(data, ["ChargePortDoorOpen", "charge_port_door_open"]),
+  );
+  const chargePortLatch = readUsableEnumToken(
+    getDataField(data, ["ChargePortLatch", "charge_port_latch"]),
+  );
+  const fastChargerPresent = readBoolean(
+    getDataField(data, ["FastChargerPresent", "fast_charger_present"]),
+  );
+  const tpmsHardWarnings = readUsableEnumToken(
+    getDataField(data, ["TpmsHardWarnings", "tpms_hard_warning"]),
+  );
+  const tpmsSoftWarnings = readUsableEnumToken(
+    getDataField(data, ["TpmsSoftWarnings", "tpms_soft_warning"]),
+  );
+  const destinationName = readUsableString(
+    getDataField(data, ["DestinationName", "destination_name"]),
+  );
+  const destLoc = readLocation(
+    getDataField(data, ["DestinationLocation", "destination_location"]),
+  );
+  const minutesToArrival = readNumber(
+    getDataField(data, ["MinutesToArrival", "minutes_to_arrival"]),
+  );
+  const milesToArrival = readNumber(
+    getDataField(data, ["MilesToArrival", "miles_to_arrival"]),
+  );
+  const expectedEnergyPercentAtArrival = readNumber(
+    getDataField(data, [
+      "ExpectedEnergyPercentAtTripArrival",
+      "expected_energy_percent_at_trip_arrival",
+    ]),
+  );
+  const preconditioningEnabled = readBoolean(
+    getDataField(data, ["PreconditioningEnabled", "preconditioning_enabled"]),
+  );
+  const valetModeEnabled = readBoolean(
+    getDataField(data, ["ValetModeEnabled", "valet_mode"]),
+  );
+  const serviceModeEnabled = readBoolean(
+    getDataField(data, ["ServiceMode", "service_mode"]),
+  );
+  const softwareUpdateDownloadPercent = readNumber(
+    getDataField(data, ["SoftwareUpdateDownloadPercentComplete"]),
+  );
+  const softwareUpdateInstallPercent = readNumber(
+    getDataField(data, ["SoftwareUpdateInstallationPercentComplete"]),
+  );
+  const softwareUpdateVersion = readUsableString(
+    getDataField(data, ["SoftwareUpdateVersion"]),
   );
 
   let status: VehicleStatus | null = "ONLINE";
@@ -506,6 +601,44 @@ export function parseTelemetryMessage(message: TelemetryMessage): ParsedTelemetr
     sentryMode: sentryMode ?? null,
     softwareVersion,
     status,
+    vehicleSpeedKmh: vehicleSpeedKmh ?? null,
+    gpsHeading: gpsHeading ?? null,
+    detailedChargeState: detailedChargeState ?? null,
+    timeToFullChargeHours: timeToFullChargeHours ?? null,
+    chargeAmps: chargeAmps ?? null,
+    chargePortDoorOpen: chargePortDoorOpen ?? null,
+    chargePortLatch: chargePortLatch ?? null,
+    fastChargerPresent: fastChargerPresent ?? null,
+    tpmsHardWarnings: tpmsHardWarnings ?? null,
+    tpmsSoftWarnings: tpmsSoftWarnings ?? null,
+    destinationName: destinationName ?? null,
+    destinationLatitude: hasUsableCoordinates(
+      destLoc?.latitude ?? null,
+      destLoc?.longitude ?? null,
+    )
+      ? (destLoc?.latitude ?? null)
+      : null,
+    destinationLongitude: hasUsableCoordinates(
+      destLoc?.latitude ?? null,
+      destLoc?.longitude ?? null,
+    )
+      ? (destLoc?.longitude ?? null)
+      : null,
+    minutesToArrival: minutesToArrival ?? null,
+    milesToArrival: milesToArrival ?? null,
+    expectedEnergyPercentAtArrival: expectedEnergyPercentAtArrival ?? null,
+    preconditioningEnabled: preconditioningEnabled ?? null,
+    valetModeEnabled: valetModeEnabled ?? null,
+    serviceModeEnabled: serviceModeEnabled ?? null,
+    softwareUpdateDownloadPercent:
+      softwareUpdateDownloadPercent != null
+        ? Math.round(softwareUpdateDownloadPercent)
+        : null,
+    softwareUpdateInstallPercent:
+      softwareUpdateInstallPercent != null
+        ? Math.round(softwareUpdateInstallPercent)
+        : null,
+    softwareUpdateVersion: softwareUpdateVersion ?? null,
   };
 }
 

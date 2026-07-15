@@ -15,6 +15,7 @@ import {
   TeslaFleetClient,
 } from "@/lib/tesla/mapper";
 import { serializeNearbyChargingSites } from "@/lib/tesla/nearby-charging";
+import { mergeCafSnapshotFields, pickCafSnapshotFields } from "@/lib/tesla/telemetry/caf-fields";
 import {
   getRestWakeCooldownMinutes,
   isBaselineOnReadyEnabled,
@@ -144,6 +145,7 @@ export async function writeRestSnapshot(
     snapshot,
     previousSnapshot,
   );
+  const cafFields = mergeCafSnapshotFields({}, previousSnapshot);
 
   const resolvedTelemetrySource =
     preserveTelemetryFields && previousSnapshot?.telemetrySource === "TELEMETRY"
@@ -187,6 +189,7 @@ export async function writeRestSnapshot(
       sentryMode: snapshot.sentryMode,
       serviceStatus: snapshot.serviceStatus,
       softwareVersion: snapshot.softwareVersion,
+      ...cafFields,
       nearbyChargingSites: snapshot.nearbyChargingSites
         ? serializeNearbyChargingSites(snapshot.nearbyChargingSites, {
             capturedAt: lastRestSyncAt,
@@ -635,6 +638,7 @@ export async function maybeRefreshNearbyOnPark(
         sentryMode: previous.sentryMode,
         serviceStatus: previous.serviceStatus,
         softwareVersion: previous.softwareVersion,
+        ...pickCafSnapshotFields(previous),
         nearbyChargingSites: nearbyJson,
         lastTelemetryAt: previous.lastTelemetryAt,
         lastRestSyncAt: now,

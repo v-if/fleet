@@ -68,7 +68,7 @@ https://bori-cmd-proxy.fly.dev
 | CREATE via Proxy | **HTTP 200** · `{"response":{"updated_vehicles":1}}` |
 | GET (Fleet API `na`) | **HTTP 200** · **`config != null`** |
 | `hostname` | `telemetry.bori-fleet.shop` |
-| fields | Soc, Location, ChargeState, **Gear**, Locked, Odometer, InsideTemp, OutsideTemp, SentryMode |
+| fields | 당시 P0 9개 (Soc…SentryMode). **현행 create 전체 목록:** [requirements-tesla-fleet-telemetry-config.md](./requirements-tesla-fleet-telemetry-config.md) §3 |
 | `synced` | 당시 `false` (차량 sleep 가능 — wake 후 `true` 될 수 있음) |
 
 → Proxy·VK 키·CA·필드 관례는 Production create에 사용 가능한 상태입니다.

@@ -1,0 +1,23 @@
+-- CAF-3: Telemetry P1 Snapshot columns
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "vehicleSpeedKmh" DOUBLE PRECISION;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "gpsHeading" DOUBLE PRECISION;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "detailedChargeState" TEXT;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "timeToFullChargeHours" DOUBLE PRECISION;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "chargeAmps" DOUBLE PRECISION;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "chargePortDoorOpen" BOOLEAN;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "chargePortLatch" TEXT;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "fastChargerPresent" BOOLEAN;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "tpmsHardWarnings" TEXT;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "tpmsSoftWarnings" TEXT;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "destinationName" TEXT;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "destinationLatitude" DOUBLE PRECISION;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "destinationLongitude" DOUBLE PRECISION;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "minutesToArrival" DOUBLE PRECISION;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "milesToArrival" DOUBLE PRECISION;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "expectedEnergyPercentAtArrival" DOUBLE PRECISION;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "preconditioningEnabled" BOOLEAN;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "valetModeEnabled" BOOLEAN;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "serviceModeEnabled" BOOLEAN;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "softwareUpdateDownloadPercent" INTEGER;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "softwareUpdateInstallPercent" INTEGER;
+ALTER TABLE "VehicleSnapshot" ADD COLUMN IF NOT EXISTS "softwareUpdateVersion" TEXT;

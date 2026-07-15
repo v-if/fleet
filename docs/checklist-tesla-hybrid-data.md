@@ -129,10 +129,30 @@ pnpm telemetry:check
 
 ---
 
+## 후속 CAF — REST-1 제원 (Telemetry 비구독) — 문서 ✅
+
+> [requirements-tesla-fleet-telemetry-config-add-field.md](./requirements-tesla-fleet-telemetry-config-add-field.md) §5 · [checklist-tesla-fleet-telemetry-config-add-field.md](./checklist-tesla-fleet-telemetry-config-add-field.md)
+
+계정 연동 · VK · **Baseline `updateSpecs`** 1회로 받을 제원 (스트림 구독 금지):
+
+| 항목 | Vehicle / Snapshot | 비고 |
+|------|-------------------|------|
+| CarType · Trim · ExteriorColor | `carType` · `trimBadging` · `exteriorColor` | 현행 Baseline ✅ |
+| VehicleName | `teslaDisplayName` | 목록/Baseline |
+| Version (연동 시점 SW) | `softwareVersion` | CAF: Telemetry `Version` 구독 제거 예정 |
+| RoofColor · WheelType · EfficiencyPackage 등 | 확장 시 | CAF §5.1 |
+
+- [x] REST-1 목록 문서화 (CAF-5)
+- [ ] Telemetry create에서 제원 키 미포함 · 재구독 검수 (CAF-2 · CAF-6)
+- [ ] (선택) 확장 제원 컬럼 Baseline 반영
+
+---
+
 ## 문서 이력
 
 | 일자 | 내용 |
 |------|------|
+| 2026-07-15 | CAF REST-1 제원 포인터 (Telemetry Config 확장) |
 | 2026-07-11 | **E 완료** — hybrid:verify, telemetry:check, unlink SyncState 정리, setup-guide 온보딩 |
 | 2026-07-11 | Telemetry handoff 문서 — [handoff-phase44-to-fleet-telemetry.md](./handoff-phase44-to-fleet-telemetry.md) (서버 배포 불필요) |
 | 2026-07-11 | **D 완료** — 목록/상세 제원·lifecycle·신선도 UI, 설정 온보딩 패널, Baseline/VK 액션 |

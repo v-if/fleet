@@ -849,6 +849,17 @@
 - [ ] **LN-QA** 실차 검수 (`LRWYGCFJ7SC214742`)
 - [ ] **LN-A/B/C** 파서·lastUpdatedAt·ASLEEP fallback (선택·본 건 비필수)
 
+### Phase CAF Telemetry Config 필드 확장 — 코드 ✅ · 실차 ☐
+
+> [requirements-tesla-fleet-telemetry-config-add-field.md](./requirements-tesla-fleet-telemetry-config-add-field.md) · [checklist-tesla-fleet-telemetry-config-add-field.md](./checklist-tesla-fleet-telemetry-config-add-field.md)
+
+- [x] **CAF-1** P0/P1/P2·REST-1 필드 정의
+- [x] **CAF-5** REST-1 제원·Baseline/연동 문서 명시
+- [x] **CAF-2** `default-fields.ts` 44키 · Version 제거 · `caf:verify`
+- [x] **CAF-3** migrate · mapper · Snapshot CAF 컬럼 · REST/ASLEEP merge
+- [x] **CAF-4** UI — 충전 ETA/포트 · 속도 · 목적지 · TPMS Hard · OTA
+- [ ] **CAF-6** 실차 재구독 · GET config ⊇ §4 · Production migrate
+
 ---
 
 ## Phase 5. 배포 및 데모 (M5)
@@ -972,4 +983,6 @@
 | 2026-07-15 | Phase LN 문서 — Snapshot 위경도 null (파서·lastUpdatedAt) |
 | 2026-07-15 | Phase LN — **LN-R 확정** (wake REST overwrite) · LN-7 우선 |
 | 2026-07-15 | Phase LN-R 구현 — mergeSnapshotCoordinates · ln:verify · LN-QA 남음 |
+| 2026-07-15 | Phase CAF — Telemetry Config P0/P1 필드 정의·체크리스트 (코드 미착수) |
+| 2026-07-15 | Phase CAF-2~4 구현 — 44 fields · migrate · UI · caf:verify · CAF-6 남음 |
 

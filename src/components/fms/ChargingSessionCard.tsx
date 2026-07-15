@@ -10,6 +10,12 @@ type ChargingSessionCardProps = {
   chargerPowerKw: number | null | undefined;
   chargeLimitSoc: number | null | undefined;
   chargingPowerKind?: string | null;
+  /** CAF: hours until full / ready */
+  timeToFullChargeHours?: number | null;
+  chargeAmps?: number | null;
+  chargePortDoorOpen?: boolean | null;
+  fastChargerPresent?: boolean | null;
+  detailedChargeState?: string | null;
 };
 
 const TITLE: Record<Exclude<ChargingStatus, "DISCONNECTED">, string> = {
@@ -29,7 +35,16 @@ function toneClass(status: Exclude<ChargingStatus, "DISCONNECTED">) {
   }
 }
 
-/** 「실시간 차량 정보」내 충전 세션 서브카드 (CC) */
+function formatEtaHours(hours: number | null | undefined): string | null {
+  if (hours == null || !Number.isFinite(hours) || hours < 0) return null;
+  const totalMin = Math.round(hours * 60);
+  if (totalMin < 60) return `약 ${totalMin}분`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return m > 0 ? `약 ${h}시간 ${m}분` : `약 ${h}시간`;
+}
+
+/** 「실시간 차량 정보」내 충전 세션 서브카드 (CC + CAF) */
 export function ChargingSessionCard({
   chargingStatus,
   batteryPercent,
@@ -37,6 +52,11 @@ export function ChargingSessionCard({
   chargerPowerKw,
   chargeLimitSoc,
   chargingPowerKind,
+  timeToFullChargeHours,
+  chargeAmps,
+  chargePortDoorOpen,
+  fastChargerPresent,
+  detailedChargeState,
 }: ChargingSessionCardProps) {
   const kindLabel = labelChargingPowerKind(chargingPowerKind);
   const rangeLabel =
@@ -54,9 +74,27 @@ export function ChargingSessionCard({
     chargeLimitSoc != null && Number.isFinite(chargeLimitSoc)
       ? `한도 ${Math.round(chargeLimitSoc)}%`
       : null;
+  const etaLabel = formatEtaHours(timeToFullChargeHours);
+  const ampsLabel =
+    chargeAmps != null && Number.isFinite(chargeAmps)
+      ? `${chargeAmps.toLocaleString("ko-KR", { maximumFractionDigits: 1 })} A`
+      : null;
+  const portLabel =
+    chargePortDoorOpen === true
+      ? "충전구 열림"
+      : chargePortDoorOpen === false
+        ? "충전구 닫힘"
+        : null;
+  const fastLabel = fastChargerPresent === true ? "급속 충전기" : null;
 
   const showSocRow = batteryPercent != null || rangeLabel != null;
-  const showPowerRow = powerLabel != null || limitLabel != null;
+  const showPowerRow =
+    powerLabel != null ||
+    limitLabel != null ||
+    etaLabel != null ||
+    ampsLabel != null ||
+    portLabel != null ||
+    fastLabel != null;
 
   return (
     <div className={`mt-4 rounded-xl border px-4 py-3 sm:px-5 ${toneClass(chargingStatus)}`}>
@@ -67,6 +105,14 @@ export function ChargingSessionCard({
         {kindLabel ? (
           <span className="rounded-md border border-gray-300/80 bg-white/60 px-1.5 py-0.5 text-theme-xs font-medium text-gray-700 dark:border-gray-600 dark:bg-white/5 dark:text-gray-300">
             {kindLabel}
+          </span>
+        ) : null}
+        {detailedChargeState ? (
+          <span
+            className="truncate text-theme-xs text-gray-500 dark:text-gray-400"
+            title={detailedChargeState}
+          >
+            {detailedChargeState.replace(/^DetailedChargeState/i, "")}
           </span>
         ) : null}
       </div>
@@ -87,7 +133,11 @@ export function ChargingSessionCard({
       {showPowerRow ? (
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-theme-sm text-gray-700 dark:text-gray-300">
           {powerLabel ? <span>{powerLabel}</span> : null}
+          {ampsLabel ? <span>{ampsLabel}</span> : null}
           {limitLabel ? <span>{limitLabel}</span> : null}
+          {etaLabel ? <span>완료 예정 {etaLabel}</span> : null}
+          {portLabel ? <span>{portLabel}</span> : null}
+          {fastLabel ? <span>{fastLabel}</span> : null}
         </div>
       ) : null}
     </div>
