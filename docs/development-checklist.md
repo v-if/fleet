@@ -814,6 +814,15 @@
 - [ ] **VD3-6** 실차 As-Is vs v3 비교
 - [ ] **VD3-7** 컷오버
 
+### Phase VD3-S 제원 `i` 팝업 — ✅ 코드 · ☐ 실차
+
+> [requirements-vehicle-detail-vd3-specs-popover.md](./requirements-vehicle-detail-vd3-specs-popover.md)
+
+- [x] **VD3-S-1** 문서 승인 (GO)
+- [x] **VD3-S-2** SpecsModal + Hero `i` · 연식/휠/루프/포트/AP HW
+- [x] **VD3-S-3** 하단 제원 카드 제거
+- [ ] **VD3-S-4** 실차 검수
+
 ### Telemetry Value Monitor (개발) — 요구1 ✅
 
 > [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md)
@@ -1042,4 +1051,6 @@
 | 2026-07-15 | VD3 `/vehicles/[id]/v3` 구현 · 체크리스트 |
 | 2026-07-16 | NCS nearby 카탈로그·폴백 요구 초안 |
 | 2026-07-16 | NCS-2~4 코드 — ChargingStation · 폴백 · verify |
+| 2026-07-16 | VD3-S Hero `i` 제원 모달 요구 초안 |
+| 2026-07-16 | VD3-S-2·S-3 코드 — Hero `i` Specs Modal · 하단 제원 카드 제거 |
 

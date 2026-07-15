@@ -23,6 +23,7 @@
 | [requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md) | 차량 상세 **표시 문구·배치** — VD-UX2 (A~G 완료) | 카피·위치 카드 검수 |
 | [requirements-vehicle-detail-ops-copy.md](./requirements-vehicle-detail-ops-copy.md) | **VD-OPS** — 새로고침/제원/재연동 안내 (TRF-B1) · ✅ | 상세 운영 문구 |
 | [requirements-vehicle-detail-vd3.md](./requirements-vehicle-detail-vd3.md) | **VD3** — Telemetry 시대 상세 · `/vehicles/[id]/v3` ✅ · 실차 ☐ | 상세 비교 |
+| [requirements-vehicle-detail-vd3-specs-popover.md](./requirements-vehicle-detail-vd3-specs-popover.md) | **VD3-S** — Hero `i` 제원 모달 · Tier B 필드 · 코드 ✅ · 실차 ☐ | V3 제원 UX |
 | [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md) | Phase VD3-1b~4 ✅ · VD3-6~7 ☐ | VD3 검수 |
 | [research/research-vehicles-detail-chatgpt.md](./research/research-vehicles-detail-chatgpt.md) | 상세 UI 리서치 (FMS 관리자 IA) | VD3 근거 |
 | [research/research-vehicles-detail-gemini.md](./research/research-vehicles-detail-gemini.md) | 상세 UI 리서치 (Cockpit·모드·제어·네비) | VD3 근거 |
@@ -215,3 +216,5 @@
 | 2026-07-15 | VD3 `/vehicles/[id]/v3` · As-Is 병렬 UI |
 | 2026-07-16 | NCS — nearby 카탈로그 DB · asleep 폴백 요구 초안 |
 | 2026-07-16 | NCS-2~4 코드 — ChargingStation · 폴백 · `ncs:verify` |
+| 2026-07-16 | VD3-S — Hero `i` 제원 모달 요구 초안 |
+| 2026-07-16 | VD3-S-2·S-3 코드 ✅ — Specs Modal · 하단 제원 카드 제거 |

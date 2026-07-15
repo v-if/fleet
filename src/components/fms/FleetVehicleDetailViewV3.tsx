@@ -14,8 +14,9 @@ import {
 import { FleetToolbar } from "@/components/fms/FleetToolbar";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
+import { Modal } from "@/components/ui/modal";
 import { useVehicleDetail, useVehicleRefresh } from "@/hooks/use-vehicles";
-import { labelCarType, labelTrimBadging } from "@/lib/tesla/display-model";
+import { labelNearbyChargingSource } from "@/lib/tesla/nearby-charging";
 import type { MapVehicle } from "@/lib/types/vehicle";
 import {
   buildOpsSummary,
@@ -40,7 +41,6 @@ import {
   formatTempC,
   hasValidCoordinates,
 } from "@/lib/vehicle-status";
-import { labelNearbyChargingSource } from "@/lib/tesla/nearby-charging";
 
 type Props = { vehicleId: string };
 
@@ -52,7 +52,8 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isRetryingBaseline, setIsRetryingBaseline] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
-  const [specsOpen, setSpecsOpen] = useState(false);
+  const [specsModalOpen, setSpecsModalOpen] = useState(false);
+  const [vinCopied, setVinCopied] = useState(false);
 
   async function handleRefresh() {
     setIsRefreshing(true);
@@ -268,10 +269,22 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
           <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
             {vehicle.plateNumber}
           </h4>
-          <p className="mt-0.5 text-theme-sm text-gray-500">
-            {vehicle.model}
-            {formatColorBadge(vehicle) ? ` · ${formatColorBadge(vehicle)}` : ""}
-          </p>
+          <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+            <p className="text-theme-sm text-gray-500">
+              {vehicle.model}
+              {formatColorBadge(vehicle) ? ` · ${formatColorBadge(vehicle)}` : ""}
+            </p>
+            <button
+              type="button"
+              onClick={() => setSpecsModalOpen(true)}
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-gray-300 text-theme-xs font-semibold text-gray-500 transition hover:border-brand-400 hover:text-brand-700 dark:border-gray-600 dark:text-gray-400 dark:hover:border-brand-500 dark:hover:text-brand-300"
+              aria-label="제원 보기"
+              title="제원 보기"
+            >
+              <span aria-hidden="true">i</span>
+              <span className="sr-only">제원 보기</span>
+            </button>
+          </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <div className="min-w-[8rem] max-w-[12rem] flex-1">
@@ -533,44 +546,12 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
         </section>
       ) : null}
 
-      {/* Specs */}
-      <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-        <button
-          type="button"
-          className="flex w-full items-center justify-between text-left"
-          onClick={() => setSpecsOpen((v) => !v)}
-        >
-          <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">제원</h4>
-          <span className="text-theme-xs text-gray-400">{specsOpen ? "접기" : "펼치기"}</span>
-        </button>
-        {specsOpen ? (
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Metric label="모델" value={vehicle.model} />
-            <Metric label="차종" value={labelCarType(vehicle.carType) ?? "—"} />
-            <Metric label="트림" value={labelTrimBadging(vehicle.trimBadging) ?? "—"} />
-            <Metric label="색상" value={formatColorBadge(vehicle) ?? "—"} />
-            <Metric label="VIN" value={vehicle.oemVehicleId ?? "—"} />
-            <Metric
-              label="소프트웨어"
-              value={vehicle.firmwareVersion ?? snapshot?.softwareVersion ?? "—"}
-            />
-            <Metric
-              label="제원 동기화"
-              value={
-                vehicle.specsSyncedAt
-                  ? formatRelativeTime(vehicle.specsSyncedAt)
-                  : "—"
-              }
-            />
-          </div>
-        ) : null}
-      </section>
-
       {/* Ops */}
       <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
         <h4 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">운영</h4>
         <p className="mb-3 text-theme-xs text-gray-500">
           「제원 다시 불러오기」는 모델·색·SW 등 고정 제원만 가져옵니다. 배터리·위치는 Telemetry입니다.
+          제원 내용은 Hero 모델명 옆 <strong>i</strong>에서 볼 수 있습니다.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button
@@ -597,6 +578,77 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
           </Link>
         </div>
       </section>
+
+      <Modal
+        isOpen={specsModalOpen}
+        onClose={() => {
+          setSpecsModalOpen(false);
+          setVinCopied(false);
+        }}
+        className="mx-4 max-h-[85vh] max-w-lg overflow-y-auto p-5 sm:p-6"
+      >
+        <h3 className="mb-1 pr-10 text-lg font-semibold text-gray-800 dark:text-white/90">
+          제원
+        </h3>
+        <p className="mb-4 text-theme-xs text-gray-500">
+          {vehicle.plateNumber}
+          {!vehicle.specsSyncedAt && !vehicle.wheelType && !vehicle.chargePortType
+            ? " · 값이 비어 있으면 운영에서 「제원 다시 불러오기」를 사용하세요."
+            : ""}
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Metric label="모델" value={vehicle.model || "—"} />
+          <Metric label="연식" value={vehicle.year ? String(vehicle.year) : "—"} />
+          <Metric label="색상" value={formatColorBadge(vehicle) ?? "—"} />
+          <Metric label="휠" value={vehicle.wheelType?.trim() || "—"} />
+          <Metric label="루프" value={vehicle.roofColor?.trim() || "—"} />
+          <Metric label="충전 포트" value={vehicle.chargePortType?.trim() || "—"} />
+          <Metric
+            label="Autopilot HW"
+            value={vehicle.driverAssist?.trim() || "—"}
+          />
+          <div className="rounded-xl border border-gray-100 px-3 py-2.5 dark:border-gray-800 sm:col-span-2">
+            <p className="text-theme-xs text-gray-500">VIN</p>
+            <div className="mt-0.5 flex flex-wrap items-center gap-2">
+              <p className="break-all text-theme-sm font-medium text-gray-800 dark:text-white/90">
+                {vehicle.oemVehicleId ?? "—"}
+              </p>
+              {vehicle.oemVehicleId ? (
+                <button
+                  type="button"
+                  className="text-theme-xs font-medium text-brand-600 hover:underline dark:text-brand-400"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(vehicle.oemVehicleId!);
+                      setVinCopied(true);
+                      window.setTimeout(() => setVinCopied(false), 1500);
+                    } catch {
+                      /* ignore */
+                    }
+                  }}
+                >
+                  {vinCopied ? "복사됨" : "복사"}
+                </button>
+              ) : null}
+            </div>
+          </div>
+          <Metric
+            label="소프트웨어"
+            value={vehicle.firmwareVersion ?? snapshot?.softwareVersion ?? "—"}
+          />
+          <Metric
+            label="제원 동기화"
+            value={
+              vehicle.specsSyncedAt ? formatRelativeTime(vehicle.specsSyncedAt) : "—"
+            }
+          />
+        </div>
+        <div className="mt-5 flex justify-end">
+          <Button size="sm" variant="outline" onClick={() => setSpecsModalOpen(false)}>
+            닫기
+          </Button>
+        </div>
+      </Modal>
     </>
   );
 }

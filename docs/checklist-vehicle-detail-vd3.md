@@ -1,7 +1,7 @@
 # Phase VD3 — 차량 상세 Telemetry 시대 IA 체크리스트
 
 관련: [requirements-vehicle-detail-vd3.md](./requirements-vehicle-detail-vd3.md)  
-상태: **문서 ✅ · `/v3` 코드 ✅ · 실차 비교 ☐ · 컷오버 ☐**
+상태: **문서 ✅ · `/v3` 코드 ✅ (VD3-S 포함) · 실차 비교 ☐ · 컷오버 ☐**
 
 ---
 
@@ -17,6 +17,7 @@
 | VD3-5 | 운행 요약·이벤트 | ☐ 후속 |
 | VD3-6 | 실차 As-Is vs `/v3` 비교 | ☐ |
 | VD3-7 | 컷오버 결정 | ☐ |
+| **VD3-S** | Hero `i` 제원 모달 ([요구](./requirements-vehicle-detail-vd3-specs-popover.md)) | ✅ 코드 · ☐ 실차 |
 
 ---
 
@@ -29,18 +30,20 @@
 | 3 | As-Is 「새 상세 (VD3)」링크 | ✅ |
 | 4 | 동일 `useVehicleDetail` (fetch 공유) | ✅ |
 | 5 | 목록 기본 링크는 As-Is 유지 | ✅ |
+| 6 | Hero `i` · Specs Modal · 하단 제원 카드 제거 (VD3-S) | ✅ |
 
 ---
 
-## 실차 비교 (VD3-6) ☐
+## 실차 비교 (VD3-6 · VD3-S-4) ☐
 
 VIN: `LRWYGCFJ7SC214742`
 
 - [ ] 동일 차량 As-Is `/vehicles/{id}` · To-Be `/vehicles/{id}/v3` 나란히
 - [ ] 가동모드 · SoC · 지도 · nearby empty/목록
 - [ ] 충전 중 Dynamic 카드 · 주행 중 목적지 카드
-- [ ] 제원 접힘 · 재연동/제원 CTA
+- [ ] 재연동/제원 CTA · Hero `i`로 제원 모달
 - [ ] 관제 요약 문구가 업무 언어인지
+- [ ] Hero `i` · 제원 모달(연식·휠·루프·포트·AP HW) · 하단 제원 카드 없음
 
 ---
 
@@ -49,4 +52,6 @@ VIN: `LRWYGCFJ7SC214742`
 | 일자 | 내용 |
 |------|------|
 | 2026-07-15 | 체크리스트 작성 · VD3-1b~4 코드 ✅ |
+| 2026-07-16 | VD3-S 제원 `i` 모달 요구 링크 |
+| 2026-07-16 | VD3-S-2·S-3 코드 ✅ · 실차 S-4 ☐ |
 |
