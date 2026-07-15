@@ -22,13 +22,18 @@ export const DISCONNECT_REASON_LABEL: Record<
 };
 
 export const REST_SYNC_REASON_LABEL: Record<
-  "BASELINE" | "WAKE_COOLDOWN" | "MANUAL_FALLBACK" | "SPECS_REFRESH",
+  | "BASELINE"
+  | "WAKE_COOLDOWN"
+  | "MANUAL_FALLBACK"
+  | "SPECS_REFRESH"
+  | "PARK_NEARBY",
   string
 > = {
   BASELINE: "제원 수집",
-  WAKE_COOLDOWN: "기상 후 상세 조회",
+  WAKE_COOLDOWN: "기상 후 상세 조회(폐기)",
   MANUAL_FALLBACK: "수동 상세 조회",
   SPECS_REFRESH: "제원 다시 불러오기",
+  PARK_NEARBY: "주차 후 인근충전소",
 };
 
 export function lifecycleBadgeColor(lifecycle: VehicleLifecycle): TailAdminBadgeColor {

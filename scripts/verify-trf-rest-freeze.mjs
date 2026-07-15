@@ -1,5 +1,5 @@
 /**
- * TRF: Freeze default ON; Baseline graduated (exempt)
+ * TRF: Freeze default ON; Baseline + park_nearby graduated
  * Usage: npm run trf:verify
  */
 import {
@@ -27,6 +27,10 @@ assert(
   REST_FREEZE_GRADUATED_PATHS.includes("baseline_specs_only"),
   "baseline graduated from freeze",
 );
+assert(
+  REST_FREEZE_GRADUATED_PATHS.includes("park_nearby"),
+  "park_nearby graduated from freeze",
+);
 
 process.env.TESLA_REST_FREEZE = "false";
 assert(isRestFreezeEnabled() === false, "false disables freeze");
@@ -39,4 +43,4 @@ if (prev === undefined) delete process.env.TESLA_REST_FREEZE;
 else process.env.TESLA_REST_FREEZE = prev;
 
 if (failed) process.exit(1);
-console.log("TRF freeze config OK (baseline graduated)");
+console.log("TRF freeze config OK (baseline + park_nearby graduated)");

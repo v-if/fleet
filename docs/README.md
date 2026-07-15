@@ -43,7 +43,8 @@
 | [checklist-tesla-fleet-telemetry-config-add-field.md](./checklist-tesla-fleet-telemetry-config-add-field.md) | Phase CAF-2~4 ✅ · CAF-6 실차 ☐ | CAF 검수 |
 | [requirements-tesla-telemetry-rest-freeze.md](./requirements-tesla-telemetry-rest-freeze.md) | **TRF** — Freeze(미졸업 REST 차단) · Baseline 졸업 · Wake 대기 | 경로 졸업 모델 |
 | [requirements-tesla-telemetry-rest-baseline-specs.md](./requirements-tesla-telemetry-rest-baseline-specs.md) | **TRF-B1** — specs-only Baseline · Tier A/B/C · 코드 ✅ · 실차 ☐ | Baseline 제원 |
-| [checklist-tesla-telemetry-rest-freeze.md](./checklist-tesla-telemetry-rest-freeze.md) | Phase TRF · Freeze ✅ · Baseline 졸업 ✅ · Wake/B2 ☐ | TRF 검수 |
+| [requirements-tesla-wake-telemetry-rest.md](./requirements-tesla-wake-telemetry-rest.md) | **TRF-B2** — 절전→Online Telemetry · park nearby 졸업 · 코드 ✅ · 실차 ☐ | Wake 재정의 |
+| [checklist-tesla-telemetry-rest-freeze.md](./checklist-tesla-telemetry-rest-freeze.md) | Phase TRF · Freeze ✅ · Baseline·park nearby 졸업 ✅ · B2 실차 ☐ | TRF 검수 |
 | [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md) | 상세 **Telemetry 수신 로그(개발)** — 요구1 ✅ · 요구2 미착수 | 수신·매핑 검증 UI |
 | [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | 하이브리드 **DB 설계** — Vehicle 제원 + VehicleSyncState + Snapshot 쓰기 경로 | 스키마·마이그레이션·sync 구현할 때 |
 | [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | Phase 4.4 구현 체크리스트 (A~E) | 하이브리드 데이터 작업 진척·완료 확인 |
@@ -202,3 +203,5 @@
 | 2026-07-15 | TRF Freeze 졸업 — Baseline 예외 · Wake 등 차단 유지 |
 | 2026-07-15 | 온보딩 E2E — Production DB 리셋 (User만 유지 · Telemetry config DELETE) |
 | 2026-07-15 | VD-OPS — 차량상세 운영 안내·버튼 문구 (TRF-B1 정합) |
+| 2026-07-15 | TRF-B2 — 절전→Online Wake/Telemetry 요구 초안 |
+| 2026-07-15 | TRF-B2 코드 ✅ — Wake/Gear 폐기 · park nearby 졸업 |

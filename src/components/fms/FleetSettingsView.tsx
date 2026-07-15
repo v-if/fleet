@@ -259,9 +259,11 @@ export function FleetSettingsView() {
               {restFreeze ? (
                 <p className="rounded-lg border border-warning-200 bg-warning-50 px-3 py-2 text-theme-xs text-warning-800 dark:border-warning-500/30 dark:bg-warning-500/10 dark:text-warning-200">
                   <strong>REST Freeze (TRF)</strong> — Snapshot을 쓰는 Fleet REST(
-                  wake·gear·nearby·fallback)가 중지되어 있습니다.{" "}
-                  <strong>온보딩 제원 Baseline(1회)</strong>은 Freeze와 무관하게
-                  동작합니다. 미졸업 경로를 모두 허용하려면{" "}
+                  fallback·gear)가 중지되어 있습니다.{" "}
+                  <strong>온보딩 제원 Baseline</strong>·
+                  <strong>주차 후 인근충전소</strong>는 Freeze와 무관하게
+                  동작합니다. Wake 전량 REST는 폐기되었습니다. 미졸업 경로를
+                  허용하려면{" "}
                   <code className="text-[11px]">TESLA_REST_FREEZE=false</code>.
                 </p>
               ) : null}

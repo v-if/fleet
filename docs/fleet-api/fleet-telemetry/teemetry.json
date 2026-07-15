@@ -1,0 +1,105 @@
+{
+    "vin": "",
+    "data": {
+      "Soc": {
+        "doubleValue": 76.66666666666667
+      },
+      "Gear": {
+        "stringValue": "ShiftStateP"
+      },
+      "Locked": {
+        "booleanValue": true
+      },
+      "Location": {
+        "locationValue": {
+          "latitude": 37.46426,
+          "longitude": 126.819543
+        }
+      },
+      "Odometer": {
+        "doubleValue": 7619.641656751686
+      },
+      "ChargeAmps": {
+        "doubleValue": 0
+      },
+      "GpsHeading": {
+        "doubleValue": 299.9750745406283
+      },
+      "InsideTemp": {
+        "doubleValue": 26.70000099390745
+      },
+      "SentryMode": {
+        "stringValue": "SentryModeStateOff"
+      },
+      "ChargeState": {
+        "stringValue": "Idle"
+      },
+      "OutsideTemp": {
+        "doubleValue": 27
+      },
+      "ServiceMode": {
+        "booleanValue": false
+      },
+      "VehicleSpeed": {
+        "doubleValue": 0
+      },
+      "ChargeLimitSoc": {
+        "intValue": 100
+      },
+      "TpmsPressureFl": {
+        "doubleValue": 2.850000042468309
+      },
+      "TpmsPressureFr": {
+        "doubleValue": 2.82500004209578
+      },
+      "TpmsPressureRl": {
+        "doubleValue": 2.850000042468309
+      },
+      "TpmsPressureRr": {
+        "doubleValue": 2.82500004209578
+      },
+      "ACChargingPower": {
+        "doubleValue": 0
+      },
+      "DCChargingPower": {
+        "doubleValue": 0
+      },
+      "EstBatteryRange": {
+        "doubleValue": 201.3129057847697
+      },
+      "ValetModeEnabled": {
+        "booleanValue": false
+      },
+      "ChargePortDoorOpen": {
+        "booleanValue": false
+      },
+      "FastChargerPresent": {
+        "booleanValue": false
+      },
+      "DestinationLocation": {
+        "locationValue": {
+          "latitude": 37.462825,
+          "longitude": 126.818483
+        }
+      },
+      "DetailedChargeState": {
+        "stringValue": "DetailedChargeStateDisconnected"
+      },
+      "SoftwareUpdateVersion": {
+        "stringValue": " "
+      },
+      "PreconditioningEnabled": {
+        "booleanValue": false
+      },
+      "ExpectedEnergyPercentAtTripArrival": {
+        "intValue": 26
+      },
+      "SoftwareUpdateDownloadPercentComplete": {
+        "intValue": 0
+      },
+      "SoftwareUpdateInstallationPercentComplete": {
+        "intValue": 0
+      }
+    },
+    "createdAt": "2026-07-15T07:05:35.000Z"
+  }

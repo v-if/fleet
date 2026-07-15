@@ -39,7 +39,7 @@ node --env-file=.env scripts/reset-fms-data.mjs --confirm --unsubscribe
 
 ## 2. E2E 시나리오 (리셋 후 · 현재 코드 기준)
 
-`TESLA_REST_FREEZE=true` 유지 권장 (Wake REST는 계속 차단 · **Baseline 제원은 Freeze 졸업**).
+`TESLA_REST_FREEZE=true` 유지 권장 (Wake/Gear REST는 **폐기** · **Baseline·park nearby는 Freeze 졸업**).
 
 1. **FMS 로그인** — `user@teslarental.com` → https://bori-fleet.shop/signin  
 2. **Tesla 계정 연동** — 설정 → OAuth → `TeslaAccount` 생성  

@@ -5,7 +5,7 @@
 | 목적 | **미졸업 Snapshot REST**를 막고, **재정의·졸업한 경로만** Freeze와 무관하게 허용한다. Telemetry SoT 검증과 온보딩 제원(Baseline)을 병행 |
 | 배경 | wake/fallback REST가 Snapshot을 덮어 Ingress≠UI 혼선 (LN-R). Baseline은 TRF-B1 specs-only로 졸업해 Freeze 중에도 VIN당 1회 제원 REST 가능 |
 | 관련 | [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md), [requirements-tesla-fleet-telemetry-config-add-field.md](./requirements-tesla-fleet-telemetry-config-add-field.md), [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md), [requirements-vehicle-location-null.md](./requirements-vehicle-location-null.md), [requirements-tesla-telemetry-rest-baseline-specs.md](./requirements-tesla-telemetry-rest-baseline-specs.md), [checklist-tesla-telemetry-rest-freeze.md](./checklist-tesla-telemetry-rest-freeze.md) |
-| 상태 | **Freeze 코드 ✅ · Baseline 졸업 ✅ · Wake 등 미졸업 · Telemetry QA ☐ · B2 ☐** |
+| 상태 | **Freeze 코드 ✅ · Baseline·park nearby 졸업 ✅ · Wake/Gear REST 폐기 ✅ · Telemetry QA ☐ · B2 실차 ☐** |
 | 작성일 | 2026-07-15 |
 | ID prefix | **TRF** (Telemetry REST Freeze) |
 
@@ -15,13 +15,16 @@
 
 ```text
 TESLA_REST_FREEZE=true (기본)
-   → 미졸업 Snapshot REST STOP (Wake · gear · nearby · fallback …)
+   → 미졸업 Snapshot REST STOP (fallback · 레거시 full …)
    → SoT(동적) = Telemetry webhook
 
 졸업 예외 (Freeze와 무관 · 항상 허용)
    ✅ Baseline specs-only (TRF-B1) — 계정/VK 후 제원 1회 · Snapshot 미생성
-   ☐ Wake 쿨다운 (TRF-B2 완료 후 졸업 예정)
-   ☐ …
+   ✅ Park nearby (TRF-B2) — Online→Gear=P · nearby_charging_sites만
+
+폐기 (호출 안 함 · 졸업 불필요)
+   ✅ Wake full REST no-op (`wake_no_rest`)
+   ✅ Gear correction REST no-op (`gear_rest_removed`)
 
 [경로별 재정의 완료] → 해당 경로만 Freeze 가드 제거 (= 졸업)
 [전 경로 졸업 또는 레거시] → TESLA_REST_FREEZE=false 로 전면 허용 가능
@@ -46,9 +49,9 @@ TESLA_REST_FREEZE=true (기본)
 
 | # | 경로 | 진입점 | Freeze | Snapshot? |
 |---|------|--------|:------:|:---------:|
-| A1 | Wake 쿨다운 REST | `maybeRunWakeCooldownRestSync` | **차단** | ✅ |
-| A2 | Gear correction | `maybeRunGearCorrectionRestSync` | **차단** | ✅ |
-| A3 | 정차 nearby | `maybeRefreshNearbyOnPark` | **차단** | ✅ |
+| A1 | Wake 쿨다운 REST | `maybeRunWakeCooldownRestSync` | **폐기(no-op)** | ❌ |
+| A2 | Gear correction | `maybeRunGearCorrectionRestSync` | **폐기(no-op)** | ❌ |
+| A3 | 정차 nearby | `maybeRefreshNearbyOnPark` | **졸업 · 허용** | nearby만 |
 | A4/A5 | Baseline specs-only | `runBaselineForVehicle` · VK→Baseline | **졸업 · 허용** | ❌ |
 | A6 | 수동 fallback | `?fallback=1` | **차단** | ✅ |
 | A7 | full / auto REST | force full | **차단** | ✅ |
@@ -62,24 +65,25 @@ TESLA_REST_FREEZE=true (기본)
 | `listVehicles` + `fleet_status` (registry) | 목록·VK 메타 |
 | OAuth / 토큰 | 위 API |
 | **Baseline specs-only (졸업)** | Vehicle 제원 1회 · Snapshot 없음 — [B1](./requirements-tesla-telemetry-rest-baseline-specs.md) |
+| **Park nearby (졸업)** | Gear=P · `nearby_charging_sites`만 — [B2](./requirements-tesla-wake-telemetry-rest.md) |
 
 ### 2.4 env
 
 ```text
 TESLA_REST_FREEZE=true   # 기본 · 미졸업 Snapshot REST 차단
-# Baseline은 REST_FREEZE_GRADUATED_PATHS — env와 무관
+# Baseline · park_nearby 는 REST_FREEZE_GRADUATED_PATHS — env와 무관
 ```
 
-- 설정 UI: fallback 비활성 · Freeze 안내(Baseline 예외 문구)
+- 설정 UI: fallback 비활성 · Freeze 안내(Baseline·park nearby 예외 문구)
 - status: `restFreeze: true`
 - 코드: `REST_FREEZE_GRADUATED_PATHS` (`config.ts`)
 
 ### 2.5 수용 기준
 
-- [x] A1~A3·A6~A7 Freeze 가드
+- [x] A1~A2 Wake/Gear **폐기** · A3 park nearby **졸업** · A6~A7 Freeze 가드
 - [x] A4/A5 Baseline **졸업** (Freeze ON에서도 실행)
 - [x] fallback UI · `restFreeze` 상태
-- [ ] 실차: Wake REST/Audit **없음** · Baseline 제원 **있음** (TRF-4 / B1-4)
+- [ ] 실차: Wake REST/Audit **없음** · Baseline 제원 **있음** · P 정차 nearby (TRF-4 / B1-4 / B2-4)
 - [ ] CAF-6 재구독 정상
 
 ---
@@ -126,17 +130,18 @@ TESLA_REST_FREEZE=true   # 기본 · 미졸업 Snapshot REST 차단
 
 **산출물:** TRF-5 ✅ · TRF-B1-3 ✅ · `npm run trf-b1:verify`
 
-### 4.2 ② Wake 쿨다운 REST
+### 4.2 ② Wake / Park nearby (TRF-B2)
 
-| 항목 | 현행(As-Is) | To-Be (재정의 · TBD) |
-|------|-------------|----------------------|
-| 트리거 | ASLEEP→Telemetry · `TESLA_REST_WAKE_COOLDOWN_MINUTES` | 유지 여부·분 재검토 |
-| 조회 | `vehicle_data` + nearby + service | **갭 보정 화이트리스트만** (예: TPMS·odometer·nearby — Telemetry에 이미 있는 Soc/Location은 조회해도 **Snapshot에 안 쓰거나 merge only**) |
-| Vehicle 제원 | `updateSpecs: false` | 유지 (제원 덮지 않음) |
-| Snapshot | 전 필드 기록 → LN-R로 좌표 merge 추가됨 | **허용 갱신 필드 목록** + 그 외 `?? previous` 의무 |
-| 목적 | Telemetry 공백 보정 | “Telemetry SoT를 깨지 않는 보정”으로 재정의 |
+**상세:** [requirements-tesla-wake-telemetry-rest.md](./requirements-tesla-wake-telemetry-rest.md) (**코드 ✅ · 실차 ☐**)
 
-**재정의 산출물 (B2):** wake REST **읽기 필드** / **Snapshot 쓰기 필드** / **무시 필드** 표.
+| 항목 | To-Be (구현됨) |
+|------|----------------|
+| Wake (절전→Online) | Telemetry만 · `wake_no_rest` · full REST 폐기 |
+| nearby | **Online→Gear=P** · Freeze 졸업 · `RestSyncReason.PARK_NEARBY` |
+| Gear REST | `gear_rest_removed` no-op |
+| 검증 | `npm run trf-b2:verify` · `trf:verify` |
+
+**산출물:** TRF-6 ✅ · TRF-B2-3 ✅
 
 ### 4.3 Phase B에서 다시 켜지 않는 것 (기본)
 
@@ -145,14 +150,14 @@ TESLA_REST_FREEZE=true   # 기본 · 미졸업 Snapshot REST 차단
 | 주기 full REST 폴링 | **계속 OFF** (Telemetry primary) |
 | 자동 wake_up | **계속 금지** |
 | 수동 fallback | 별도 정책 · Audit 필수 · 화이트리스트 동일 적용 권고 |
-| Gear correction | Phase B에서 **유지/폐기/축소** 재결정 (기본안: Freeze와 같이 재검토) |
+| Gear correction | **폐기됨** (TRF-B2 · `gear_rest_removed`) |
 
-### 4.4 Phase B 착수 전 필수
+### 4.4 Phase B 잔여
 
-- [ ] Phase A Freeze 해제 게이트(§3) 충족
-- [ ] B1·B2 필드 표 문서 승인
+- [ ] Phase A Freeze 해제 게이트(§3) / 실차 QA
+- [x] B1·B2 문서·코드 (실차 B1-4·B2-4 잔여)
 - [ ] LN-R merge 유지 (좌표 등)
-- [ ] CAF 구독 필드와 “wake가 Snapshot에 써도 되는 필드”가 모순 없는지 교차 검토
+- [x] Wake가 Snapshot에 쓰지 않음 (§4.2)
 
 ---
 
@@ -165,9 +170,9 @@ TESLA_REST_FREEZE=true   # 기본 · 미졸업 Snapshot REST 차단
 | **TRF-3** | 설정 fallback UI 비활성 · 상태 표시 | A Code | ✅ |
 | **TRF-4** | Freeze 상태에서 CAF-6·Telemetry 확인 (게이트 §3) | A QA | ☐ |
 | **TRF-5** | B1 Baseline/VK 조회·갱신 필드 표 확정 | B Doc | ✅ |
-| **TRF-6** | B2 Wake 쿨다운 조회·갱신 필드 표 확정 | B Doc | ☐ |
-| **TRF-7** | B1 코드 ✅ · B2·Freeze 해제 ☐ | B Code | 부분 ✅ |
-| **TRF-8** | 해제 후 실차: Telemetry SoT + 허용 REST만 Audit | B QA | ☐ |
+| **TRF-6** | B2 Wake/Park nearby 정책 확정 | B Doc | ✅ |
+| **TRF-7** | B1·B2 코드 ✅ · fallback 등 Freeze 잔여 | B Code | 부분 ✅ |
+| **TRF-8** | 실차: Telemetry SoT + 허용 REST만 Audit | B QA | ☐ |
 
 ---
 
@@ -177,8 +182,8 @@ TESLA_REST_FREEZE=true   # 기본 · 미졸업 Snapshot REST 차단
 |-------|------|:----:|
 | **TRF-Doc** | 요구·체크리스트 · 인덱스 | ✅ |
 | **TRF-A** | Freeze 구현 ✅ · Telemetry 확인(TRF-4) ☐ | 코드 ✅ / QA ☐ |
-| **TRF-B-Doc** | B1 ✅ · Wake(B2) ☐ | B1 ✅ / B2 ☐ |
-| **TRF-B** | B1 코드 ✅ · B2·Freeze 해제 ☐ | 부분 ✅ |
+| **TRF-B-Doc** | B1 ✅ · B2 ✅ | ✅ |
+| **TRF-B** | B1·B2 코드 ✅ · 실차·fallback 잔여 | 부분 ✅ |
 
 ---
 
@@ -186,24 +191,22 @@ TESLA_REST_FREEZE=true   # 기본 · 미졸업 Snapshot REST 차단
 
 | 항목 | 내용 |
 |------|------|
-| Freeze 중 제원 공백 | 신규 연동 차량 Model/색 미표시 가능 → 확인 후 B1 우선 또는 임시 UI “제원 대기” |
-| Freeze 중 nearby 공백 | 인근충전소 미갱신 — 검증 우선 |
-| Freeze 안 끄고 B 재정의만 | wake가 옛 전량 write로 재오염 — **가드 유지하며 B 배포** 권고 |
+| Freeze 중 제원 공백 | 신규 연동 — Baseline 졸업으로 완화 · 실차 B1-4 |
+| Park nearby 실패 | 절전 직후 REST 거부 가능 — ONLINE+P 시점 유지 |
+| Freeze 끄고 옛 wake 재가동 | **금지** — Wake는 폐기 상태 유지 |
 | alreadyConfigured | Freeze와 무관 · CAF 재구독은 예외 허용 |
 
 ---
 
-## 8. 구현 메모 (착수 시)
+## 8. 구현 메모
 
-| 모듈 | Freeze 포인트 |
-|------|----------------|
-| `processor.ts` | wake / gear / nearby 호출 전 |
-| `hybrid/rest-sync.ts` | `runBaseline*` · `maybeRunWake*` · gear · nearby |
-| `vehicle-sync.ts` / sync API | full · `fallback=1` |
-| `FleetSettingsView` | fallback 버튼 |
-| `telemetry/config.ts` | `isRestFreezeEnabled()` |
-
-Phase B 표는 CAF add-field §5 · hybrid 문서에 링크해 확장.
+| 모듈 | 상태 |
+|------|------|
+| `processor.ts` | Wake/Gear 호출 제거 · P→`maybeRefreshNearbyOnPark` |
+| `hybrid/rest-sync.ts` | Wake/Gear no-op · park nearby 졸업 |
+| `vehicle-sync.ts` / sync API | full · `fallback=1` Freeze 유지 |
+| `FleetSettingsView` | fallback 버튼 · Freeze 안내 갱신 |
+| `telemetry/config.ts` | `REST_FREEZE_GRADUATED_PATHS` ⊇ baseline · park_nearby |
 
 ---
 
@@ -216,3 +219,6 @@ Phase B 표는 CAF add-field §5 · hybrid 문서에 링크해 확장.
 | 2026-07-15 | TRF-B1 상세 요구 링크 — `requirements-tesla-telemetry-rest-baseline-specs.md` |
 | 2026-07-15 | TRF-B1-3 specs-only Baseline 코드 · TRF-5 ✅ |
 | 2026-07-15 | Freeze **졸업 모델** — Baseline specs-only는 Freeze 예외 · Wake 등은 차단 유지 |
+| 2026-07-15 | TRF-B2 링크 — `requirements-tesla-wake-telemetry-rest.md` |
+| 2026-07-15 | B2 nearby 시점 — Wake ✕ · Online→P ○ |
+| 2026-07-15 | **TRF-B2 코드** — Wake/Gear 폐기 · park nearby 졸업 · `trf-b2:verify` |

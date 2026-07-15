@@ -34,9 +34,10 @@ export function isTelemetryPrimaryMode(): boolean {
  *
  * **졸업 예외(Freeze와 무관·항상 허용):**
  * - Baseline specs-only (`runBaselineForVehicle` / VK→Baseline) — TRF-B1
+ * - Park nearby (`maybeRefreshNearbyOnPark`) — TRF-B2
  *
- * **Freeze ON 시 계속 차단:** Wake · gear · nearby · fallback/full Snapshot REST
- * 다음 TRF-Bx 완료 시 해당 경로도 예외로 졸업.
+ * **Freeze ON 시 계속 차단:** gear correction · fallback/full Snapshot REST
+ * Wake full REST는 TRF-B2에서 **폐기(no-op)** — Freeze와 무관하게 호출하지 않음.
  */
 export function isRestFreezeEnabled(): boolean {
   const value = process.env.TESLA_REST_FREEZE;
@@ -54,6 +55,7 @@ export const REST_FREEZE_SKIP_ERROR = "rest_freeze" as const;
 /** Freeze 졸업 경로 — 문서·검증용 목록 (코드는 경로별 가드 제거로 구현) */
 export const REST_FREEZE_GRADUATED_PATHS = [
   "baseline_specs_only",
+  "park_nearby",
 ] as const;
 
 export type VehicleSyncMode = "full" | "registry";
@@ -145,7 +147,10 @@ export function getTelemetryCaPem(): string | null {
   return raw.includes("\\n") ? raw.replace(/\\n/g, "\n") : raw;
 }
 
-/** ASLEEP→ONLINE 시 vehicle_data 쿨다운(분). 기본 30 */
+/**
+ * Park nearby 등 갭 REST 쿨다운(분). 기본 30.
+ * env 이름 `TESLA_REST_WAKE_COOLDOWN_MINUTES` 유지(레거시). Wake full REST는 폐기됨.
+ */
 export function getRestWakeCooldownMinutes(): number {
   const minutes = Number(process.env.TESLA_REST_WAKE_COOLDOWN_MINUTES ?? "30");
   if (!Number.isFinite(minutes) || minutes < 0) {

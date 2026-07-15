@@ -2,11 +2,7 @@ import { TelemetryIngressStatus, TelemetrySource, VehicleLifecycle } from "@pris
 
 import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
-import {
-  maybeRefreshNearbyOnPark,
-  maybeRunGearCorrectionRestSync,
-  maybeRunWakeCooldownRestSync,
-} from "@/lib/tesla/hybrid/rest-sync";
+import { maybeRefreshNearbyOnPark } from "@/lib/tesla/hybrid/rest-sync";
 import { patchVehicleSyncState } from "@/lib/tesla/hybrid/sync-state";
 import { shouldClearNearbyForLocation } from "@/lib/tesla/nearby-charging";
 
@@ -133,7 +129,6 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
   const previous = vehicle.snapshots[0];
   const wasAsleep =
     previous?.isAsleepInferred === true || previous?.status === "ASLEEP";
-  const previousIgnitionOn = previous?.ignitionOn;
   const merged = mergeSnapshotFields(fields, previous);
 
   await prisma.vehicleSnapshot.create({
@@ -214,31 +209,15 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
     await patchVehicleSyncState(vehicleId, {
       lastWakeDetectedAt: fields.eventAt,
     });
-
-    try {
-      await maybeRunWakeCooldownRestSync(vehicleId);
-    } catch (error) {
-      console.warn(`Wake cooldown REST sync failed for ${vehicleId}:`, error);
-    }
+    // TRF-B2: Wake REST 없음 — Telemetry SoT only
   }
 
-  // BF-C: P 정차 시 nearby 재조회 / P→비가동 시 선택적 보정 REST
-  if (!isDisconnected && fields.shiftState != null) {
-    const nowParked = fields.shiftState === "P";
-    const nowDriving = fields.shiftState !== "P";
-
-    if (nowParked) {
-      try {
-        await maybeRefreshNearbyOnPark(vehicleId);
-      } catch (error) {
-        console.warn(`Nearby refresh on park failed for ${vehicleId}:`, error);
-      }
-    } else if (nowDriving && previousIgnitionOn === false) {
-      try {
-        await maybeRunGearCorrectionRestSync(vehicleId);
-      } catch (error) {
-        console.warn(`Gear correction REST failed for ${vehicleId}:`, error);
-      }
+  // TRF-B2 / BF-C: P 정차 시 nearby만 (Freeze 졸업). Gear 보정 REST 폐기.
+  if (!isDisconnected && fields.shiftState != null && fields.shiftState === "P") {
+    try {
+      await maybeRefreshNearbyOnPark(vehicleId);
+    } catch (error) {
+      console.warn(`Nearby refresh on park failed for ${vehicleId}:`, error);
     }
   }
 

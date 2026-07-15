@@ -877,8 +877,9 @@
 - [ ] **TRF-4** Freeze ON 하 Telemetry 확인 게이트 (CAF-6 연계)
 - [x] **TRF-5 / B1** [제원 Baseline](./requirements-tesla-telemetry-rest-baseline-specs.md) · `writeVehicleSpecs` · **Freeze 졸업**
 - [ ] **TRF-B1-4** 실차 specs-only QA (Freeze ON 유지 가능)
-- [ ] **TRF-B2-Doc** Wake 쿨다운 필드 표 → 완료 후 Freeze 졸업 예정
-- [ ] **TRF-B** B2 구현·졸업 · (선택) `TESLA_REST_FREEZE=false`
+- [x] **TRF-B2-Doc** [절전→Online Wake](./requirements-tesla-wake-telemetry-rest.md) · 코드 ✅ (`trf-b2:verify`)
+- [ ] **TRF-B2-4** 실차: 절전→Online Telemetry only · Gear=P nearby
+- [ ] **TRF-B** (선택) 잔여 fallback `TESLA_REST_FREEZE=false` · TRF-4/8 실차
 
 ---
 
@@ -1011,4 +1012,6 @@
 | 2026-07-15 | TRF-B1-3 — specs-only Baseline 코드 · Vehicle Tier A/B/C 마이그레이션 |
 | 2026-07-15 | TRF Freeze 졸업 — Baseline은 Freeze 예외 · Wake 차단 유지 |
 | 2026-07-15 | Phase VD-OPS — 상세 운영 안내·「제원 다시 불러오기」문구 |
+| 2026-07-15 | TRF-B2 절전→Online 요구 초안 |
+| 2026-07-15 | TRF-B2 코드 — Wake/Gear 폐기 · park nearby 졸업 |
 
