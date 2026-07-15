@@ -22,6 +22,7 @@
     "ln:verify": "node --import tsx scripts/verify-ln-rest-coordinates.mjs",
     "caf:verify": "node --import tsx scripts/verify-caf-telemetry-fields.mjs",
     "trf:verify": "node --import tsx scripts/verify-trf-rest-freeze.mjs",
+    "trf-b1:verify": "node --import tsx scripts/verify-trf-b1-vehicle-specs.mjs",
     "disconnect:verify": "node --env-file=.env --import tsx scripts/verify-phase45-disconnect.ts",
     "db:reset-data": "node --env-file=.env scripts/reset-fms-data.mjs"
   },

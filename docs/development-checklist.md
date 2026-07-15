@@ -867,8 +867,10 @@
 - [x] **TRF-1** Freeze · 게이트 · B① Baseline/VK · B② Wake 재정의 정책 문서
 - [x] **TRF-2 · TRF-3** A1~A7 Freeze 가드 · `TESLA_REST_FREEZE` · fallback UI · `restFreeze` 상태
 - [ ] **TRF-4** Freeze ON 하 Telemetry 확인 게이트 (CAF-6 연계)
-- [ ] **TRF-B-Doc** Baseline/VK · Wake 조회·갱신 필드 표 확정
-- [ ] **TRF-B** 재정의 구현 · Freeze 해제 · 실차
+- [x] **TRF-5 / B1** [제원 Baseline](./requirements-tesla-telemetry-rest-baseline-specs.md) · `writeVehicleSpecs` · **Freeze 졸업**
+- [ ] **TRF-B1-4** 실차 specs-only QA (Freeze ON 유지 가능)
+- [ ] **TRF-B2-Doc** Wake 쿨다운 필드 표 → 완료 후 Freeze 졸업 예정
+- [ ] **TRF-B** B2 구현·졸업 · (선택) `TESLA_REST_FREEZE=false`
 
 ---
 
@@ -997,4 +999,7 @@
 | 2026-07-15 | Phase CAF-2~4 구현 — 44 fields · migrate · UI · caf:verify · CAF-6 남음 |
 | 2026-07-15 | Phase TRF — Telemetry REST Freeze · Baseline/Wake 재정의 요구·체크리스트 |
 | 2026-07-15 | Phase TRF-A — Freeze 코드 완료 (TRF-2·3) · QA(TRF-4)·B 대기 |
+| 2026-07-15 | TRF-B1 온보딩 제원 REST 요구 초안 (`rest-baseline-specs`) |
+| 2026-07-15 | TRF-B1-3 — specs-only Baseline 코드 · Vehicle Tier A/B/C 마이그레이션 |
+| 2026-07-15 | TRF Freeze 졸업 — Baseline은 Freeze 예외 · Wake 차단 유지 |
 

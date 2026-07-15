@@ -1041,7 +1041,22 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                 {teslaDisplayName ? (
                   <InfoField label="Tesla 표시명" value={teslaDisplayName} />
                 ) : null}
-                <InfoField label="SW 버전" value={snapshot?.softwareVersion ?? "-"} />
+                <InfoField
+                  label="SW 버전"
+                  value={
+                    vehicle.firmwareVersion ??
+                    snapshot?.softwareVersion ??
+                    "-"
+                  }
+                />
+                <InfoField label="휠" value={vehicle.wheelType ?? "-"} />
+                <InfoField label="루프" value={vehicle.roofColor ?? "-"} />
+                <InfoField label="충전 포트" value={vehicle.chargePortType ?? "-"} />
+                <InfoField label="Autopilot HW" value={vehicle.driverAssist ?? "-"} />
+                <InfoField label="외장 트림" value={vehicle.exteriorTrim ?? "-"} />
+                {vehicle.accessType ? (
+                  <InfoField label="접근 권한" value={vehicle.accessType} />
+                ) : null}
                 <InfoField
                   label="제원 동기화"
                   value={formatDateTime(vehicle.specsSyncedAt)}

@@ -39,8 +39,9 @@
 | [requirements-tesla-fleet-telemetry-config.md](./requirements-tesla-fleet-telemetry-config.md) | **fleet_telemetry_config** create · **CAF 44키** | 구독·재구독 |
 | [requirements-tesla-fleet-telemetry-config-add-field.md](./requirements-tesla-fleet-telemetry-config-add-field.md) | **CAF** P0/P1·REST-1 · 코드 ✅ | 필드 확장 |
 | [checklist-tesla-fleet-telemetry-config-add-field.md](./checklist-tesla-fleet-telemetry-config-add-field.md) | Phase CAF-2~4 ✅ · CAF-6 실차 ☐ | CAF 검수 |
-| [requirements-tesla-telemetry-rest-freeze.md](./requirements-tesla-telemetry-rest-freeze.md) | **TRF** — Telemetry 확인 전 REST Freeze · 이후 Baseline/Wake 재정의 | 순수 Telemetry 검증 |
-| [checklist-tesla-telemetry-rest-freeze.md](./checklist-tesla-telemetry-rest-freeze.md) | Phase TRF · Doc ✅ · Freeze 코드 ✅ · QA/재정의 ☐ | TRF 검수·B |
+| [requirements-tesla-telemetry-rest-freeze.md](./requirements-tesla-telemetry-rest-freeze.md) | **TRF** — Freeze(미졸업 REST 차단) · Baseline 졸업 · Wake 대기 | 경로 졸업 모델 |
+| [requirements-tesla-telemetry-rest-baseline-specs.md](./requirements-tesla-telemetry-rest-baseline-specs.md) | **TRF-B1** — specs-only Baseline · Tier A/B/C · 코드 ✅ · 실차 ☐ | Baseline 제원 |
+| [checklist-tesla-telemetry-rest-freeze.md](./checklist-tesla-telemetry-rest-freeze.md) | Phase TRF · Freeze ✅ · Baseline 졸업 ✅ · Wake/B2 ☐ | TRF 검수 |
 | [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md) | 상세 **Telemetry 수신 로그(개발)** — 요구1 ✅ · 요구2 미착수 | 수신·매핑 검증 UI |
 | [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | 하이브리드 **DB 설계** — Vehicle 제원 + VehicleSyncState + Snapshot 쓰기 경로 | 스키마·마이그레이션·sync 구현할 때 |
 | [checklist-tesla-hybrid-data.md](./checklist-tesla-hybrid-data.md) | Phase 4.4 구현 체크리스트 (A~E) | 하이브리드 데이터 작업 진척·완료 확인 |
@@ -194,3 +195,6 @@
 | 2026-07-15 | CAF-2~4 구현 반영 (44키 · migrate · UI) |
 | 2026-07-15 | TRF — Telemetry 검증 REST Freeze · Baseline/Wake 재정의 요구 |
 | 2026-07-15 | TRF-A Freeze 코드 ✅ (`TESLA_REST_FREEZE`) · TRF-4 QA · B 대기 |
+| 2026-07-15 | TRF-B1 — 온보딩 최초 REST 제원 재정의 요구 초안 |
+| 2026-07-15 | TRF-B1-3 코드 — `writeVehicleSpecs` · Vehicle 제원 컬럼 migrate |
+| 2026-07-15 | TRF Freeze 졸업 — Baseline 예외 · Wake 등 차단 유지 |

@@ -29,9 +29,14 @@ export function isTelemetryPrimaryMode(): boolean {
 }
 
 /**
- * TRF Phase A — Snapshot을 쓰는 Fleet REST 전면 중지.
- * 기본 ON (`true`). Telemetry 확인 완료 후 `TESLA_REST_FREEZE=false` 로 해제.
- * 허용: webhook · fleet_telemetry_config · registry-only list/fleet_status
+ * TRF — 미졸업 Snapshot REST 경로 차단 (기본 ON).
+ * `false`/`0` 이면 전 경로 허용(레거시).
+ *
+ * **졸업 예외(Freeze와 무관·항상 허용):**
+ * - Baseline specs-only (`runBaselineForVehicle` / VK→Baseline) — TRF-B1
+ *
+ * **Freeze ON 시 계속 차단:** Wake · gear · nearby · fallback/full Snapshot REST
+ * 다음 TRF-Bx 완료 시 해당 경로도 예외로 졸업.
  */
 export function isRestFreezeEnabled(): boolean {
   const value = process.env.TESLA_REST_FREEZE;
@@ -45,6 +50,11 @@ export function isRestFreezeEnabled(): boolean {
 }
 
 export const REST_FREEZE_SKIP_ERROR = "rest_freeze" as const;
+
+/** Freeze 졸업 경로 — 문서·검증용 목록 (코드는 경로별 가드 제거로 구현) */
+export const REST_FREEZE_GRADUATED_PATHS = [
+  "baseline_specs_only",
+] as const;
 
 export type VehicleSyncMode = "full" | "registry";
 

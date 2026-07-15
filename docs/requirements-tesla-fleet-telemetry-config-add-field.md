@@ -217,6 +217,9 @@
 
 목적: 스트림 낭비 없이 `Vehicle` 제원 컬럼·표시명 채움. 이후 Telemetry/주기 REST로 **덮지 않음**(스펙 리프레시 수동 제외).
 
+온보딩 최초 REST As-Is/To-Be·쓰기 화이트리스트:  
+[requirements-tesla-telemetry-rest-baseline-specs.md](./requirements-tesla-telemetry-rest-baseline-specs.md) (**TRF-B1**).
+
 ### 5.1 Telemetry available-data 중 Vehicle Configuration → REST-1
 
 | Telemetry 필드명 (참고) | REST/Vehicle 매핑 (현행·예정) | 비고 |
@@ -224,16 +227,16 @@
 | `CarType` | `vehicle_config.car_type` → `Vehicle.carType` | 모델 (Model Y 등) |
 | `Trim` | `trim_badging` → `Vehicle.trimBadging` | |
 | `ExteriorColor` | `exterior_color` → `Vehicle.exteriorColor` | |
-| `RoofColor` | (확장 시) | |
-| `WheelType` | (확장 시) | |
-| `EfficiencyPackage` | (확장 시) | |
-| `EuropeVehicle` | (확장 시) | |
-| `RightHandDrive` | (확장 시) | |
-| `SunroofInstalled` | (확장 시) | |
-| `RearSeatHeaters` | (확장 시) | |
-| `ChargePort` (포트 **타입**) | charge_port_type | **문 열림** `ChargePortDoorOpen`과 다름 |
-| `VehicleName` | `teslaDisplayName` | 닉네임 — 목록 API에서도 가능 |
-| `Version` | `car_version` / Snapshot `softwareVersion` | **연동 시점 SW** · OTA 중에는 P1 SoftwareUpdate* |
+| `RoofColor` | `roof_color` → `Vehicle.roofColor` | TRF-B1 Tier B |
+| `WheelType` | `wheel_type` → `Vehicle.wheelType` | TRF-B1 Tier B |
+| `EfficiencyPackage` | → `vehicleConfigJson` | TRF-B1 Tier C |
+| `EuropeVehicle` | → `vehicleConfigJson` (`eu_vehicle`) | Tier C |
+| `RightHandDrive` | → `vehicleConfigJson` (`rhd`) | Tier C |
+| `SunroofInstalled` | → `vehicleConfigJson` | Tier C |
+| `RearSeatHeaters` | → `vehicleConfigJson` | Tier C |
+| `ChargePort` (포트 **타입**) | `charge_port_type` → `Vehicle.chargePortType` | 문 열림과 분리 |
+| `VehicleName` | `teslaDisplayName` | 닉네임 |
+| `Version` | `car_version` → `Vehicle.firmwareVersion` | OTA는 P1 SoftwareUpdate* |
 | `OffroadLightbarPresent` | 필요 시 | |
 
 ### 5.2 REST 전용(Telemetry 목록 밖) — 연동 1회에 같이 받기 좋은 항목

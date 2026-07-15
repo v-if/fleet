@@ -204,6 +204,24 @@ model Vehicle {
   exteriorColor    String?
   /// Fleet vehicles.display_name (준정적)
   teslaDisplayName String?
+  /// vehicle_state.car_version — REST-1 Version (TRF-B1 V-A)
+  firmwareVersion  String?
+  /// vehicle_config.roof_color
+  roofColor        String?
+  /// vehicle_config.wheel_type
+  wheelType        String?
+  /// vehicle_config.charge_port_type (포트 규격 · 문 열림과 별개)
+  chargePortType   String?
+  /// vehicle_config.driver_assist (AP HW)
+  driverAssist     String?
+  /// vehicle_config.exterior_trim
+  exteriorTrim     String?
+  /// vehicle_config 필터 JSON (TRF-B1 Tier C)
+  vehicleConfigJson Json?
+  /// Fleet list id_s
+  teslaVehicleId   String?
+  /// Fleet access_type (OWNER/DRIVER …)
+  accessType       String?
   /// 제원 마지막 저장 시각
   specsSyncedAt    DateTime?      @db.Timestamptz(3)
   unlinkedAt       DateTime?      @db.Timestamptz(3)

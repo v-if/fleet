@@ -10,10 +10,14 @@ import {
   patchVehicleSyncState,
 } from "@/lib/tesla/hybrid/sync-state";
 import {
-  mapTeslaAlertsToEvents,
   mapTeslaVehicleToSnapshot,
   TeslaFleetClient,
 } from "@/lib/tesla/mapper";
+import {
+  extractVehicleSpecs,
+  specsAuditFields,
+  writeVehicleSpecs,
+} from "@/lib/tesla/hybrid/vehicle-specs";
 import { serializeNearbyChargingSites } from "@/lib/tesla/nearby-charging";
 import { mergeCafSnapshotFields, pickCafSnapshotFields } from "@/lib/tesla/telemetry/caf-fields";
 import {
@@ -46,6 +50,30 @@ function specsUpdateData(snapshot: VehicleSnapshotData, now: Date) {
     exteriorColor: snapshot.exteriorColor ?? null,
     teslaDisplayName: snapshot.teslaDisplayName ?? null,
     model: displayModel,
+    ...(snapshot.firmwareVersion !== undefined
+      ? { firmwareVersion: snapshot.firmwareVersion ?? null }
+      : {}),
+    ...(snapshot.roofColor !== undefined
+      ? { roofColor: snapshot.roofColor ?? null }
+      : {}),
+    ...(snapshot.wheelType !== undefined
+      ? { wheelType: snapshot.wheelType ?? null }
+      : {}),
+    ...(snapshot.chargePortType !== undefined
+      ? { chargePortType: snapshot.chargePortType ?? null }
+      : {}),
+    ...(snapshot.driverAssist !== undefined
+      ? { driverAssist: snapshot.driverAssist ?? null }
+      : {}),
+    ...(snapshot.exteriorTrim !== undefined
+      ? { exteriorTrim: snapshot.exteriorTrim ?? null }
+      : {}),
+    ...(snapshot.teslaVehicleId !== undefined
+      ? { teslaVehicleId: snapshot.teslaVehicleId ?? null }
+      : {}),
+    ...(snapshot.accessType !== undefined
+      ? { accessType: snapshot.accessType ?? null }
+      : {}),
     specsSyncedAt: now,
   };
 }
@@ -252,19 +280,11 @@ export type RestSyncOnceResult =
   | { ok: true; reason: RestSyncReason; vehicleId: string }
   | { ok: false; skipped?: boolean; error: string; vehicleId?: string };
 
-/** Baseline: vehicle_data 1회. 실패 시 wake 금지, 에러만 SyncState에 기록 */
+/** Baseline: 제원 전용 vehicle_data 1회 (TRF-B1). Snapshot/nearby/alerts 없음. wake 금지.
+ * Freeze 졸업 경로 — `TESLA_REST_FREEZE`와 무관하게 항상 실행. */
 export async function runBaselineForVehicle(
   vehicleId: string,
 ): Promise<RestSyncOnceResult> {
-  if (isRestFreezeEnabled()) {
-    return {
-      ok: false,
-      skipped: true,
-      error: REST_FREEZE_SKIP_ERROR,
-      vehicleId,
-    };
-  }
-
   const ctx = await resolveTeslaUserId(vehicleId);
   if (!ctx) {
     return { ok: false, error: "vehicle_or_tesla_account_missing", vehicleId };
@@ -286,49 +306,17 @@ export async function runBaselineForVehicle(
     }
 
     const data = await client.getVehicleData(ctx.vin);
-    const snapshot = mapTeslaVehicleToSnapshot(
-      listItem,
-      data,
-      fleet.items.find((item) => item.vin.toUpperCase() === ctx.vin.toUpperCase()),
+    const fleetItem = fleet.items.find(
+      (item) => item.vin.toUpperCase() === ctx.vin.toUpperCase(),
     );
+    const specs = extractVehicleSpecs(listItem, data, fleetItem);
+    const now = new Date();
 
-    const [nearbyChargingSites, serviceStatus] = await Promise.all([
-      client.getNearbyChargingSites(ctx.vin),
-      client.getServiceStatus(ctx.vin),
-    ]);
-    snapshot.nearbyChargingSites = nearbyChargingSites;
-    snapshot.serviceStatus = serviceStatus;
-
-    await writeRestSnapshot(snapshot, {
+    await writeVehicleSpecs(vehicleId, specs, {
       teslaAccountId: ctx.teslaAccountId,
-      updateSpecs: true,
       restSyncReason: RestSyncReason.BASELINE,
-      lastRestSyncAt: new Date(),
+      lastRestSyncAt: now,
     });
-
-    try {
-      const alerts = await client.getRecentAlerts(ctx.vin);
-      const plateNumber = snapshot.plateNumber;
-      const events = mapTeslaAlertsToEvents(plateNumber, alerts);
-      await prisma.vehicleEvent.deleteMany({
-        where: {
-          vehicleId,
-          type: { in: ["ALERT", "WARNING"] },
-        },
-      });
-      for (const event of events) {
-        await prisma.vehicleEvent.create({
-          data: {
-            vehicleId,
-            type: event.type,
-            message: event.message,
-            occurredAt: event.occurredAt,
-          },
-        });
-      }
-    } catch (alertError) {
-      console.warn(`Baseline recent_alerts skipped for ${ctx.vin}:`, alertError);
-    }
 
     await createAuditLog({
       action: "VEHICLE_BASELINE_SYNC",
@@ -337,8 +325,12 @@ export async function runBaselineForVehicle(
       vehicleId,
       teslaAccountId: ctx.teslaAccountId,
       status: AuditLogStatus.SUCCESS,
-      summary: `Baseline vehicle_data 성공 (${ctx.vin})`,
-      metadata: { reason: RestSyncReason.BASELINE, vin: ctx.vin },
+      summary: `Baseline 제원(specs_only) 성공 (${ctx.vin})`,
+      metadata: {
+        reason: RestSyncReason.BASELINE,
+        vin: ctx.vin,
+        ...specsAuditFields(specs),
+      },
     });
 
     return { ok: true, reason: RestSyncReason.BASELINE, vehicleId };
@@ -352,8 +344,13 @@ export async function runBaselineForVehicle(
       vehicleId,
       teslaAccountId: ctx.teslaAccountId,
       status: AuditLogStatus.FAILURE,
-      summary: `Baseline vehicle_data 실패 (wake 미시도): ${message}`,
-      metadata: { reason: RestSyncReason.BASELINE, vin: ctx.vin, noWake: true },
+      summary: `Baseline 제원 실패 (wake 미시도): ${message}`,
+      metadata: {
+        reason: RestSyncReason.BASELINE,
+        vin: ctx.vin,
+        noWake: true,
+        mode: "specs_only",
+      },
     });
     return { ok: false, error: message, vehicleId };
   }
@@ -538,9 +535,9 @@ export async function confirmVirtualKeyForVehicle(vehicleId: string) {
   };
 }
 
-/** 계정 내 Baseline 미완료 차량에 best-effort 1회씩 (wake 없음) */
+/** 계정 내 Baseline 미완료 차량에 best-effort 1회씩 (wake 없음 · Freeze 예외) */
 export async function tryBaselinesForAccount(teslaAccountId: string) {
-  if (isRestFreezeEnabled() || !isBaselineOnReadyEnabled()) {
+  if (!isBaselineOnReadyEnabled()) {
     return { attempted: 0, succeeded: 0 };
   }
 

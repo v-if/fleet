@@ -20,6 +20,15 @@ export type VehicleSnapshotData = {
   trimBadging?: string | null;
   exteriorColor?: string | null;
   teslaDisplayName?: string | null;
+  /** Fleet list registry (TRF-B1) */
+  teslaVehicleId?: string | null;
+  accessType?: string | null;
+  firmwareVersion?: string | null;
+  roofColor?: string | null;
+  wheelType?: string | null;
+  chargePortType?: string | null;
+  driverAssist?: string | null;
+  exteriorTrim?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   batteryPercent?: number;

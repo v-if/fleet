@@ -1,0 +1,10 @@
+-- TRF-B1: Vehicle 제원 Tier A/B/C + Registry
+ALTER TABLE "Vehicle" ADD COLUMN IF NOT EXISTS "firmwareVersion" TEXT;
+ALTER TABLE "Vehicle" ADD COLUMN IF NOT EXISTS "roofColor" TEXT;
+ALTER TABLE "Vehicle" ADD COLUMN IF NOT EXISTS "wheelType" TEXT;
+ALTER TABLE "Vehicle" ADD COLUMN IF NOT EXISTS "chargePortType" TEXT;
+ALTER TABLE "Vehicle" ADD COLUMN IF NOT EXISTS "driverAssist" TEXT;
+ALTER TABLE "Vehicle" ADD COLUMN IF NOT EXISTS "exteriorTrim" TEXT;
+ALTER TABLE "Vehicle" ADD COLUMN IF NOT EXISTS "vehicleConfigJson" JSONB;
+ALTER TABLE "Vehicle" ADD COLUMN IF NOT EXISTS "teslaVehicleId" TEXT;
+ALTER TABLE "Vehicle" ADD COLUMN IF NOT EXISTS "accessType" TEXT;

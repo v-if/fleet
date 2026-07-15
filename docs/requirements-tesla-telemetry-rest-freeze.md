@@ -2,96 +2,85 @@
 
 | 항목 | 내용 |
 |------|------|
-| 목적 | **Telemetry 수신·구독(CAF) 확인이 끝날 때까지** Snapshot을 오염시키는 **모든 Fleet REST 경로를 중지**하고, 확인 이후 **① Baseline/VK · ② Wake 쿨다운**의 조회·갱신 필드를 현행 기준으로 **재정의**한다 |
-| 배경 | Telemetry primary여도 wake/Baseline/fallback REST가 Snapshot을 덮어 Ingress≠UI 혼선을 만듦 (LN-R 등). 순수 Telemetry 검증이 선행돼야 CAF-6·구독 필드 검수가 성립한다 |
-| 관련 | [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md), [requirements-tesla-fleet-telemetry-config-add-field.md](./requirements-tesla-fleet-telemetry-config-add-field.md), [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md), [requirements-vehicle-location-null.md](./requirements-vehicle-location-null.md), [checklist-tesla-telemetry-rest-freeze.md](./checklist-tesla-telemetry-rest-freeze.md) |
-| 상태 | **요구·체크리스트 ✅ · Phase A Freeze 코드 ✅ · Telemetry QA(TRF-4) ☐ · 필드 재정의 ☐** |
+| 목적 | **미졸업 Snapshot REST**를 막고, **재정의·졸업한 경로만** Freeze와 무관하게 허용한다. Telemetry SoT 검증과 온보딩 제원(Baseline)을 병행 |
+| 배경 | wake/fallback REST가 Snapshot을 덮어 Ingress≠UI 혼선 (LN-R). Baseline은 TRF-B1 specs-only로 졸업해 Freeze 중에도 VIN당 1회 제원 REST 가능 |
+| 관련 | [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md), [requirements-tesla-fleet-telemetry-config-add-field.md](./requirements-tesla-fleet-telemetry-config-add-field.md), [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md), [requirements-vehicle-location-null.md](./requirements-vehicle-location-null.md), [requirements-tesla-telemetry-rest-baseline-specs.md](./requirements-tesla-telemetry-rest-baseline-specs.md), [checklist-tesla-telemetry-rest-freeze.md](./checklist-tesla-telemetry-rest-freeze.md) |
+| 상태 | **Freeze 코드 ✅ · Baseline 졸업 ✅ · Wake 등 미졸업 · Telemetry QA ☐ · B2 ☐** |
 | 작성일 | 2026-07-15 |
 | ID prefix | **TRF** (Telemetry REST Freeze) |
 
 ---
 
-## 1. 정책 요약 (2단계)
+## 1. 정책 요약 — Freeze + 경로 졸업
 
 ```text
-[Phase A — FREEZE]  Telemetry 확인 완료 전
-   → Snapshot/동적 상태를 만드는 Fleet REST 전부 STOP
-   → SoT = Telemetry webhook (+ config 구독 API만 예외)
+TESLA_REST_FREEZE=true (기본)
+   → 미졸업 Snapshot REST STOP (Wake · gear · nearby · fallback …)
+   → SoT(동적) = Telemetry webhook
 
-[Telemetry 확인 완료]  CAF-6 · Ingress/Snapshot 정합 · 운영자 승인
+졸업 예외 (Freeze와 무관 · 항상 허용)
+   ✅ Baseline specs-only (TRF-B1) — 계정/VK 후 제원 1회 · Snapshot 미생성
+   ☐ Wake 쿨다운 (TRF-B2 완료 후 졸업 예정)
+   ☐ …
 
-[Phase B — REDEFINE]  확인 이후
-   → ① Baseline / VK 직후 REST
-   → ② Wake 쿨다운 REST
-   → 조회 필드 · Vehicle 갱신 · Snapshot 갱신(merge) 목록을 문서·코드로 재정의
+[경로별 재정의 완료] → 해당 경로만 Freeze 가드 제거 (= 졸업)
+[전 경로 졸업 또는 레거시] → TESLA_REST_FREEZE=false 로 전면 허용 가능
 ```
 
-**원칙:** Freeze 동안 “REST로 Telemetry를 보완한다”는 금지.  
-확인 후에만, **역할이 다른 두 REST**를 좁게·필드로 명시해 다시 켠다.
+**원칙:** Freeze는 “REST 전면 OFF”가 아니라 **아직 필드 재정의되지 않은 REST만 차단**.  
+졸업한 경로는 kill-switch와 무관하게 운영 계약대로 호출된다.
 
 ---
 
-## 2. Phase A — REST Freeze (Telemetry 확인 완료 전)
+## 2. Phase A — REST Freeze (미졸업 경로)
 
 ### 2.1 목표
 
 | 목표 | 내용 |
 |------|------|
-| Snapshot SoT | **오직** Fleet Telemetry → Ingress → processor |
-| 검증 가능성 | Ingress에 없는 값이 Snapshot/UI에 나타나면 **구독·파서 문제**로 단정 가능 |
-| 오염 차단 | wake REST 직후 null 좌표·제원 덮어쓰기 등 재발 방지 |
+| Snapshot SoT | 동적 상태는 **Telemetry** (졸업 경로가 Snapshot을 쓸 때만 예외·화이트리스트) |
+| 오염 차단 | Wake/fallback 등 미재정의 REST가 Snapshot을 덮지 않음 |
+| 온보딩 | Baseline(제원)은 졸업 — Freeze ON에서도 VK 후 제원 1회 가능 |
 
-### 2.2 STOP 대상 (현행 코드 경로)
+### 2.2 STOP 대상 (Freeze ON · 미졸업)
 
-모두 **Outbound Tesla Fleet / Proxy를 통해 vehicle·충전소·서비스 데이터를 가져와 Snapshot(또는 동일 SoT)을 쓰는 경로**.
+| # | 경로 | 진입점 | Freeze | Snapshot? |
+|---|------|--------|:------:|:---------:|
+| A1 | Wake 쿨다운 REST | `maybeRunWakeCooldownRestSync` | **차단** | ✅ |
+| A2 | Gear correction | `maybeRunGearCorrectionRestSync` | **차단** | ✅ |
+| A3 | 정차 nearby | `maybeRefreshNearbyOnPark` | **차단** | ✅ |
+| A4/A5 | Baseline specs-only | `runBaselineForVehicle` · VK→Baseline | **졸업 · 허용** | ❌ |
+| A6 | 수동 fallback | `?fallback=1` | **차단** | ✅ |
+| A7 | full / auto REST | force full | **차단** | ✅ |
 
-| # | 경로 | 진입점 | API (대표) | Snapshot? |
-|---|------|--------|------------|:---------:|
-| A1 | Wake 쿨다운 REST | `maybeRunWakeCooldownRestSync` ← processor `wasAsleep` | `vehicle_data` (+ nearby/service) | ✅ |
-| A2 | Gear correction REST | `maybeRunGearCorrectionRestSync` | `vehicle_data` | ✅ |
-| A3 | 정차 nearby 갱신 | `maybeRefreshNearbyOnPark` | `nearby_charging_sites` | ✅ (nearby 컬럼) |
-| A4 | Baseline | `runBaselineForVehicle` · `?baseline` · READY 자동 | `vehicle_data` + alerts 등 | ✅ + 제원 |
-| A5 | VK confirm 후 Baseline | virtual-key confirm → baseline | 동일 | ✅ |
-| A6 | 수동 fallback | 설정 `?fallback=1` · sync full | `vehicle_data` | ✅ |
-| A7 | 레거시 full sync | `TESLA_REST_AUTO_SYNC` / force full | `vehicle_data` | ✅ |
-
-**Freeze = 위 A1~A7 전부 실행 금지** (스킵·가드·UI 비활성).
-
-### 2.3 Freeze 중 허용 (예외 · 최소화)
-
-Telemetry **확인 자체**와 계정 메타에만 필요.
+### 2.3 Freeze 중 허용
 
 | 허용 | 이유 |
 |------|------|
-| Telemetry webhook 수신 · process | 검증 대상 |
-| `fleet_telemetry_config` GET / POST(create) / DELETE | CAF-6 재구독 · 구독 확인 |
-| `listVehicles` + `fleet_status` (registry-only) | 목록·VK 페어링 메타 · **Snapshot 미생성** 유지 |
-| OAuth / 토큰 갱신 | 위 API에 필요 |
+| Telemetry webhook · process | 동적 SoT |
+| `fleet_telemetry_config` GET/POST/DELETE | 구독 |
+| `listVehicles` + `fleet_status` (registry) | 목록·VK 메타 |
+| OAuth / 토큰 | 위 API |
+| **Baseline specs-only (졸업)** | Vehicle 제원 1회 · Snapshot 없음 — [B1](./requirements-tesla-telemetry-rest-baseline-specs.md) |
 
-**금지에 포함:** Baseline을 “제원만”이라도 Freeze 중에는 **하지 않음** (vehicle_data 한 방이 동적 필드를 같이 가져옴). 제원 REST-1은 Phase B①에서 재개.
-
-### 2.4 구현 방향 (코드 착수 시 · 본 문서는 요구만)
-
-권고 kill-switch (이름 예시):
+### 2.4 env
 
 ```text
-TESLA_REST_FREEZE=true   # 또는 TESLA_REST_SNAPSHOT_SYNC_ENABLED=false
+TESLA_REST_FREEZE=true   # 기본 · 미졸업 Snapshot REST 차단
+# Baseline은 REST_FREEZE_GRADUATED_PATHS — env와 무관
 ```
 
-- `true`일 때 A1~A7 early return (`skipped: rest_freeze`)
-- 설정 UI: 「REST fallback 동기화」버튼 비활성 + Freeze 안내
-- Audit: skip 사유 `TRF_FREEZE` 기록(선택)
-- 로그/상태 API에 `restFreeze: true` 노출 (운영 가시성)
+- 설정 UI: fallback 비활성 · Freeze 안내(Baseline 예외 문구)
+- status: `restFreeze: true`
+- 코드: `REST_FREEZE_GRADUATED_PATHS` (`config.ts`)
 
-해제: **Telemetry 확인 완료(§4)** 후 env/`false` + 배포. Phase B 필드 재정의 문서 승인 전에도 Freeze 해제는 가능하나, **B 재정의 전 wake/Baseline을 옛 코드로 재가동하지 말 것** 권고.
+### 2.5 수용 기준
 
-### 2.5 Freeze 수용 기준
-
-- [x] A1~A7 코드 경로에 Freeze 가드 (`TESLA_REST_FREEZE`, 기본 ON)
-- [x] 설정 fallback UI 비활성(또는 가드) · status `restFreeze`
-- [ ] 실차: ASLEEP→ONLINE 후 **REST Snapshot / WAKE_COOLDOWN Audit 없음** (TRF-4)
-- [ ] Ingress PROCESSED → Snapshot `telemetrySource=TELEMETRY`만 증가(해당 구간) (TRF-4)
-- [ ] CAF-6 재구독(config)은 정상 동작 (TRF-4 / CAF-6)
+- [x] A1~A3·A6~A7 Freeze 가드
+- [x] A4/A5 Baseline **졸업** (Freeze ON에서도 실행)
+- [x] fallback UI · `restFreeze` 상태
+- [ ] 실차: Wake REST/Audit **없음** · Baseline 제원 **있음** (TRF-4 / B1-4)
+- [ ] CAF-6 재구독 정상
 
 ---
 
@@ -124,15 +113,18 @@ TESLA_REST_FREEZE=true   # 또는 TESLA_REST_SNAPSHOT_SYNC_ENABLED=false
 
 ### 4.1 ① Baseline / VK 직후 REST
 
-| 항목 | 현행(As-Is) | To-Be (재정의 · TBD) |
-|------|-------------|----------------------|
-| 트리거 | VK confirm · READY · 수동 baseline | 동일 계열 유지 예정 · **Freeze 후 재활성** |
-| 조회 | `vehicle_data` 전체 + nearby + service + alerts | **조회 필드 화이트리스트** 확정 예정 |
-| Vehicle 갱신 | `updateSpecs`: carType, trim, color, displayName… | CAF REST-1 목록에 맞춘 **제원만** (동적 컬럼 금지) |
-| Snapshot 갱신 | 동적 전부 write (GPS 포함) | **옵션 A:** 제원 전용 API/파싱만 · Snapshot 미생성<br>**옵션 B:** Snapshot은 Telemetry 미수신 키만 merge · 좌표 등 P0는 previous/`??` |
+**상세 요구(As-Is/To-Be·필드 표·Version 정책):**  
+→ [requirements-tesla-telemetry-rest-baseline-specs.md](./requirements-tesla-telemetry-rest-baseline-specs.md) (**TRF-B1** · 코드 ✅ · 실차 ☐)
+
+| 항목 | 현행(As-Is) | To-Be (구현됨) |
+|------|-------------|----------------|
+| 트리거 | VK confirm · READY · 수동 baseline | 동일 · **Freeze 졸업(항상 허용)** |
+| 조회 | `vehicle_data` + nearby + service + alerts | `list` + `fleet_status` + `vehicle_data` only |
+| Vehicle 갱신 | `updateSpecs` 제원 | Tier A/B/C + `firmwareVersion` · `writeVehicleSpecs` |
+| Snapshot 갱신 | 동적 전부 write | **미생성** |
 | wake | 금지 유지 | 유지 |
 
-**재정의 산출물 (B1):** `docs` 표 — REST response 경로 → Vehicle 컬럼 / (선택) Snapshot 컬럼 / ignore.
+**산출물:** TRF-5 ✅ · TRF-B1-3 ✅ · `npm run trf-b1:verify`
 
 ### 4.2 ② Wake 쿨다운 REST
 
@@ -172,9 +164,9 @@ TESLA_REST_FREEZE=true   # 또는 TESLA_REST_SNAPSHOT_SYNC_ENABLED=false
 | **TRF-2** | A1~A7 Freeze 가드 · env kill-switch | A Code | ✅ |
 | **TRF-3** | 설정 fallback UI 비활성 · 상태 표시 | A Code | ✅ |
 | **TRF-4** | Freeze 상태에서 CAF-6·Telemetry 확인 (게이트 §3) | A QA | ☐ |
-| **TRF-5** | B1 Baseline/VK 조회·갱신 필드 표 확정 | B Doc | ☐ |
+| **TRF-5** | B1 Baseline/VK 조회·갱신 필드 표 확정 | B Doc | ✅ |
 | **TRF-6** | B2 Wake 쿨다운 조회·갱신 필드 표 확정 | B Doc | ☐ |
-| **TRF-7** | B1·B2 코드 반영 · Freeze 해제 | B Code | ☐ |
+| **TRF-7** | B1 코드 ✅ · B2·Freeze 해제 ☐ | B Code | 부분 ✅ |
 | **TRF-8** | 해제 후 실차: Telemetry SoT + 허용 REST만 Audit | B QA | ☐ |
 
 ---
@@ -185,8 +177,8 @@ TESLA_REST_FREEZE=true   # 또는 TESLA_REST_SNAPSHOT_SYNC_ENABLED=false
 |-------|------|:----:|
 | **TRF-Doc** | 요구·체크리스트 · 인덱스 | ✅ |
 | **TRF-A** | Freeze 구현 ✅ · Telemetry 확인(TRF-4) ☐ | 코드 ✅ / QA ☐ |
-| **TRF-B-Doc** | Baseline/VK · Wake 필드 재정의 표 | ☐ |
-| **TRF-B** | 재정의 구현 · Freeze 해제 | ☐ |
+| **TRF-B-Doc** | B1 ✅ · Wake(B2) ☐ | B1 ✅ / B2 ☐ |
+| **TRF-B** | B1 코드 ✅ · B2·Freeze 해제 ☐ | 부분 ✅ |
 
 ---
 
@@ -221,3 +213,6 @@ Phase B 표는 CAF add-field §5 · hybrid 문서에 링크해 확장.
 |------|------|
 | 2026-07-15 | TRF — Freeze 전면 중지 · Telemetry 게이트 · B①② 필드 재정의 예정 문서화 |
 | 2026-07-15 | Phase A 코드 반영 — `TESLA_REST_FREEZE` · A1~A7 · UI/status · `trf:verify` |
+| 2026-07-15 | TRF-B1 상세 요구 링크 — `requirements-tesla-telemetry-rest-baseline-specs.md` |
+| 2026-07-15 | TRF-B1-3 specs-only Baseline 코드 · TRF-5 ✅ |
+| 2026-07-15 | Freeze **졸업 모델** — Baseline specs-only는 Freeze 예외 · Wake 등은 차단 유지 |

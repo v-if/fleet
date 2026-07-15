@@ -98,6 +98,12 @@ async function upsertVehicleRegistry(
     ...(snapshot.teslaDisplayName
       ? { teslaDisplayName: snapshot.teslaDisplayName }
       : {}),
+    ...(snapshot.teslaVehicleId !== undefined
+      ? { teslaVehicleId: snapshot.teslaVehicleId ?? null }
+      : {}),
+    ...(snapshot.accessType !== undefined
+      ? { accessType: snapshot.accessType ?? null }
+      : {}),
   };
 
   if (existing) {

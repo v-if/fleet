@@ -258,10 +258,11 @@ export function FleetSettingsView() {
 
               {restFreeze ? (
                 <p className="rounded-lg border border-warning-200 bg-warning-50 px-3 py-2 text-theme-xs text-warning-800 dark:border-warning-500/30 dark:bg-warning-500/10 dark:text-warning-200">
-                  <strong>REST Freeze (TRF)</strong> — Telemetry 검증 중 Snapshot용 Fleet REST(
-                  wake·Baseline·fallback·nearby 등)가 중지되어 있습니다. 목록 동기화·Telemetry
-                  구독만 가능합니다. 확인 후{" "}
-                  <code className="text-[11px]">TESLA_REST_FREEZE=false</code> 로 해제하세요.
+                  <strong>REST Freeze (TRF)</strong> — Snapshot을 쓰는 Fleet REST(
+                  wake·gear·nearby·fallback)가 중지되어 있습니다.{" "}
+                  <strong>온보딩 제원 Baseline(1회)</strong>은 Freeze와 무관하게
+                  동작합니다. 미졸업 경로를 모두 허용하려면{" "}
+                  <code className="text-[11px]">TESLA_REST_FREEZE=false</code>.
                 </p>
               ) : null}
 

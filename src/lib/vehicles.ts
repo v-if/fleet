@@ -141,6 +141,20 @@ function toListItem(
     trimBadging: vehicle.trimBadging,
     exteriorColor: vehicle.exteriorColor,
     teslaDisplayName: vehicle.teslaDisplayName,
+    firmwareVersion: vehicle.firmwareVersion,
+    roofColor: vehicle.roofColor,
+    wheelType: vehicle.wheelType,
+    chargePortType: vehicle.chargePortType,
+    driverAssist: vehicle.driverAssist,
+    exteriorTrim: vehicle.exteriorTrim,
+    vehicleConfigJson:
+      vehicle.vehicleConfigJson &&
+      typeof vehicle.vehicleConfigJson === "object" &&
+      !Array.isArray(vehicle.vehicleConfigJson)
+        ? (vehicle.vehicleConfigJson as Record<string, unknown>)
+        : null,
+    teslaVehicleId: vehicle.teslaVehicleId,
+    accessType: vehicle.accessType,
     specsSyncedAt: vehicle.specsSyncedAt?.toISOString() ?? null,
     syncState: serializeSyncState(syncState),
     freshness: buildFreshness(syncState, snapshot),

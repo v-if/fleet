@@ -128,6 +128,16 @@ export type VehicleListItemDto = {
   trimBadging: string | null;
   exteriorColor: string | null;
   teslaDisplayName: string | null;
+  firmwareVersion: string | null;
+  roofColor: string | null;
+  wheelType: string | null;
+  chargePortType: string | null;
+  driverAssist: string | null;
+  exteriorTrim: string | null;
+  /** Tier C — 필터된 vehicle_config */
+  vehicleConfigJson: Record<string, unknown> | null;
+  teslaVehicleId: string | null;
+  accessType: string | null;
   specsSyncedAt: string | null;
   syncState: VehicleSyncStateDto | null;
   freshness: VehicleFreshnessDto;

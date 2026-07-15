@@ -168,7 +168,7 @@ model VehicleSyncState {
 | OAuth + registry (`list`+`fleet_status`) | VIN·displayName만 | → `REGISTERED`/`KEY_PENDING` | **생성 안 함** |
 | VK 확인 | — | → `TELEMETRY_PENDING`, `virtualKeyConfirmedAt` | — |
 | Telemetry config synced | — | `telemetryConfigSyncedAt`, → `READY` 가능 | — |
-| Baseline `vehicle_data` 성공 | **제원 upsert** + `model` 매핑 | `baselineCompletedAt`, `lastRestSyncAt=BASELINE` | 동적 1행 |
+| Baseline `vehicle_data` 성공 | **제원 upsert** (Tier A/B/C · TRF-B1) · Snapshot **미생성** | `baselineCompletedAt`, `lastRestSyncAt=BASELINE` | — |
 | Telemetry V 수신 | **금지** | ASLEEP→ONLINE 시 `lastWakeDetectedAt`; 쿨다운 시 REST 트리거 | 동적 merge/create |
 | Wake 쿨다운 `vehicle_data` | 제원 **덮지 않음** (SPECS_REFRESH 제외) | `lastRestSyncAt=WAKE_COOLDOWN` | 동적 갱신(TPMS 등) |
 | 수동 fallback | 정책에 따라 제원 갱신 가능 | `MANUAL_FALLBACK` | 동적 |
@@ -246,3 +246,4 @@ model VehicleSyncState {
 | 2026-07-14 | Phase MM2 — Snapshot `shiftState` |
 | 2026-07-12 | Snapshot merge 고착 → Phase BF 링크 (§4.5) |
 | 2026-07-12 | Phase BF 코드 완료 반영 (§4.5) |
+| 2026-07-15 | TRF-B1 — Baseline은 Snapshot 미생성 · 제원만 (Tier A/B/C) |

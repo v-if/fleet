@@ -4,6 +4,9 @@ export type TeslaVehicleListItem = {
   vin: string;
   display_name: string | null;
   state: "online" | "offline" | "asleep" | string;
+  /** string form of id — Fleet API path용 */
+  id_s?: string;
+  access_type?: string | null;
 };
 
 export type TeslaVehicleListResponse = {
@@ -96,6 +99,7 @@ export type TeslaVehicleDataResponse = {
       locked?: boolean;
       sentry_mode?: boolean;
       car_version?: string;
+      vehicle_name?: string | null;
       tpms_pressure_fl?: number;
       tpms_pressure_fr?: number;
       tpms_pressure_rl?: number;
@@ -122,6 +126,12 @@ export type TeslaVehicleDataResponse = {
       car_type?: string;
       trim_badging?: string;
       exterior_color?: string;
+      exterior_trim?: string;
+      roof_color?: string;
+      wheel_type?: string;
+      charge_port_type?: string;
+      driver_assist?: string;
+      [key: string]: unknown;
     };
   };
 };

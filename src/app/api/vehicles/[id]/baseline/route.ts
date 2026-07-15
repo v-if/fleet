@@ -43,8 +43,6 @@ export async function POST(request: Request, context: RouteContext) {
 
   try {
     const result = await runBaselineForVehicle(vehicleId);
-    const frozen =
-      !result.ok && result.skipped === true && result.error === "rest_freeze";
     const errorMessage = result.ok ? null : result.error;
 
     await createAuditLogWithApiCall(
@@ -57,11 +55,9 @@ export async function POST(request: Request, context: RouteContext) {
         vehicleId,
         requestId,
         status: result.ok ? AuditLogStatus.SUCCESS : AuditLogStatus.FAILURE,
-        summary: frozen
-          ? `REST Freeze: Baseline 거부 (${vehicle.oemVehicleId})`
-          : result.ok
-            ? `Baseline 재시도 성공 (${vehicle.oemVehicleId})`
-            : `Baseline 재시도 실패: ${errorMessage}`,
+        summary: result.ok
+          ? `Baseline 제원(specs_only) 성공 (${vehicle.oemVehicleId})`
+          : `Baseline 재시도 실패: ${errorMessage}`,
         metadata: sanitizeBody(result),
       },
       {
@@ -73,7 +69,7 @@ export async function POST(request: Request, context: RouteContext) {
         method: request.method,
         url: request.url,
         path: new URL(request.url).pathname,
-        statusCode: result.ok ? 200 : frozen ? 403 : 409,
+        statusCode: result.ok ? 200 : 409,
         success: result.ok,
         requestHeaders: sanitizeHeaders(request.headers),
         responseBody: sanitizeBody(result),
@@ -82,7 +78,7 @@ export async function POST(request: Request, context: RouteContext) {
     );
 
     if (!result.ok) {
-      return NextResponse.json(result, { status: frozen ? 403 : 409 });
+      return NextResponse.json(result, { status: 409 });
     }
 
     return NextResponse.json(result);

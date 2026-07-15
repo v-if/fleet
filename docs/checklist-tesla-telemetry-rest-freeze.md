@@ -2,7 +2,7 @@
 
 관련 요구사항: [requirements-tesla-telemetry-rest-freeze.md](./requirements-tesla-telemetry-rest-freeze.md)  
 관련 CAF: [checklist-tesla-fleet-telemetry-config-add-field.md](./checklist-tesla-fleet-telemetry-config-add-field.md) (CAF-6과 게이트 연계)  
-상태: **문서 ✅ · Freeze 코드 ✅ · Telemetry 확인 QA ☐ · 필드 재정의 ☐**
+상태: **문서 ✅ · Freeze ✅ · Baseline 졸업 ✅ · Telemetry QA ☐ · B2 ☐**
 
 ---
 
@@ -14,9 +14,9 @@
 | TRF-2 | A1~A7 Freeze 가드 · env | TRF-A | ✅ |
 | TRF-3 | fallback UI 비활성 · 상태 표시 | TRF-A | ✅ |
 | TRF-4 | Freeze 하 Telemetry 확인 게이트 | TRF-A QA | ☐ |
-| TRF-5 | B1 Baseline/VK 필드 표 | TRF-B-Doc | ☐ |
+| TRF-5 | B1 Baseline/VK 필드 표 | TRF-B-Doc | ✅ |
 | TRF-6 | B2 Wake 쿨다운 필드 표 | TRF-B-Doc | ☐ |
-| TRF-7 | B 코드 · Freeze 해제 | TRF-B | ☐ |
+| TRF-7 | B1 코드 ✅ · B2·Freeze 해제 ☐ | TRF-B | 부분 ✅ |
 | TRF-8 | 해제 후 실차 | TRF-B QA | ☐ |
 
 ---
@@ -37,13 +37,13 @@
 
 | # | 경로 | 상태 |
 |---|------|:----:|
-| A1 | Wake 쿨다운 `maybeRunWakeCooldownRestSync` | ✅ |
-| A2 | Gear correction | ✅ |
-| A3 | Nearby on park | ✅ |
-| A4 | Baseline `runBaselineForVehicle` | ✅ |
-| A5 | VK confirm → Baseline · `tryBaselinesForAccount` | ✅ |
-| A6 | 수동 `?fallback=1` (403) | ✅ |
-| A7 | full / auto REST sync Snapshot (`resolveVehicleSyncMode` → registry) | ✅ |
+| A1 | Wake 쿨다운 `maybeRunWakeCooldownRestSync` | ✅ 차단 |
+| A2 | Gear correction | ✅ 차단 |
+| A3 | Nearby on park | ✅ 차단 |
+| A4 | Baseline `runBaselineForVehicle` | ✅ 졸업 |
+| A5 | VK confirm → Baseline · `tryBaselinesForAccount` | ✅ 졸업 |
+| A6 | 수동 `?fallback=1` (403) | ✅ 차단 |
+| A7 | full / auto REST sync Snapshot | ✅ 차단 |
 
 ### 공통
 
@@ -60,33 +60,46 @@
 - [x] Telemetry webhook / process
 - [x] `fleet_telemetry_config` GET/POST/DELETE
 - [x] registry-only `listVehicles` + `fleet_status` (Snapshot 없음)
+- [x] **Baseline specs-only (졸업)** — VK·수동·`tryBaselinesForAccount`
+
+### 졸업 목록 (`REST_FREEZE_GRADUATED_PATHS`)
+
+| 경로 | 상태 |
+|------|:----:|
+| `baseline_specs_only` | ✅ |
+| wake / gear / nearby / fallback | ☐ 미졸업 |
 
 ---
 
 ## TRF-A QA — Telemetry 확인 게이트 ☐
 
-VIN: `LRWYGCFJ7SC214742` · **Freeze ON** 상태에서
+VIN: `LRWYGCFJ7SC214742` · **Freeze ON** (Baseline 졸업은 허용)
 
 - [ ] T1 CAF-6: 재구독 · GET config ⊇ 44키 · Version 없음
 - [ ] T2 Ingress P0/P1 샘플 수신
-- [ ] T3 Snapshot에 REST 오염 없음 (`telemetrySource` / Audit)
+- [ ] T3 Snapshot에 **Wake/fallback REST 오염 없음** (Baseline은 Snapshot 없음)
 - [ ] T4 ASLEEP→ONLINE 후 WAKE_COOLDOWN Snapshot/Audit **없음**
-- [ ] T5 운영자: Telemetry 확인 완료 기록 → Freeze 해제 가능
+- [ ] T4b VK/온보딩 후 Baseline 제원 저장 · Audit `specs_only`
+- [ ] T5 미졸업 경로 허용 시 `TESLA_REST_FREEZE=false` (선택)
 
 ---
 
-## TRF-B-Doc — 필드 재정의 ☐
+## TRF-B-Doc — 필드 재정의
 
-Telemetry 확인 **이후** 작성·승인.
+Telemetry 확인 **이후** 코드 적용. **B1 문서 초안은 선행 작성·승인.**
 
-### B1 — Baseline / VK
+상세: [requirements-tesla-telemetry-rest-baseline-specs.md](./requirements-tesla-telemetry-rest-baseline-specs.md)
+
+### B1 — Baseline / VK (온보딩 최초 REST · 제원)
 
 | # | 항목 | 상태 |
 |---|------|:----:|
-| 1 | 조회 API·응답 경로 화이트리스트 | ☐ |
-| 2 | Vehicle 갱신 컬럼 (= REST-1 제원) | ☐ |
-| 3 | Snapshot: 미생성 vs 제한 merge 결정 | ☐ |
-| 4 | wake_up 계속 금지 명시 | ☐ |
+| 1 | 조회 API·응답 경로 화이트리스트 | ✅ |
+| 2 | Vehicle Tier A/B · `vehicleConfigJson` · Version V-A | ✅ |
+| 3 | Snapshot 미생성 · nearby/service/alerts 제거 | ✅ |
+| 4 | wake_up 금지 유지 | ✅ |
+| 5 | migrate · `trf-b1:verify` · DTO/UI | ✅ |
+| 6 | 실차 QA (TRF-B1-4 · Freeze ON에서도 Baseline 가능) | ☐ |
 
 ### B2 — Wake 쿨다운
 
@@ -118,4 +131,8 @@ Telemetry 확인 **이후** 작성·승인.
 |------|------|
 | 2026-07-15 | TRF 체크리스트 작성 (코드 미착수) |
 | 2026-07-15 | TRF-A 코드 ✅ (TRF-2·3) · `TESLA_REST_FREEZE` · QA(TRF-4)·B ☐ |
+| 2026-07-15 | TRF-B1 제원 Baseline 요구 초안 추가 · 승인·코드 대기 |
+| 2026-07-15 | TRF-B1 Fleet API 리서치 3건 반영 · Tier A/B/C 확정안 |
+| 2026-07-15 | TRF-B1-3 코드 완료 — specs-only Baseline · migrate · verify |
+| 2026-07-15 | Freeze 졸업 — Baseline 예외 · Wake 등 차단 유지 |
 |
