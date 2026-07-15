@@ -21,6 +21,8 @@
 | [requirements-tesla-fleet-api-display-data.md](./requirements-tesla-fleet-api-display-data.md) | 프론트 고도화 선행 — Fleet API 표시 항목 조사, **정적/동적** 분류 | 화면 고도화·제원/실시간 데이터 설계할 때 |
 | [requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md) | **차량 상세** 고도화 — 실차 DB 대조, 관리자 IA·표현·Phase (VD-1~3) | 상세 UI/UX 구현 전에 |
 | [requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md) | 차량 상세 **표시 문구·배치** — VD-UX2 (A~G 완료) | 카피·위치 카드 검수 |
+| [requirements-vehicle-detail-ops-copy.md](./requirements-vehicle-detail-ops-copy.md) | **VD-OPS** — 새로고침/제원/재연동 안내 (TRF-B1) · ✅ | 상세 운영 문구 |
+| [checklist-vehicle-detail-ops-copy.md](./checklist-vehicle-detail-ops-copy.md) | Phase VD-OPS ✅ | 검수 |
 | [requirements-charging-card.md](./requirements-charging-card.md) | 상세 「충전 중」서브카드 (CC-A~D ✅) — 완속/급속 포함 | 충전 UX · migrate·실차 검수 |
 | [checklist-charging-card.md](./checklist-charging-card.md) | Phase CC 체크리스트 · 실차 검수 남음 | CC 구현·검수 |
 | [requirements-car-info-card.md](./requirements-car-info-card.md) | 상세 3×2+TPMS (CI-A~D ✅) · **§10 카드 평가·CI-E 후보** | 차체·퀵타일 · 개선 검토 |
@@ -33,7 +35,7 @@
 | [checklist-vehicle-detail-ui.md](./checklist-vehicle-detail-ui.md) | 차량 상세 UI Phase VD-1~3 체크리스트 | VD 구현·검수할 때 |
 | [requirements-tesla-api-bugfix-0712.md](./requirements-tesla-api-bugfix-0712.md) | 실차 검증 **도어/트렁크·인근충전소 고착** 버그 원인·수정 요구 (BF-1~3) | 표시 데이터 버그 수정 전에 |
 | [checklist-tesla-api-bugfix-0712.md](./checklist-tesla-api-bugfix-0712.md) | Phase BF-A~E 구현 체크리스트 (미착수) | BF 구현·실차 검수할 때 |
-| [checklist-onboarding-e2e-reset.md](./checklist-onboarding-e2e-reset.md) | 온보딩 E2E용 DB 리셋 · 유지/삭제 · 사용자 할 일 | 첫 연동부터 재검증할 때 |
+| [checklist-onboarding-e2e-reset.md](./checklist-onboarding-e2e-reset.md) | 온보딩 E2E DB 리셋 · **2026-07-15 실행 완료** · TRF-B1 시나리오 | 첫 연동 재검증 |
 | [requirements-tesla-api-bug-report-0712.md](./requirements-tesla-api-bug-report-0712.md) | 위 이슈의 **현장 관찰·가설 원문** | 재현 시나리오 참고 |
 | [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md) | Telemetry vs Fleet API **하이브리드 호출** — ASLEEP 금지·이벤트 주도 REST | 수집 전략·wake/쿨다운 설계할 때 |
 | [requirements-tesla-fleet-telemetry-config.md](./requirements-tesla-fleet-telemetry-config.md) | **fleet_telemetry_config** create · **CAF 44키** | 구독·재구독 |
@@ -198,3 +200,5 @@
 | 2026-07-15 | TRF-B1 — 온보딩 최초 REST 제원 재정의 요구 초안 |
 | 2026-07-15 | TRF-B1-3 코드 — `writeVehicleSpecs` · Vehicle 제원 컬럼 migrate |
 | 2026-07-15 | TRF Freeze 졸업 — Baseline 예외 · Wake 등 차단 유지 |
+| 2026-07-15 | 온보딩 E2E — Production DB 리셋 (User만 유지 · Telemetry config DELETE) |
+| 2026-07-15 | VD-OPS — 차량상세 운영 안내·버튼 문구 (TRF-B1 정합) |

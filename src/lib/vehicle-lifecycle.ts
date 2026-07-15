@@ -25,7 +25,7 @@ export const REST_SYNC_REASON_LABEL: Record<
   "BASELINE" | "WAKE_COOLDOWN" | "MANUAL_FALLBACK" | "SPECS_REFRESH",
   string
 > = {
-  BASELINE: "제원·초기 상태 수집",
+  BASELINE: "제원 수집",
   WAKE_COOLDOWN: "기상 후 상세 조회",
   MANUAL_FALLBACK: "수동 상세 조회",
   SPECS_REFRESH: "제원 다시 불러오기",
@@ -73,8 +73,8 @@ export function lifecycleGuidance(lifecycle: VehicleLifecycle | null | undefined
     case "TELEMETRY_PENDING":
       return {
         title: "실시간 신호를 기다리는 중",
-        body: "키가 확인되었습니다. 첫 실시간 신호를 기다리거나, 차량이 깨어 있을 때 ‘제원·상태 다시 불러오기’를 시도할 수 있습니다.",
-        actions: ["retry_baseline"],
+        body: "키가 확인되었습니다. 첫 실시간 신호를 기다리거나 「실시간 연동 다시 켜기」로 구독을 확인하세요. 제원만 비어 있으면 「제원 다시 불러오기」를 사용할 수 있습니다.",
+        actions: ["reconnect_telemetry", "retry_baseline"],
       };
     case "TELEMETRY_DISCONNECTED":
       return {

@@ -793,6 +793,14 @@
 - [x] **UX2-G** 위치 캡션 숨김 · 인근충전소 맵 아래 (UX2-21~22)
 - [ ] 실차 수동 검수 (체크리스트 UX2-A~G)
 
+### Phase VD-OPS 차량 상세 운영 안내 (TRF-B1 정합) — ✅
+
+> [requirements-vehicle-detail-ops-copy.md](./requirements-vehicle-detail-ops-copy.md) · [checklist-vehicle-detail-ops-copy.md](./checklist-vehicle-detail-ops-copy.md)
+
+- [x] **VD-OPS-1** 새로고침 / 제원 / 재연동 역할 · 문구 요구
+- [x] **VD-OPS-2** 신호 없음 배너·버튼명「제원 다시 불러오기」·TELEMETRY_PENDING 재연동 우선
+- [ ] 실차: 신호 없음 → 재연동만으로 이해
+
 ### Telemetry Value Monitor (개발) — 요구1 ✅
 
 > [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md)
@@ -1002,4 +1010,5 @@
 | 2026-07-15 | TRF-B1 온보딩 제원 REST 요구 초안 (`rest-baseline-specs`) |
 | 2026-07-15 | TRF-B1-3 — specs-only Baseline 코드 · Vehicle Tier A/B/C 마이그레이션 |
 | 2026-07-15 | TRF Freeze 졸업 — Baseline은 Freeze 예외 · Wake 차단 유지 |
+| 2026-07-15 | Phase VD-OPS — 상세 운영 안내·「제원 다시 불러오기」문구 |
 

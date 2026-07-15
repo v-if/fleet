@@ -105,7 +105,7 @@ function buildConnectivityTimeline(vehicle: VehicleDetailDto): ConnectivityStep[
     },
     {
       key: "baseline",
-      label: "제원·초기 상태 수집",
+      label: "제원 수집",
       at: sync?.baselineCompletedAt ?? null,
       done: Boolean(sync?.baselineCompletedAt),
     },
@@ -397,16 +397,18 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
       if (!response.ok) {
         setActionMessage(
           body.error
-            ? `제원·상태 불러오기 실패 (자동 기상 없음): ${body.error}`
-            : "제원·상태 다시 불러오기에 실패했습니다. 차량이 깨어 있을 때 다시 시도하세요.",
+            ? `제원 불러오기 실패 (자동 기상 없음): ${body.error}`
+            : "제원 불러오기에 실패했습니다. 차량이 깨어 있을 때 다시 시도하세요.",
         );
         return;
       }
-      setActionMessage("제원·초기 상태 수집이 완료되었습니다.");
+      setActionMessage(
+        "제원을 다시 불러왔습니다. (배터리·위치는 변경되지 않습니다.)",
+      );
       await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       await refetch();
     } catch {
-      setActionMessage("제원·상태 요청 중 오류가 발생했습니다.");
+      setActionMessage("제원 요청 중 오류가 발생했습니다.");
     } finally {
       setIsRetryingBaseline(false);
     }
@@ -892,7 +894,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   주행 중 — 주차 후 갱신
                 </p>
                 <p className="mt-1 text-theme-xs text-gray-400">
-                  또는 차량이 깨어 있을 때 「제원·상태 다시 불러오기」로 갱신할 수 있습니다.
+                  주행 중 — 주차 후 갱신됩니다.
                 </p>
               </div>
             )}
@@ -924,16 +926,6 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   {isConfirmingKey ? "확인 중..." : "키 연결 확인"}
                 </Button>
               ) : null}
-              {guidance.actions.includes("retry_baseline") ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => void handleRetryBaseline()}
-                  disabled={isRetryingBaseline}
-                >
-                  {isRetryingBaseline ? "불러오는 중..." : "제원·상태 다시 불러오기"}
-                </Button>
-              ) : null}
               {guidance.actions.includes("reconnect_telemetry") ? (
                 <Button
                   size="sm"
@@ -941,6 +933,16 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   disabled={isReconnecting}
                 >
                   {isReconnecting ? "연결 중..." : "실시간 연동 다시 켜기"}
+                </Button>
+              ) : null}
+              {guidance.actions.includes("retry_baseline") ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleRetryBaseline()}
+                  disabled={isRetryingBaseline}
+                >
+                  {isRetryingBaseline ? "불러오는 중..." : "제원 다시 불러오기"}
                 </Button>
               ) : null}
               <Link href="/settings">
@@ -968,8 +970,9 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               </h4>
             </div>
             <p className="mt-2 text-theme-sm text-gray-600 dark:text-gray-300">
-              실시간 연동은 켜져 있지만 최근 신호가 없습니다. 「실시간 연동 다시 켜기」 또는
-              차량이 깨어 있을 때 「제원·상태 다시 불러오기」를 시도해 보세요.
+              실시간 연동은 켜져 있지만 차량 신호가 아직 없습니다. SoC·위치 등 관제
+              데이터를 받으려면 「실시간 연동 다시 켜기」로 Telemetry 구독을 재등록하세요.
+              차량이 깨어 있어야 수신이 시작되기 쉽습니다.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Button
@@ -1088,7 +1091,8 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               운영 · 연동
             </h4>
             <p className="mb-4 text-theme-xs text-gray-500 dark:text-gray-400">
-              조회 카드와 분리된 관리자 조치 · 연동 타임라인 · 최근 오류
+              관리자 조치 · 연동 타임라인 · 최근 오류. 「제원 다시 불러오기」는
+              모델·색·SW 등 고정 제원만 가져오며 배터리·위치는 갱신하지 않습니다.
             </p>
             <div className="flex flex-wrap gap-2">
               {lifecycle !== "TELEMETRY_DISCONNECTED" ? (
@@ -1115,7 +1119,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                 onClick={() => void handleRetryBaseline()}
                 disabled={isRetryingBaseline || lifecycle === "TELEMETRY_DISCONNECTED"}
               >
-                {isRetryingBaseline ? "불러오는 중..." : "제원·상태 다시 불러오기"}
+                {isRetryingBaseline ? "불러오는 중..." : "제원 다시 불러오기"}
               </Button>
               <Button
                 size="sm"
@@ -1268,7 +1272,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                   ) : null}
                   {baselineLastError ? (
                     <div>
-                      <p className="text-theme-xs font-medium text-gray-500">제원·상태 수집 오류</p>
+                      <p className="text-theme-xs font-medium text-gray-500">제원 수집 오류</p>
                       <p className="mt-1 break-all text-theme-sm text-gray-700 dark:text-gray-300">
                         {baselineLastError}
                       </p>
