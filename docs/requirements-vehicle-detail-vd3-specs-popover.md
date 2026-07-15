@@ -2,10 +2,10 @@
 
 | 항목 | 내용 |
 |------|------|
-| 목적 | `/vehicles/[id]/v3`에서 **제원 카드를 스크롤에서 제거하고**, Hero 모델 라인 옆 **`i` 아이콘 → 닫을 수 있는 제원 패널**로 옮긴다. 패널에 **연식·휠·루프·충전 포트·Autopilot HW** 등을 표시한다 |
+| 목적 | `/vehicles/[id]`에서 **제원 카드를 스크롤에서 제거하고**, Hero 모델 라인 옆 **`i` 아이콘 → 닫을 수 있는 제원 패널**로 옮긴다. 패널에 **연식·휠·루프·충전 포트·Autopilot HW** 등을 표시한다 |
 | 배경 | 제원은 조회 빈도가 낮아 카드로 상시 자리를 차지할 필요가 없음. 관제(SoC·모드·지도) 밀도를 우선하고 제원은 필요 시만 |
 | 관련 | [requirements-vehicle-detail-vd3.md](./requirements-vehicle-detail-vd3.md), [requirements-tesla-telemetry-rest-baseline-specs.md](./requirements-tesla-telemetry-rest-baseline-specs.md) (Tier A/B), [requirements-vehicle-detail-ops-copy.md](./requirements-vehicle-detail-ops-copy.md) |
-| 적용 | **To-Be만** (`FleetVehicleDetailViewV3`). As-Is `/vehicles/[id]`는 변경하지 않음 (병렬 비교 유지) |
+| 적용 | **기본 상세** (`FleetVehicleDetailViewV3`). 이전 화면 `/v2`는 변경하지 않음 |
 | 상태 | **코드 ✅ (VD3-S-2·S-3) · 실차 VD3-S-4 ☐** |
 | 작성일 | 2026-07-16 |
 | ID | **VD3-S** |

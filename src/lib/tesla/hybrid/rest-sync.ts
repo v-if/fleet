@@ -10,6 +10,10 @@ import {
 import { createAuditLog } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { buildDisplayModel } from "@/lib/tesla/display-model";
+import {
+  shouldPreservePlateNumber,
+  withoutPlateNumberIfPreserved,
+} from "@/lib/vehicle-display-name";
 import { mergeSnapshotCoordinates } from "@/lib/tesla/hybrid/coordinates";
 import {
   ensureVehicleSyncState,
@@ -135,7 +139,10 @@ export async function writeRestSnapshot(
     ? await prisma.vehicle.update({
         where: { id: existing.id },
         data: {
-          ...registryFields,
+          ...withoutPlateNumberIfPreserved(
+            registryFields,
+            shouldPreservePlateNumber(existing.plateNumberEditedAt),
+          ),
           ...(updateSpecs
             ? specsUpdateData(snapshot, now)
             : existing.specsSyncedAt

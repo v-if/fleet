@@ -3,6 +3,9 @@ import { Prisma, RestSyncReason, VehicleLifecycle } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { buildDisplayModel } from "@/lib/tesla/display-model";
 import {
+  shouldPreservePlateNumber,
+} from "@/lib/vehicle-display-name";
+import {
   ensureVehicleSyncState,
   patchVehicleSyncState,
 } from "@/lib/tesla/hybrid/sync-state";
@@ -187,10 +190,16 @@ export async function writeVehicleSpecs(
 
   const now = lastRestSyncAt;
 
+  const existing = await prisma.vehicle.findUnique({
+    where: { id: vehicleId },
+    select: { plateNumberEditedAt: true },
+  });
+  const preservePlateNumber = shouldPreservePlateNumber(existing?.plateNumberEditedAt);
+
   const vehicle = await prisma.vehicle.update({
     where: { id: vehicleId },
     data: {
-      plateNumber: specs.plateNumber,
+      ...(preservePlateNumber ? {} : { plateNumber: specs.plateNumber }),
       year: specs.year,
       oemVehicleId: specs.oemVehicleId,
       teslaAccountId,

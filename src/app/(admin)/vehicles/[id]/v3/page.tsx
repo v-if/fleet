@@ -1,18 +1,11 @@
-import type { Metadata } from "next";
-
-import { FleetVehicleDetailViewV3 } from "@/components/fms/FleetVehicleDetailViewV3";
-import { fmsPageTitle } from "@/lib/branding";
-
-export const metadata: Metadata = {
-  title: fmsPageTitle("차량 상세 VD3"),
-  description: "보리차 차량 상세 VD3 미리보기",
-};
+import { redirect } from "next/navigation";
 
 type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default async function VehicleDetailV3Page({ params }: PageProps) {
+/** VD3 컷오버: 구 `/v3` URL → 기본 상세로 리다이렉트 */
+export default async function VehicleDetailV3RedirectPage({ params }: PageProps) {
   const { id } = await params;
-  return <FleetVehicleDetailViewV3 vehicleId={id} />;
+  redirect(`/vehicles/${id}`);
 }

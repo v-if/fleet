@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { FleetVehicleDetailView } from "@/components/fms/FleetVehicleDetailView";
+import { FleetVehicleDetailViewV3 } from "@/components/fms/FleetVehicleDetailViewV3";
 import { fmsPageTitle } from "@/lib/branding";
 
 export const metadata: Metadata = {
@@ -14,5 +14,5 @@ type PageProps = {
 
 export default async function VehicleDetailPage({ params }: PageProps) {
   const { id } = await params;
-  return <FleetVehicleDetailView vehicleId={id} />;
+  return <FleetVehicleDetailViewV3 vehicleId={id} />;
 }

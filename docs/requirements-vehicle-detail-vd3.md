@@ -6,8 +6,8 @@
 | 배경 | 상세 UI는 초기 REST/폴링·부분 Telemetry 기준으로 쌓였다. 지금은 P0/P1 스트림·제원 REST·주차 nearby가 있는데, **카드가 늘고 질문은 분산**되어 있다 |
 | 리서치 | [research-vehicles-detail-chatgpt.md](./research/research-vehicles-detail-chatgpt.md), [research-vehicles-detail-gemini.md](./research/research-vehicles-detail-gemini.md) |
 | 선행 | [requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md) (VD), [requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md) (VD-UX2), [requirements-vehicle-detail-ops-copy.md](./requirements-vehicle-detail-ops-copy.md) (VD-OPS), [requirements-tesla-fleet-telemetry-config-add-field.md](./requirements-tesla-fleet-telemetry-config-add-field.md) (CAF), [requirements-tesla-wake-telemetry-rest.md](./requirements-tesla-wake-telemetry-rest.md) (TRF-B2), [requirements-charging-card.md](./requirements-charging-card.md), [requirements-car-info-card.md](./requirements-car-info-card.md) |
-| 적용 | **병렬 화면:** As-Is `FleetVehicleDetailView` 유지 · To-Be 신규 뷰 URL (§6.1). 수집 파이프(TRF/CAF)는 공유 |
-| 상태 | **문서 ✅ · `/v3` 코드 ✅ (VD3-1b~4) · 실차 비교 ☐ · 컷오버 ☐** |
+| 적용 | **컷오버 완료:** 기본 `/vehicles/[id]` = VD3 · 이전 `/vehicles/[id]/v2` 보존 |
+| 상태 | **문서 ✅ · 기본 상세 VD3 ✅ · v2 보존 ✅ · 실차 비교 ☐** |
 | 작성일 | 2026-07-15 |
 | ID | **VD3** |
 
@@ -169,20 +169,13 @@
 
 ### 6.1 As-Is / To-Be 병렬 URL — 의견 (채택 권고)
 
-**결론: 기존 상세를 유지하고, VD3는 별도 URL로 두는 방식이 지금 단계에 맞다.**  
-한 화면을 in-place로 갈아엎으면 비교·롤백·일상 관제가 한꺼번에 흔들린다. 데모·실차 검수 기간에는 **두 화면을 같은 차량·같은 데이터로 열어 보는 것**이 의사결정에 유리하다.
+**결론 (2026-07-16 컷오버):** VD3를 **기본 상세**로 승격했다. 이전 화면은 `/vehicles/[id]/v2`에 보존. 구 `/v3` URL은 기본으로 리다이렉트.
 
 | 관점 | 의견 |
 |------|------|
-| 왜 좋은가 | 운영은 As-Is로 계속 · To-Be는 안심하고 실험. 스크롤·정보밀도·모드 뱃지를 **나란히** 판단 가능 |
-| 기본 진입 | 목록·기존 링크 → **As-Is** (`/vehicles/[id]`). To-Be는 의도적 URL 또는 「새 상세 보기」링크 |
-| URL 형태 | **경로 분리 권고:** `/vehicles/[id]/v3` (또는 `/vehicles/[id]/preview`). `?view=v3`보다 공유·북마크·권한이 명확 |
-| 데이터 | **API·DTO·Server fetch 공유** — 뷰(컴포넌트)만 분기. Snapshot/Telemetry SoT를 두 벌로 만들면 비교가 무의미해짐 |
-| UX 다리 | 양쪽 툴바에 상호 링크: 「이전 상세」↔「새 상세(VD3)」· VIN/번호 동일 표시 |
-| 유지 비용 | 듀얼 기간이 길면 부담. **결정 기한·커트오버 조건**을 문서에 적고, 채택 후 As-Is 제거 또는 리다이렉트 |
-| 하지 말 것 | feature flag로 같은 URL에 몰래 전환(비교 어려움) · To-Be만 다른 REST를 추가 호출 · 목록 기본을 성급히 v3로 |
-
-**추천 컷오버:** To-Be가 실차·데모에서 「5초 판단」이 As-Is 이상이다고 합의 → 목록 링크를 v3로 바꾼 뒤 As-Is는 `/legacy`로 잠시 남기거나 삭제.
+| 기본 진입 | 목록·위젯 → **`/vehicles/[id]`** (VD3) |
+| 이전 화면 | **`/vehicles/[id]/v2`** — 비교·롤백용 |
+| 구 URL | `/vehicles/[id]/v3` → `/vehicles/[id]` 리다이렉트 |
 
 ---
 
@@ -192,10 +185,9 @@
 
 | 구분 | URL (admin 예) | 컴포넌트 |
 |------|----------------|----------|
-| **As-Is** | `/vehicles/[id]` | 현행 `FleetVehicleDetailView` **수정 최소화** |
-| **To-Be (VD3)** | `/vehicles/[id]/v3` | 신규 예: `FleetVehicleDetailViewV3` |
-
-(플릿 포탈을 쓰면 `/fleet/vehicles/[id]` · `/fleet/vehicles/[id]/v3` 동일 패턴.)
+| **기본 (VD3)** | `/vehicles/[id]` | `FleetVehicleDetailViewV3` |
+| **이전 (v2)** | `/vehicles/[id]/v2` | `FleetVehicleDetailView` |
+| **구 URL** | `/vehicles/[id]/v3` | → `/vehicles/[id]` 리다이렉트 |
 
 ### 7.2 공유 / 분기
 
@@ -223,14 +215,15 @@
 | ID | 내용 | 상태 |
 |----|------|:----:|
 | **VD3-1** | 본 문서 · 리서치 · **병렬 URL 전략** 승인 | ✅ |
-| **VD3-1b** | 라우트 `/vehicles/[id]/v3` + 상호 링크 셸 | ✅ |
+| **VD3-1b** | 라우트 컷오버 — 기본 VD3 · v2 이전 · `/v3` 리다이렉트 | ✅ |
 | **VD3-2** | To-Be: Hero · 운행모드 · 룰 기반 관제 요약 | ✅ |
 | **VD3-3** | To-Be: CAF 조건부 블록 | ✅ |
 | **VD3-4** | To-Be: nearby 신뢰 UX | ✅ |
 | **VD3-5** | (후속) 운행 요약·이벤트 | ☐ |
 | **VD3-6** | 실차 비교 검수 (As-Is vs `/v3`) | ☐ |
-| **VD3-7** | 컷오버 결정 · 기본 URL 전환 · 구화면 정리 | ☐ |
+| **VD3-7** | 컷오버 — 기본 URL VD3 · v2 보존 | ✅ |
 | **VD3-S** | Hero `i` 제원 모달 — [vd3-specs-popover](./requirements-vehicle-detail-vd3-specs-popover.md) | ✅ 코드 · ☐ 실차 |
+| **VD3-N** | Hero 표시명 연필 인라인 편집 — [vd3-display-name](./requirements-vehicle-detail-vd3-display-name.md) | ✅ 코드 · ☐ 실차 |
 
 체크리스트: [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
 
@@ -256,4 +249,7 @@
 | 2026-07-15 | 코드 — `FleetVehicleDetailViewV3` · `/vehicles/[id]/v3` · 상호 링크 · VD3-1b~4 ✅ |
 | 2026-07-16 | VD3-S 링크 — Hero `i` 제원 모달 요구 |
 | 2026-07-16 | VD3-S-2·S-3 — Hero `i` + Specs Modal · 하단 제원 accordion 제거 |
+| 2026-07-16 | VD3-N 링크 — Hero 표시명 연필 인라인 편집 요구 |
+| 2026-07-16 | VD3-N-2·N-3 — PATCH API · plateNumberEditedAt · Hero 연필 UI |
+| 2026-07-16 | VD3-7 컷오버 — `/vehicles/[id]` 기본 VD3 · v2 · `/v3` 리다이렉트 |
 |

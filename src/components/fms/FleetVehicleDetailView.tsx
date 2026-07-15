@@ -633,7 +633,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
     <>
       <FleetToolbar
         title={vehicle.plateNumber}
-        description={`${vehicle.model} · ${vehicle.year}`}
+        description={`${vehicle.model} · ${vehicle.year} · 이전 상세 (v2)`}
         onRefresh={() => void handleRefresh()}
         isRefreshing={isRefreshing || isFetching}
       />
@@ -652,10 +652,10 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
           전체 지도
         </Link>
         <Link
-          href={`/vehicles/${vehicleId}/v3`}
+          href={`/vehicles/${vehicleId}`}
           className="inline-flex rounded-lg border border-brand-300 bg-brand-50 px-4 py-2 text-theme-sm font-medium text-brand-800 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-brand-200"
         >
-          새 상세 (VD3)
+          현재 상세
         </Link>
       </div>
 

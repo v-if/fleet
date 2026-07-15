@@ -157,6 +157,7 @@ function toListItem(
     teslaVehicleId: vehicle.teslaVehicleId,
     accessType: vehicle.accessType,
     specsSyncedAt: vehicle.specsSyncedAt?.toISOString() ?? null,
+    plateNumberEditedAt: vehicle.plateNumberEditedAt?.toISOString() ?? null,
     syncState: serializeSyncState(syncState),
     freshness: buildFreshness(syncState, snapshot),
     snapshot: snapshot ? serializeSnapshot(snapshot) : null,

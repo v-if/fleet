@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
+import { ApiCallDirection, AuditLogStatus } from "@prisma/client";
 
+import {
+  createAuditLogWithApiCall,
+  getOrCreateRequestId,
+  sanitizeBody,
+  sanitizeHeaders,
+} from "@/lib/audit-log";
 import { requireApiSession } from "@/lib/auth-session";
 import { getVehicleDetail } from "@/lib/vehicles";
+import { updateVehicleDisplayName } from "@/lib/vehicle-display-name";
 import { isTelemetryPrimaryMode } from "@/lib/tesla/telemetry/config";
 import { inferAsleepVehicles } from "@/lib/tesla/telemetry/processor";
 
@@ -41,5 +49,98 @@ export async function GET(_request: Request, context: RouteContext) {
   return NextResponse.json({
     provider: process.env.VEHICLE_DATA_PROVIDER ?? "mock",
     vehicle,
+  });
+}
+
+/** VD3-N: FMS 표시명(plateNumber) 수동 수정 */
+export async function PATCH(request: Request, context: RouteContext) {
+  const requestId = getOrCreateRequestId(request);
+  const session = await requireApiSession();
+  if (session instanceof NextResponse) {
+    await createAuditLogWithApiCall(
+      {
+        action: "vehicle.display_name_update",
+        targetType: "Vehicle",
+        requestId,
+        status: AuditLogStatus.DENIED,
+        summary: "차량 표시명 변경 거부: 인증되지 않은 요청",
+      },
+      {
+        direction: ApiCallDirection.INBOUND,
+        system: "FMS",
+        requestId,
+        method: request.method,
+        url: request.url,
+        path: new URL(request.url).pathname,
+        statusCode: 401,
+        success: false,
+        requestHeaders: sanitizeHeaders(request.headers),
+        errorMessage: "Unauthorized",
+      },
+    );
+    return session;
+  }
+
+  const { id } = await context.params;
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const plateNumber =
+    body && typeof body === "object" && "plateNumber" in body
+      ? (body as { plateNumber?: unknown }).plateNumber
+      : undefined;
+
+  const result = await updateVehicleDisplayName(
+    id,
+    plateNumber,
+    { userId: session.userId, email: session.email },
+    {
+      requestId,
+      method: request.method,
+      url: request.url,
+      path: new URL(request.url).pathname,
+    },
+  );
+
+  if (!result.ok) {
+    await createAuditLogWithApiCall(
+      {
+        actorUserId: session.userId,
+        actorEmail: session.email,
+        action: "vehicle.display_name_update",
+        targetType: "Vehicle",
+        targetId: id,
+        vehicleId: id,
+        requestId,
+        status: AuditLogStatus.FAILURE,
+        summary: `차량 표시명 변경 실패: ${result.error}`,
+        metadata: sanitizeBody({ plateNumber }),
+      },
+      {
+        direction: ApiCallDirection.INBOUND,
+        system: "FMS",
+        requestId,
+        actorUserId: session.userId,
+        vehicleId: id,
+        method: request.method,
+        url: request.url,
+        path: new URL(request.url).pathname,
+        statusCode: result.status,
+        success: false,
+        requestHeaders: sanitizeHeaders(request.headers),
+        requestBody: sanitizeBody({ plateNumber }),
+        errorMessage: result.error,
+      },
+    );
+    return NextResponse.json({ error: result.error }, { status: result.status });
+  }
+
+  return NextResponse.json({
+    provider: process.env.VEHICLE_DATA_PROVIDER ?? "mock",
+    vehicle: result.vehicle,
   });
 }

@@ -141,6 +141,7 @@ export type VehicleListItemDto = {
   teslaVehicleId: string | null;
   accessType: string | null;
   specsSyncedAt: string | null;
+  plateNumberEditedAt: string | null;
   syncState: VehicleSyncStateDto | null;
   freshness: VehicleFreshnessDto;
   snapshot: VehicleSnapshotDto | null;

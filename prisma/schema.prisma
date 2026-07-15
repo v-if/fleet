@@ -226,6 +226,8 @@ model Vehicle {
   accessType       String?
   /// 제원 마지막 저장 시각
   specsSyncedAt    DateTime?      @db.Timestamptz(3)
+  /// 관리자 수동 표시명 저장 시각 (null이면 Tesla derive로 plateNumber 갱신 가능)
+  plateNumberEditedAt DateTime?   @db.Timestamptz(3)
   unlinkedAt       DateTime?      @db.Timestamptz(3)
   isDeleted        Boolean        @default(false)
   createdAt        DateTime       @default(now()) @db.Timestamptz(3)

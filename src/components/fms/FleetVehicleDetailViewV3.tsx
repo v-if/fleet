@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { TpmsDiagram } from "@/components/fleet/tpms-diagram";
 import { VehicleMap } from "@/components/fleet/vehicle-map";
@@ -16,6 +16,7 @@ import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
 import { useVehicleDetail, useVehicleRefresh } from "@/hooks/use-vehicles";
+import { CheckLineIcon, CloseLineIcon } from "@/icons";
 import { labelNearbyChargingSource } from "@/lib/tesla/nearby-charging";
 import type { MapVehicle } from "@/lib/types/vehicle";
 import {
@@ -54,6 +55,55 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [specsModalOpen, setSpecsModalOpen] = useState(false);
   const [vinCopied, setVinCopied] = useState(false);
+  const [isEditingDisplayName, setIsEditingDisplayName] = useState(false);
+  const [displayNameDraft, setDisplayNameDraft] = useState("");
+  const [isSavingDisplayName, setIsSavingDisplayName] = useState(false);
+  const [displayNameError, setDisplayNameError] = useState<string | null>(null);
+  const displayNameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditingDisplayName) {
+      displayNameInputRef.current?.focus();
+      displayNameInputRef.current?.select();
+    }
+  }, [isEditingDisplayName]);
+
+  function startEditDisplayName(currentName: string) {
+    setDisplayNameDraft(currentName);
+    setDisplayNameError(null);
+    setIsEditingDisplayName(true);
+  }
+
+  function cancelEditDisplayName() {
+    setIsEditingDisplayName(false);
+    setDisplayNameDraft("");
+    setDisplayNameError(null);
+  }
+
+  async function saveDisplayName() {
+    setIsSavingDisplayName(true);
+    setDisplayNameError(null);
+    try {
+      const response = await fetch(`/api/vehicles/${vehicleId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plateNumber: displayNameDraft }),
+      });
+      const body = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setDisplayNameError(body.error ?? "표시명 저장에 실패했습니다.");
+        return;
+      }
+      setIsEditingDisplayName(false);
+      setDisplayNameDraft("");
+      await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      await refetch();
+    } catch {
+      setDisplayNameError("표시명 저장 중 오류가 발생했습니다.");
+    } finally {
+      setIsSavingDisplayName(false);
+    }
+  }
 
   async function handleRefresh() {
     setIsRefreshing(true);
@@ -187,19 +237,11 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
   return (
     <>
       <FleetToolbar
-        title={`${vehicle.plateNumber} · VD3`}
-        description={`${vehicle.model} · ${vehicle.year} · 새 상세 미리보기`}
+        title={vehicle.plateNumber}
+        description={`${vehicle.model} · ${vehicle.year}`}
         onRefresh={() => void handleRefresh()}
         isRefreshing={isRefreshing || isFetching}
       />
-
-      <div className="mb-3 rounded-xl border border-brand-200 bg-brand-50 px-3 py-2 text-theme-xs text-brand-800 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-200">
-        <strong>VD3 미리보기</strong> — Telemetry 시대 배치. 일상 관제는{" "}
-        <Link href={`/vehicles/${vehicleId}`} className="font-medium underline">
-          이전 상세
-        </Link>
-        를 사용하세요. 데이터를 비교한 뒤 한쪽을 선택할 예정입니다.
-      </div>
 
       <div className="mb-4 flex flex-wrap gap-2">
         <Link
@@ -209,10 +251,10 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
           목록으로
         </Link>
         <Link
-          href={`/vehicles/${vehicleId}`}
-          className="inline-flex rounded-lg border border-gray-300 px-4 py-2 text-theme-sm dark:border-gray-700"
+          href={`/vehicles/${vehicleId}/v2`}
+          className="inline-flex rounded-lg border border-gray-300 px-4 py-2 text-theme-sm text-gray-500 dark:border-gray-700"
         >
-          이전 상세 (As-Is)
+          이전 상세 (v2)
         </Link>
       </div>
 
@@ -266,9 +308,73 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
             ) : null}
           </div>
 
-          <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            {vehicle.plateNumber}
-          </h4>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {isEditingDisplayName ? (
+              <>
+                <input
+                  ref={displayNameInputRef}
+                  type="text"
+                  value={displayNameDraft}
+                  onChange={(event) => setDisplayNameDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void saveDisplayName();
+                    }
+                    if (event.key === "Escape") {
+                      event.preventDefault();
+                      cancelEditDisplayName();
+                    }
+                  }}
+                  disabled={isSavingDisplayName}
+                  maxLength={32}
+                  aria-label="차량 표시명"
+                  className="min-w-[10rem] max-w-full flex-1 rounded-lg border border-gray-300 bg-white px-2.5 py-1 text-lg font-semibold text-gray-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 disabled:opacity-60 dark:border-gray-600 dark:bg-gray-900 dark:text-white/90"
+                />
+                <button
+                  type="button"
+                  onClick={() => void saveDisplayName()}
+                  disabled={isSavingDisplayName}
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gray-300 text-gray-500 transition hover:border-success-400 hover:text-success-600 disabled:opacity-50 dark:border-gray-600 dark:text-gray-400 dark:hover:border-success-500 dark:hover:text-success-400"
+                  aria-label="표시명 저장"
+                  title="저장"
+                >
+                  <CheckLineIcon className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelEditDisplayName}
+                  disabled={isSavingDisplayName}
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gray-300 text-gray-500 transition hover:border-error-400 hover:text-error-600 disabled:opacity-50 dark:border-gray-600 dark:text-gray-400 dark:hover:border-error-500 dark:hover:text-error-400"
+                  aria-label="표시명 취소"
+                  title="취소"
+                >
+                  <CloseLineIcon className="h-4 w-4" />
+                </button>
+              </>
+            ) : (
+              <>
+                <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                  {vehicle.plateNumber}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => startEditDisplayName(vehicle.plateNumber)}
+                  className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-gray-300 text-theme-xs font-semibold text-gray-500 transition hover:border-brand-400 hover:text-brand-700 dark:border-gray-600 dark:text-gray-400 dark:hover:border-brand-500 dark:hover:text-brand-300"
+                  aria-label="표시명 수정"
+                  title="표시명 수정"
+                >
+                  <span aria-hidden="true">✏</span>
+                  <span className="sr-only">표시명 수정</span>
+                </button>
+              </>
+            )}
+          </div>
+          {displayNameError ? (
+            <p className="mt-1 text-theme-xs text-error-600 dark:text-error-400">
+              {displayNameError}
+            </p>
+          ) : null}
           <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
             <p className="text-theme-sm text-gray-500">
               {vehicle.model}
@@ -571,10 +677,10 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
             {isRetryingBaseline ? "불러오는 중..." : "제원 다시 불러오기"}
           </Button>
           <Link
-            href={`/vehicles/${vehicleId}`}
+            href={`/vehicles/${vehicleId}/v2`}
             className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-theme-sm dark:border-gray-700"
           >
-            이전 상세로
+            이전 상세 (v2)
           </Link>
         </div>
       </section>

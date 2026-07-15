@@ -24,6 +24,10 @@ import { ensureTelemetrySubscriptionsForAccount } from "@/lib/tesla/telemetry/su
 import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
 import {
+  shouldPreservePlateNumber,
+  withoutPlateNumberIfPreserved,
+} from "@/lib/vehicle-display-name";
+import {
   createVehicleProvider,
   getVehicleProviderName,
 } from "@/lib/vehicle-providers";
@@ -107,10 +111,12 @@ async function upsertVehicleRegistry(
   };
 
   if (existing) {
+    const preservePlateNumber = shouldPreservePlateNumber(existing.plateNumberEditedAt);
+    const registryUpdate = withoutPlateNumberIfPreserved(registryData, preservePlateNumber);
     const updated = await prisma.vehicle.update({
       where: { id: existing.id },
       data: {
-        ...registryData,
+        ...registryUpdate,
         // 제원 동기화 전이면 placeholder model만 유지/갱신
         ...(existing.specsSyncedAt ? {} : { model: snapshot.model }),
       },

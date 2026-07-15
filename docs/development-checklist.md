@@ -806,13 +806,13 @@
 > [requirements-vehicle-detail-vd3.md](./requirements-vehicle-detail-vd3.md) · [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
 
 - [x] **VD3-1** 문서 · As-Is 유지 + `/v3` 병렬
-- [x] **VD3-1b** `/vehicles/[id]/v3` · 상호 링크
+- [x] **VD3-1b** `/vehicles/[id]` 기본 VD3 · `/vehicles/[id]/v2` 이전 · 상호 링크
 - [x] **VD3-2** Hero · 가동모드 · 관제 요약
 - [x] **VD3-3** CAF 조건부 블록
 - [x] **VD3-4** nearby 신뢰 empty UX
 - [ ] **VD3-5** 운행/이벤트(후속)
 - [ ] **VD3-6** 실차 As-Is vs v3 비교
-- [ ] **VD3-7** 컷오버
+- [x] **VD3-7** 컷오버 — 기본 URL VD3 · v2 보존 · `/v3` 리다이렉트
 
 ### Phase VD3-S 제원 `i` 팝업 — ✅ 코드 · ☐ 실차
 
@@ -822,6 +822,15 @@
 - [x] **VD3-S-2** SpecsModal + Hero `i` · 연식/휠/루프/포트/AP HW
 - [x] **VD3-S-3** 하단 제원 카드 제거
 - [ ] **VD3-S-4** 실차 검수
+
+### Phase VD3-N 표시명 연필 편집 — ✅ 코드 · ☐ 실차
+
+> [requirements-vehicle-detail-vd3-display-name.md](./requirements-vehicle-detail-vd3-display-name.md)
+
+- [x] **VD3-N-1** 문서 승인 (GO)
+- [x] **VD3-N-2** `plateNumberEditedAt` · REST 보호 · `PATCH` API · Audit
+- [x] **VD3-N-3** Hero 연필 · ✓/✕ 인라인 편집 · 쿼리 invalidate
+- [ ] **VD3-N-4** 실차 검수
 
 ### Telemetry Value Monitor (개발) — 요구1 ✅
 
@@ -1053,4 +1062,6 @@
 | 2026-07-16 | NCS-2~4 코드 — ChargingStation · 폴백 · verify |
 | 2026-07-16 | VD3-S Hero `i` 제원 모달 요구 초안 |
 | 2026-07-16 | VD3-S-2·S-3 코드 — Hero `i` Specs Modal · 하단 제원 카드 제거 |
+| 2026-07-16 | VD3-N-2·N-3 코드 — PATCH 표시명 · plateNumberEditedAt · Hero 연필 UI |
+| 2026-07-16 | VD3-7 컷오버 — `/vehicles/[id]` 기본 VD3 · v2 · `/v3` 리다이렉트 |
 
