@@ -23,6 +23,7 @@ import {
   vehicleStatusBadgeColor,
 } from "@/lib/fms-badge-utils";
 import { labelCarType, labelTrimBadging } from "@/lib/tesla/display-model";
+import { labelNearbyChargingSource } from "@/lib/tesla/nearby-charging";
 import type { MapVehicle, VehicleDetailDto } from "@/lib/types/vehicle";
 import {
   DISCONNECT_REASON_LABEL,
@@ -867,12 +868,17 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
               <h5 className="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
                 인근 충전소
               </h5>
-              {snapshot?.nearbyChargingMeta?.capturedAt ? (
+              {snapshot?.nearbyChargingMeta?.capturedAt ||
+              snapshot?.nearbyChargingMeta?.source ? (
                 <p className="text-theme-xs text-gray-500 dark:text-gray-400">
-                  수집 {formatRelativeTime(snapshot.nearbyChargingMeta.capturedAt)}
-                  {snapshot.nearbyChargingMeta.capturedAt
-                    ? ` · ${formatDateTime(snapshot.nearbyChargingMeta.capturedAt)}`
-                    : ""}
+                  {[
+                    labelNearbyChargingSource(snapshot.nearbyChargingMeta?.source),
+                    snapshot.nearbyChargingMeta?.capturedAt
+                      ? `수집 ${formatRelativeTime(snapshot.nearbyChargingMeta.capturedAt)}`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               ) : null}
             </div>

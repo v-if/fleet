@@ -75,11 +75,12 @@ function serializeSnapshot(snapshot: VehicleSnapshot) {
     softwareUpdateVersion: snapshot.softwareUpdateVersion ?? null,
     nearbyChargingSites: nearby.sites,
     nearbyChargingMeta:
-      nearby.capturedAt || nearby.sites.length > 0
+      nearby.capturedAt || nearby.sites.length > 0 || nearby.source
         ? {
             capturedAt: nearby.capturedAt,
             capturedLat: nearby.capturedLat,
             capturedLng: nearby.capturedLng,
+            source: nearby.source,
           }
         : null,
     lastTelemetryAt: snapshot.lastTelemetryAt?.toISOString() ?? null,

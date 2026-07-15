@@ -1,4 +1,11 @@
-import { AuditLogStatus, RestSyncReason, TelemetrySource, VehicleLifecycle } from "@prisma/client";
+import {
+  AuditLogStatus,
+  ChargingStationSiteType,
+  RestSyncReason,
+  TelemetrySource,
+  VehicleLifecycle,
+  type VehicleSnapshot,
+} from "@prisma/client";
 
 import { createAuditLog } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
@@ -15,6 +22,11 @@ import {
   specsAuditFields,
   writeVehicleSpecs,
 } from "@/lib/tesla/hybrid/vehicle-specs";
+import {
+  isNearbyCatalogFallbackEnabled,
+  queryNearbyFromCatalog,
+  upsertChargingStationsFromSeeds,
+} from "@/lib/tesla/charging-station-catalog";
 import { serializeNearbyChargingSites } from "@/lib/tesla/nearby-charging";
 import { mergeCafSnapshotFields, pickCafSnapshotFields } from "@/lib/tesla/telemetry/caf-fields";
 import {
@@ -465,8 +477,9 @@ export async function tryBaselinesForAccount(teslaAccountId: string) {
 }
 
 /**
- * TRF-B2 / BF-C: Gear=P 정차 + 쿨다운 경과 시 nearby_charging_sites만 갱신.
- * Freeze 졸업 경로 — Wake/vehicle_data 호출 없음.
+ * TRF-B2 / NCS: Gear=P 정차 시 nearby_charging_sites.
+ * 성공 → 카탈로그 Upsert + Snapshot(TESLA_REST).
+ * 실패 → 카탈로그 폴백(있으면 Snapshot CATALOG). 없으면 이전 nearby 유지(빈 덮어쓰기 금지).
  */
 export async function maybeRefreshNearbyOnPark(
   vehicleId: string,
@@ -504,57 +517,26 @@ export async function maybeRefreshNearbyOnPark(
 
   const client = new TeslaFleetClient(ctx.userId);
   try {
-    const sites = await client.getNearbyChargingSites(ctx.vin);
-    const now = new Date();
-    const nearbyJson = serializeNearbyChargingSites(sites, {
-      capturedAt: now,
-      capturedLat: previous.latitude,
-      capturedLng: previous.longitude,
-    });
+    const { sites, seeds } = await client.getNearbyChargingSitesResult(ctx.vin);
+    await upsertChargingStationsFromSeeds(
+      seeds.map((s) => ({
+        ...s,
+        siteType:
+          s.siteType === "supercharger"
+            ? ChargingStationSiteType.supercharger
+            : ChargingStationSiteType.destination,
+      })),
+    );
 
-    await prisma.vehicleSnapshot.create({
-      data: {
-        vehicleId,
-        latitude: previous.latitude,
-        longitude: previous.longitude,
-        batteryPercent: previous.batteryPercent,
-        rangeKm: previous.rangeKm,
-        ignitionOn: previous.ignitionOn,
-        status: previous.status,
-        chargingStatus: previous.chargingStatus,
-        odometerKm: previous.odometerKm,
-        chargeLimitSoc: previous.chargeLimitSoc,
-        chargerPowerKw: previous.chargerPowerKw,
-        chargingPowerKind: previous.chargingPowerKind,
-        shiftState: previous.shiftState,
-        locked: previous.locked,
-        doorsOpen: previous.doorsOpen,
-        windowsOpen: previous.windowsOpen,
-        doorDfOpen: previous.doorDfOpen,
-        doorDrOpen: previous.doorDrOpen,
-        doorPfOpen: previous.doorPfOpen,
-        doorPrOpen: previous.doorPrOpen,
-        frontTrunkOpen: previous.frontTrunkOpen,
-        rearTrunkOpen: previous.rearTrunkOpen,
-        insideTempC: previous.insideTempC,
-        outsideTempC: previous.outsideTempC,
-        climateOn: previous.climateOn,
-        tpmsFrontLeft: previous.tpmsFrontLeft,
-        tpmsFrontRight: previous.tpmsFrontRight,
-        tpmsRearLeft: previous.tpmsRearLeft,
-        tpmsRearRight: previous.tpmsRearRight,
-        sentryMode: previous.sentryMode,
-        serviceStatus: previous.serviceStatus,
-        softwareVersion: previous.softwareVersion,
-        ...pickCafSnapshotFields(previous),
-        nearbyChargingSites: nearbyJson,
-        lastTelemetryAt: previous.lastTelemetryAt,
-        lastRestSyncAt: now,
-        telemetrySource: previous.telemetrySource ?? TelemetrySource.MIXED,
-        isAsleepInferred: previous.isAsleepInferred,
-        sleepInferredAt: previous.sleepInferredAt,
-        lastUpdatedAt: now,
-      },
+    const now = new Date();
+    await writeNearbyOnlySnapshot(previous, {
+      nearbyJson: serializeNearbyChargingSites(sites, {
+        capturedAt: now,
+        capturedLat: previous.latitude,
+        capturedLng: previous.longitude,
+        source: "TESLA_REST",
+      }),
+      now,
     });
 
     await patchVehicleSyncState(vehicleId, {
@@ -572,8 +554,10 @@ export async function maybeRefreshNearbyOnPark(
       summary: `주차 후 인근충전소 갱신 (${ctx.vin})`,
       metadata: {
         mode: "park_nearby",
+        source: "tesla_rest",
         vin: ctx.vin,
         siteCount: sites.length,
+        seeded: seeds.length,
         reason: RestSyncReason.PARK_NEARBY,
       },
     });
@@ -581,6 +565,76 @@ export async function maybeRefreshNearbyOnPark(
     return { ok: true, reason: RestSyncReason.PARK_NEARBY, vehicleId };
   } catch (error) {
     const message = error instanceof Error ? error.message : "nearby_refresh_failed";
+
+    if (
+      isNearbyCatalogFallbackEnabled() &&
+      previous.latitude != null &&
+      previous.longitude != null &&
+      Number.isFinite(previous.latitude) &&
+      Number.isFinite(previous.longitude)
+    ) {
+      const catalogSites = await queryNearbyFromCatalog(
+        previous.latitude,
+        previous.longitude,
+      );
+
+      if (catalogSites.length > 0) {
+        const now = new Date();
+        await writeNearbyOnlySnapshot(previous, {
+          nearbyJson: serializeNearbyChargingSites(catalogSites, {
+            capturedAt: now,
+            capturedLat: previous.latitude,
+            capturedLng: previous.longitude,
+            source: "CATALOG",
+          }),
+          now,
+        });
+
+        await patchVehicleSyncState(vehicleId, {
+          lastRestSyncAt: now,
+          lastRestSyncReason: RestSyncReason.PARK_NEARBY,
+        });
+
+        await createAuditLog({
+          action: "VEHICLE_NEARBY_REFRESH",
+          targetType: "Vehicle",
+          targetId: vehicleId,
+          vehicleId,
+          teslaAccountId: ctx.teslaAccountId,
+          status: AuditLogStatus.SUCCESS,
+          summary: `주차 후 인근충전소 카탈로그 폴백 (${ctx.vin})`,
+          metadata: {
+            mode: "park_nearby",
+            source: "catalog_fallback",
+            vin: ctx.vin,
+            siteCount: catalogSites.length,
+            restError: message,
+            reason: RestSyncReason.PARK_NEARBY,
+          },
+        });
+
+        return { ok: true, reason: RestSyncReason.PARK_NEARBY, vehicleId };
+      }
+
+      await createAuditLog({
+        action: "VEHICLE_NEARBY_REFRESH",
+        targetType: "Vehicle",
+        targetId: vehicleId,
+        vehicleId,
+        teslaAccountId: ctx.teslaAccountId,
+        status: AuditLogStatus.FAILURE,
+        summary: `인근충전소 REST 실패 · 카탈로그 없음 (이전 목록 유지): ${message}`,
+        metadata: {
+          mode: "park_nearby",
+          source: "empty",
+          vin: ctx.vin,
+          restError: message,
+          preservedPrevious: true,
+        },
+      });
+      return { ok: false, skipped: true, error: "catalog_empty", vehicleId };
+    }
+
     await createAuditLog({
       action: "VEHICLE_NEARBY_REFRESH",
       targetType: "Vehicle",
@@ -589,10 +643,61 @@ export async function maybeRefreshNearbyOnPark(
       teslaAccountId: ctx.teslaAccountId,
       status: AuditLogStatus.FAILURE,
       summary: `인근 충전소 갱신 실패: ${message}`,
-      metadata: { mode: "park_nearby", vin: ctx.vin, noWake: true },
+      metadata: { mode: "park_nearby", vin: ctx.vin, noWake: true, source: "empty" },
     });
     return { ok: false, error: message, vehicleId };
   }
+}
+
+async function writeNearbyOnlySnapshot(
+  previous: VehicleSnapshot,
+  options: { nearbyJson: string; now: Date },
+) {
+  const { nearbyJson, now } = options;
+  await prisma.vehicleSnapshot.create({
+    data: {
+      vehicleId: previous.vehicleId,
+      latitude: previous.latitude,
+      longitude: previous.longitude,
+      batteryPercent: previous.batteryPercent,
+      rangeKm: previous.rangeKm,
+      ignitionOn: previous.ignitionOn,
+      status: previous.status,
+      chargingStatus: previous.chargingStatus,
+      odometerKm: previous.odometerKm,
+      chargeLimitSoc: previous.chargeLimitSoc,
+      chargerPowerKw: previous.chargerPowerKw,
+      chargingPowerKind: previous.chargingPowerKind,
+      shiftState: previous.shiftState,
+      locked: previous.locked,
+      doorsOpen: previous.doorsOpen,
+      windowsOpen: previous.windowsOpen,
+      doorDfOpen: previous.doorDfOpen,
+      doorDrOpen: previous.doorDrOpen,
+      doorPfOpen: previous.doorPfOpen,
+      doorPrOpen: previous.doorPrOpen,
+      frontTrunkOpen: previous.frontTrunkOpen,
+      rearTrunkOpen: previous.rearTrunkOpen,
+      insideTempC: previous.insideTempC,
+      outsideTempC: previous.outsideTempC,
+      climateOn: previous.climateOn,
+      tpmsFrontLeft: previous.tpmsFrontLeft,
+      tpmsFrontRight: previous.tpmsFrontRight,
+      tpmsRearLeft: previous.tpmsRearLeft,
+      tpmsRearRight: previous.tpmsRearRight,
+      sentryMode: previous.sentryMode,
+      serviceStatus: previous.serviceStatus,
+      softwareVersion: previous.softwareVersion,
+      ...pickCafSnapshotFields(previous),
+      nearbyChargingSites: nearbyJson,
+      lastTelemetryAt: previous.lastTelemetryAt,
+      lastRestSyncAt: now,
+      telemetrySource: previous.telemetrySource ?? TelemetrySource.MIXED,
+      isAsleepInferred: previous.isAsleepInferred,
+      sleepInferredAt: previous.sleepInferredAt,
+      lastUpdatedAt: now,
+    },
+  });
 }
 
 /**

@@ -40,6 +40,7 @@ import {
   formatTempC,
   hasValidCoordinates,
 } from "@/lib/vehicle-status";
+import { labelNearbyChargingSource } from "@/lib/tesla/nearby-charging";
 
 type Props = { vehicleId: string };
 
@@ -352,9 +353,17 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
               <h5 className="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
                 인근 충전소
               </h5>
-              {snapshot?.nearbyChargingMeta?.capturedAt ? (
+              {snapshot?.nearbyChargingMeta?.capturedAt ||
+              snapshot?.nearbyChargingMeta?.source ? (
                 <p className="text-theme-xs text-gray-500">
-                  수집 {formatRelativeTime(snapshot.nearbyChargingMeta.capturedAt)}
+                  {[
+                    labelNearbyChargingSource(snapshot.nearbyChargingMeta?.source),
+                    snapshot.nearbyChargingMeta?.capturedAt
+                      ? `수집 ${formatRelativeTime(snapshot.nearbyChargingMeta.capturedAt)}`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               ) : null}
             </div>

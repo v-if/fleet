@@ -95,6 +95,62 @@ export function mapNearbyChargingSites(
   return sites;
 }
 
+export type NearbyCatalogSeedFromTesla = {
+  name: string;
+  siteType: "destination" | "supercharger";
+  latitude: number;
+  longitude: number;
+  totalStalls: number | null;
+  lastAvailableStalls: number | null;
+  siteClosed: boolean | null;
+};
+
+/** NCS — 좌표 있는 site만 카탈로그 씨드 */
+export function extractNearbyCatalogSeeds(
+  destination: TeslaNearbyChargingSite[] = [],
+  superchargers: TeslaNearbyChargingSite[] = [],
+): NearbyCatalogSeedFromTesla[] {
+  const rows: NearbyCatalogSeedFromTesla[] = [];
+
+  const push = (
+    site: TeslaNearbyChargingSite,
+    fallbackType: "destination" | "supercharger",
+  ) => {
+    const name = site.name?.trim();
+    const lat = site.location?.lat;
+    const lng = site.location?.long;
+    if (!name || lat == null || lng == null) return;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    if (lat === 0 && lng === 0) return;
+
+    const rawType = site.type?.toLowerCase();
+    const siteType: "destination" | "supercharger" =
+      rawType === "supercharger" || rawType === "destination"
+        ? rawType
+        : fallbackType;
+
+    rows.push({
+      name,
+      siteType,
+      latitude: lat,
+      longitude: lng,
+      totalStalls:
+        site.total_stalls != null && Number.isFinite(site.total_stalls)
+          ? Math.round(site.total_stalls)
+          : null,
+      lastAvailableStalls:
+        site.available_stalls != null && Number.isFinite(site.available_stalls)
+          ? Math.round(site.available_stalls)
+          : null,
+      siteClosed: typeof site.site_closed === "boolean" ? site.site_closed : null,
+    });
+  };
+
+  for (const site of destination) push(site, "destination");
+  for (const site of superchargers) push(site, "supercharger");
+  return rows;
+}
+
 function derivePlateNumber(vin: string, displayName?: string | null) {
   const normalizedName = displayName?.replace(/\s/g, "").trim();
   if (normalizedName && KOREAN_PLATE_REGEX.test(normalizedName)) {
@@ -396,18 +452,33 @@ export class TeslaFleetClient {
     return data.response?.recent_alerts ?? [];
   }
 
+  async getNearbyChargingSitesResult(vin: string): Promise<{
+    sites: NearbyChargingSite[];
+    seeds: ReturnType<typeof extractNearbyCatalogSeeds>;
+  }> {
+    const data = await this.request<TeslaNearbyChargingSitesResponse>(
+      `/api/1/vehicles/${encodeURIComponent(vin)}/nearby_charging_sites`,
+    );
+    if (!data.response) {
+      const err = data.error?.trim() || "nearby_charging_sites empty response";
+      throw new Error(err);
+    }
+    const destination = data.response.destination_charging ?? [];
+    const superchargers = data.response.superchargers ?? [];
+    return {
+      sites: mapNearbyChargingSites(destination, superchargers),
+      seeds: extractNearbyCatalogSeeds(destination, superchargers),
+    };
+  }
+
+  /** @deprecated use getNearbyChargingSitesResult — 실패 시 [] 반환은 NCS에서 금지 */
   async getNearbyChargingSites(vin: string): Promise<NearbyChargingSite[]> {
     try {
-      const data = await this.request<TeslaNearbyChargingSitesResponse>(
-        `/api/1/vehicles/${encodeURIComponent(vin)}/nearby_charging_sites`,
-      );
-      return mapNearbyChargingSites(
-        data.response?.destination_charging,
-        data.response?.superchargers,
-      );
+      const result = await this.getNearbyChargingSitesResult(vin);
+      return result.sites;
     } catch (error) {
       console.warn(`nearby_charging_sites failed for ${vin}:`, error);
-      return [];
+      throw error;
     }
   }
 

@@ -1,0 +1,96 @@
+{
+    "response": {
+        "congestion_sync_time_utc_secs": 1784113993,
+        "destination_charging": [
+            {
+                "location": {
+                    "lat": 37.478524,
+                    "long": 126.88471
+                },
+                "name": "마리오 아울렛",
+                "type": "destination",
+                "distance_miles": 0.885834
+            },
+            {
+                "location": {
+                    "lat": 37.47984,
+                    "long": 126.8953
+                },
+                "name": "Seoul Guro, South Korea - G Tower",
+                "type": "destination",
+                "distance_miles": 1.46549
+            },
+            {
+                "location": {
+                    "lat": 37.41866,
+                    "long": 126.88073
+                },
+                "name": "Gwangmyeong, South Korea - AK Plaza",
+                "type": "destination",
+                "distance_miles": 3.864389
+            },
+            {
+                "location": {
+                    "lat": 37.50255,
+                    "long": 126.775018
+                },
+                "name": "Lotte Department Store Jungdong",
+                "type": "destination",
+                "distance_miles": 5.552848
+            }
+        ],
+        "superchargers": [
+            {
+                "location": {
+                    "lat": 37.478402,
+                    "long": 126.886792
+                },
+                "name": "서울 금천 - 마리오아울렛",
+                "type": "supercharger",
+                "distance_miles": 0.990473,
+                "available_stalls": 6,
+                "total_stalls": 9,
+                "site_closed": false
+            },
+            {
+                "location": {
+                    "lat": 37.480146,
+                    "long": 126.895005
+                },
+                "name": "서울 구로 - G Tower",
+                "type": "supercharger",
+                "distance_miles": 1.4561,
+                "available_stalls": 8,
+                "total_stalls": 9,
+                "site_closed": false
+            },
+            {
+                "location": {
+                    "lat": 37.4989,
+                    "long": 126.8574
+                },
+                "name": "서울 고척 - 아이파크몰",
+                "type": "supercharger",
+                "distance_miles": 1.853643,
+                "available_stalls": 6,
+                "total_stalls": 8,
+                "site_closed": false
+            },
+            {
+                "location": {
+                    "lat": 37.419638,
+                    "long": 126.882471
+                },
+                "name": "광명 - AK플라자",
+                "type": "supercharger",
+                "distance_miles": 3.814128,
+                "available_stalls": 2,
+                "total_stalls": 3,
+                "site_closed": false
+            }
+        ],
+        "timestamp": 1784114050116
+    }
+}
+
+{"response":null,"error":"vehicle unavailable: vehicle is offline or asleep","error_description":"","txid":"146bb62f228e9811518ca412a8c872b0"}

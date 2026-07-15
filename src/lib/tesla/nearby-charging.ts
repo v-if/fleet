@@ -1,11 +1,14 @@
 import type { NearbyChargingSite } from "@/lib/vehicle-providers/types";
 import type { NearbyChargingSiteDto } from "@/lib/types/vehicle";
 
+export type NearbyChargingSource = "TESLA_REST" | "CATALOG";
+
 export type NearbyChargingEnvelope = {
   sites: NearbyChargingSite[];
   capturedAt: string;
   capturedLat: number | null;
   capturedLng: number | null;
+  source?: NearbyChargingSource;
 };
 
 export type NearbyChargingParsed = {
@@ -13,6 +16,7 @@ export type NearbyChargingParsed = {
   capturedAt: string | null;
   capturedLat: number | null;
   capturedLng: number | null;
+  source: NearbyChargingSource | null;
 };
 
 /** 인근 충전소 stale 클리어 거리(km). 기본 2 */
@@ -44,6 +48,7 @@ export function serializeNearbyChargingSites(
     capturedAt?: Date;
     capturedLat?: number | null;
     capturedLng?: number | null;
+    source?: NearbyChargingSource;
   } = {},
 ): string {
   const envelope: NearbyChargingEnvelope = {
@@ -51,13 +56,20 @@ export function serializeNearbyChargingSites(
     capturedAt: (meta.capturedAt ?? new Date()).toISOString(),
     capturedLat: meta.capturedLat ?? null,
     capturedLng: meta.capturedLng ?? null,
+    source: meta.source,
   };
   return JSON.stringify(envelope);
 }
 
 export function parseNearbyChargingJson(json: string | null): NearbyChargingParsed {
   if (!json) {
-    return { sites: [], capturedAt: null, capturedLat: null, capturedLng: null };
+    return {
+      sites: [],
+      capturedAt: null,
+      capturedLat: null,
+      capturedLng: null,
+      source: null,
+    };
   }
   try {
     const parsed = JSON.parse(json) as
@@ -73,10 +85,15 @@ export function parseNearbyChargingJson(json: string | null): NearbyChargingPars
         capturedAt: null,
         capturedLat: null,
         capturedLng: null,
+        source: null,
       };
     }
 
     if (parsed && typeof parsed === "object" && Array.isArray(parsed.sites)) {
+      const source =
+        parsed.source === "TESLA_REST" || parsed.source === "CATALOG"
+          ? parsed.source
+          : null;
       return {
         sites: parsed.sites.filter(
           (s): s is NearbyChargingSiteDto =>
@@ -88,12 +105,19 @@ export function parseNearbyChargingJson(json: string | null): NearbyChargingPars
           typeof parsed.capturedLat === "number" ? parsed.capturedLat : null,
         capturedLng:
           typeof parsed.capturedLng === "number" ? parsed.capturedLng : null,
+        source,
       };
     }
   } catch {
     /* ignore */
   }
-  return { sites: [], capturedAt: null, capturedLat: null, capturedLng: null };
+  return {
+    sites: [],
+    capturedAt: null,
+    capturedLat: null,
+    capturedLng: null,
+    source: null,
+  };
 }
 
 /** GPS가 수집 지점에서 임계 초과면 클리어 대상 */
@@ -122,4 +146,12 @@ export function shouldClearNearbyForLocation(
   }
 
   return haversineKm(originLat, originLng, latitude, longitude) > thresholdKm;
+}
+
+export function labelNearbyChargingSource(
+  source: "TESLA_REST" | "CATALOG" | null | undefined,
+): string | null {
+  if (source === "CATALOG") return "저장된 충전소";
+  if (source === "TESLA_REST") return "Tesla 조회";
+  return null;
 }

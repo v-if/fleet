@@ -418,3 +418,36 @@ model ApiCallLog {
   @@index([system])
   @@index([occurredAt])
 }
+
+/// NCS — nearby REST 씨드 출처
+enum ChargingStationSource {
+  TESLA_NEARBY
+}
+
+/// NCS — Tesla nearby site type
+enum ChargingStationSiteType {
+  destination
+  supercharger
+}
+
+model ChargingStation {
+  id                  String                  @id @default(cuid())
+  source              ChargingStationSource   @default(TESLA_NEARBY)
+  siteType            ChargingStationSiteType
+  name                String
+  nameKey             String
+  latitude            Float
+  longitude           Float
+  /// unique: lat.round(5):lng.round(5):siteType
+  geoKey              String                  @unique
+  totalStalls         Int?
+  lastAvailableStalls Int?
+  siteClosed          Boolean?
+  lastSeenAt          DateTime                @db.Timestamptz(3)
+  hitCount            Int                     @default(1)
+  createdAt           DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime                @updatedAt @db.Timestamptz(3)
+
+  @@index([latitude, longitude])
+  @@index([lastSeenAt])
+}

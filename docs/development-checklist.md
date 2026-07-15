@@ -892,6 +892,17 @@
 - [ ] **TRF-B1-4** 실차 specs-only QA (Freeze ON 유지 가능)
 - [x] **TRF-B2-Doc** [절전→Online Wake](./requirements-tesla-wake-telemetry-rest.md) · 코드 ✅ (`trf-b2:verify`)
 - [ ] **TRF-B2-4** 실차: 절전→Online Telemetry only · Gear=P nearby
+
+### Phase NCS 인근충전소 카탈로그 · asleep 폴백 — 코드 ✅ · 실차 ☐
+
+> [requirements-nearby-charging-catalog.md](./requirements-nearby-charging-catalog.md) · [checklist-nearby-charging-catalog.md](./checklist-nearby-charging-catalog.md)
+
+- [x] **NCS-1** 문서 (조건부 GO)
+- [x] **NCS-2** ChargingStation Upsert · REST 성공 적재
+- [x] **NCS-3** REST 실패 → 카탈로그 폴백 · `[]` 가짜 성공 분리
+- [x] **NCS-4** UI 출처 · mapper 좌표 · `ncs:verify`
+- [ ] **NCS-5** 실차 검수
+- [ ] **NCS-6** (후속) 공공 EV / 전국 시드
 - [ ] **TRF-B** (선택) 잔여 fallback `TESLA_REST_FREEZE=false` · TRF-4/8 실차
 
 ---
@@ -1029,4 +1040,6 @@
 | 2026-07-15 | TRF-B2 코드 — Wake/Gear 폐기 · park nearby 졸업 |
 | 2026-07-15 | VD3 차량상세 Telemetry 시대 IA 요구 초안 |
 | 2026-07-15 | VD3 `/vehicles/[id]/v3` 구현 · 체크리스트 |
+| 2026-07-16 | NCS nearby 카탈로그·폴백 요구 초안 |
+| 2026-07-16 | NCS-2~4 코드 — ChargingStation · 폴백 · verify |
 

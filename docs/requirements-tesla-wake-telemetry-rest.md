@@ -142,6 +142,8 @@ nearby는 **§3.4 주차 진입**이 SoT 타이밍.
 
 **기존 코드와의 관계:** `maybeRefreshNearbyOnPark`가 이미 “P 정차 시 nearby만”을 한다. B2는 Wake 전량 REST에서 nearby를 **빼서** 이쪽에 모으고, `maybeRunWakeCooldownRestSync`의 nearby/`vehicle_data`는 폐기·축소한다.
 
+**후속 (asleep 공백):** REST 성공분을 카탈로그에 쌓고 실패 시 DB 폴백 — [requirements-nearby-charging-catalog.md](./requirements-nearby-charging-catalog.md) (**NCS** · 코드 ✅ · 실차 ☐).
+
 ---
 
 ## 4. 현행 코드에서 바꿔야 할 사항

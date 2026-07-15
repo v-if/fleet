@@ -48,6 +48,8 @@
 | [requirements-tesla-telemetry-rest-freeze.md](./requirements-tesla-telemetry-rest-freeze.md) | **TRF** — Freeze(미졸업 REST 차단) · Baseline 졸업 · Wake 대기 | 경로 졸업 모델 |
 | [requirements-tesla-telemetry-rest-baseline-specs.md](./requirements-tesla-telemetry-rest-baseline-specs.md) | **TRF-B1** — specs-only Baseline · Tier A/B/C · 코드 ✅ · 실차 ☐ | Baseline 제원 |
 | [requirements-tesla-wake-telemetry-rest.md](./requirements-tesla-wake-telemetry-rest.md) | **TRF-B2** — 절전→Online Telemetry · park nearby 졸업 · 코드 ✅ · 실차 ☐ | Wake 재정의 |
+| [requirements-nearby-charging-catalog.md](./requirements-nearby-charging-catalog.md) | **NCS** — nearby 카탈로그 Upsert · asleep 폴백 · 코드 ✅ · 실차 ☐ | 인근충전소 |
+| [checklist-nearby-charging-catalog.md](./checklist-nearby-charging-catalog.md) | Phase NCS-2~4 ✅ · NCS-5 ☐ | NCS 검수 |
 | [checklist-tesla-telemetry-rest-freeze.md](./checklist-tesla-telemetry-rest-freeze.md) | Phase TRF · Freeze ✅ · Baseline·park nearby 졸업 ✅ · B2 실차 ☐ | TRF 검수 |
 | [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md) | 상세 **Telemetry 수신 로그(개발)** — 요구1 ✅ · 요구2 미착수 | 수신·매핑 검증 UI |
 | [requirements-tesla-hybrid-data-model.md](./requirements-tesla-hybrid-data-model.md) | 하이브리드 **DB 설계** — Vehicle 제원 + VehicleSyncState + Snapshot 쓰기 경로 | 스키마·마이그레이션·sync 구현할 때 |
@@ -211,3 +213,5 @@
 | 2026-07-15 | TRF-B2 코드 ✅ — Wake/Gear 폐기 · park nearby 졸업 |
 | 2026-07-15 | VD3 — 차량상세 Telemetry 시대 IA 요구 초안 |
 | 2026-07-15 | VD3 `/vehicles/[id]/v3` · As-Is 병렬 UI |
+| 2026-07-16 | NCS — nearby 카탈로그 DB · asleep 폴백 요구 초안 |
+| 2026-07-16 | NCS-2~4 코드 — ChargingStation · 폴백 · `ncs:verify` |

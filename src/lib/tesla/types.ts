@@ -52,16 +52,25 @@ export type TeslaRecentAlertsResponse = {
 
 export type TeslaNearbyChargingSite = {
   name?: string;
+  type?: string;
   distance_miles?: number;
   available_stalls?: number;
   total_stalls?: number;
+  site_closed?: boolean;
+  location?: {
+    lat?: number;
+    long?: number;
+  };
 };
 
 export type TeslaNearbyChargingSitesResponse = {
   response: {
     destination_charging?: TeslaNearbyChargingSite[];
     superchargers?: TeslaNearbyChargingSite[];
-  };
+    congestion_sync_time_utc_secs?: number;
+    timestamp?: number;
+  } | null;
+  error?: string;
 };
 
 export type TeslaServiceDataResponse = {

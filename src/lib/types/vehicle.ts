@@ -16,6 +16,8 @@ export type NearbyChargingMetaDto = {
   capturedAt: string | null;
   capturedLat: number | null;
   capturedLng: number | null;
+  /** NCS: Tesla REST vs 카탈로그 폴백 */
+  source?: "TESLA_REST" | "CATALOG" | null;
 };
 
 export type VehicleSnapshotDto = {
