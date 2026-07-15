@@ -22,6 +22,10 @@
 | [requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md) | **차량 상세** 고도화 — 실차 DB 대조, 관리자 IA·표현·Phase (VD-1~3) | 상세 UI/UX 구현 전에 |
 | [requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md) | 차량 상세 **표시 문구·배치** — VD-UX2 (A~G 완료) | 카피·위치 카드 검수 |
 | [requirements-vehicle-detail-ops-copy.md](./requirements-vehicle-detail-ops-copy.md) | **VD-OPS** — 새로고침/제원/재연동 안내 (TRF-B1) · ✅ | 상세 운영 문구 |
+| [requirements-vehicle-detail-vd3.md](./requirements-vehicle-detail-vd3.md) | **VD3** — Telemetry 시대 상세 · `/vehicles/[id]/v3` ✅ · 실차 ☐ | 상세 비교 |
+| [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md) | Phase VD3-1b~4 ✅ · VD3-6~7 ☐ | VD3 검수 |
+| [research/research-vehicles-detail-chatgpt.md](./research/research-vehicles-detail-chatgpt.md) | 상세 UI 리서치 (FMS 관리자 IA) | VD3 근거 |
+| [research/research-vehicles-detail-gemini.md](./research/research-vehicles-detail-gemini.md) | 상세 UI 리서치 (Cockpit·모드·제어·네비) | VD3 근거 |
 | [checklist-vehicle-detail-ops-copy.md](./checklist-vehicle-detail-ops-copy.md) | Phase VD-OPS ✅ | 검수 |
 | [requirements-charging-card.md](./requirements-charging-card.md) | 상세 「충전 중」서브카드 (CC-A~D ✅) — 완속/급속 포함 | 충전 UX · migrate·실차 검수 |
 | [checklist-charging-card.md](./checklist-charging-card.md) | Phase CC 체크리스트 · 실차 검수 남음 | CC 구현·검수 |
@@ -205,3 +209,5 @@
 | 2026-07-15 | VD-OPS — 차량상세 운영 안내·버튼 문구 (TRF-B1 정합) |
 | 2026-07-15 | TRF-B2 — 절전→Online Wake/Telemetry 요구 초안 |
 | 2026-07-15 | TRF-B2 코드 ✅ — Wake/Gear 폐기 · park nearby 졸업 |
+| 2026-07-15 | VD3 — 차량상세 Telemetry 시대 IA 요구 초안 |
+| 2026-07-15 | VD3 `/vehicles/[id]/v3` · As-Is 병렬 UI |

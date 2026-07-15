@@ -650,6 +650,12 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
         >
           전체 지도
         </Link>
+        <Link
+          href={`/vehicles/${vehicleId}/v3`}
+          className="inline-flex rounded-lg border border-brand-300 bg-brand-50 px-4 py-2 text-theme-sm font-medium text-brand-800 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-brand-200"
+        >
+          새 상세 (VD3)
+        </Link>
       </div>
 
       {/* UX2-F: 실시간 차량 정보 | 현재 위치 */}

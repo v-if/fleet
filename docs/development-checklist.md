@@ -801,6 +801,19 @@
 - [x] **VD-OPS-2** 신호 없음 배너·버튼명「제원 다시 불러오기」·TELEMETRY_PENDING 재연동 우선
 - [ ] 실차: 신호 없음 → 재연동만으로 이해
 
+### Phase VD3 차량 상세 Telemetry 시대 IA — 코드 ✅ · 실차 ☐
+
+> [requirements-vehicle-detail-vd3.md](./requirements-vehicle-detail-vd3.md) · [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
+
+- [x] **VD3-1** 문서 · As-Is 유지 + `/v3` 병렬
+- [x] **VD3-1b** `/vehicles/[id]/v3` · 상호 링크
+- [x] **VD3-2** Hero · 가동모드 · 관제 요약
+- [x] **VD3-3** CAF 조건부 블록
+- [x] **VD3-4** nearby 신뢰 empty UX
+- [ ] **VD3-5** 운행/이벤트(후속)
+- [ ] **VD3-6** 실차 As-Is vs v3 비교
+- [ ] **VD3-7** 컷오버
+
 ### Telemetry Value Monitor (개발) — 요구1 ✅
 
 > [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md)
@@ -1014,4 +1027,6 @@
 | 2026-07-15 | Phase VD-OPS — 상세 운영 안내·「제원 다시 불러오기」문구 |
 | 2026-07-15 | TRF-B2 절전→Online 요구 초안 |
 | 2026-07-15 | TRF-B2 코드 — Wake/Gear 폐기 · park nearby 졸업 |
+| 2026-07-15 | VD3 차량상세 Telemetry 시대 IA 요구 초안 |
+| 2026-07-15 | VD3 `/vehicles/[id]/v3` 구현 · 체크리스트 |
 
