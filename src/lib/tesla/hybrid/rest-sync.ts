@@ -19,6 +19,8 @@ import { mergeCafSnapshotFields, pickCafSnapshotFields } from "@/lib/tesla/telem
 import {
   getRestWakeCooldownMinutes,
   isBaselineOnReadyEnabled,
+  isRestFreezeEnabled,
+  REST_FREEZE_SKIP_ERROR,
 } from "@/lib/tesla/telemetry/config";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
 import type { VehicleSnapshotData } from "@/lib/vehicle-providers/types";
@@ -254,6 +256,15 @@ export type RestSyncOnceResult =
 export async function runBaselineForVehicle(
   vehicleId: string,
 ): Promise<RestSyncOnceResult> {
+  if (isRestFreezeEnabled()) {
+    return {
+      ok: false,
+      skipped: true,
+      error: REST_FREEZE_SKIP_ERROR,
+      vehicleId,
+    };
+  }
+
   const ctx = await resolveTeslaUserId(vehicleId);
   if (!ctx) {
     return { ok: false, error: "vehicle_or_tesla_account_missing", vehicleId };
@@ -352,6 +363,15 @@ export async function runBaselineForVehicle(
 export async function maybeRunWakeCooldownRestSync(
   vehicleId: string,
 ): Promise<RestSyncOnceResult> {
+  if (isRestFreezeEnabled()) {
+    return {
+      ok: false,
+      skipped: true,
+      error: REST_FREEZE_SKIP_ERROR,
+      vehicleId,
+    };
+  }
+
   const subscription = await prisma.telemetrySubscription.findUnique({
     where: { vehicleId },
     select: { active: true },
@@ -520,7 +540,7 @@ export async function confirmVirtualKeyForVehicle(vehicleId: string) {
 
 /** 계정 내 Baseline 미완료 차량에 best-effort 1회씩 (wake 없음) */
 export async function tryBaselinesForAccount(teslaAccountId: string) {
-  if (!isBaselineOnReadyEnabled()) {
+  if (isRestFreezeEnabled() || !isBaselineOnReadyEnabled()) {
     return { attempted: 0, succeeded: 0 };
   }
 
@@ -563,6 +583,15 @@ export async function tryBaselinesForAccount(teslaAccountId: string) {
 export async function maybeRefreshNearbyOnPark(
   vehicleId: string,
 ): Promise<RestSyncOnceResult> {
+  if (isRestFreezeEnabled()) {
+    return {
+      ok: false,
+      skipped: true,
+      error: REST_FREEZE_SKIP_ERROR,
+      vehicleId,
+    };
+  }
+
   const subscription = await prisma.telemetrySubscription.findUnique({
     where: { vehicleId },
     select: { active: true },
@@ -688,6 +717,15 @@ export async function maybeRefreshNearbyOnPark(
 export async function maybeRunGearCorrectionRestSync(
   vehicleId: string,
 ): Promise<RestSyncOnceResult> {
+  if (isRestFreezeEnabled()) {
+    return {
+      ok: false,
+      skipped: true,
+      error: REST_FREEZE_SKIP_ERROR,
+      vehicleId,
+    };
+  }
+
   const subscription = await prisma.telemetrySubscription.findUnique({
     where: { vehicleId },
     select: { active: true },

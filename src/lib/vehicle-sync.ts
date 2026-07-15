@@ -14,6 +14,7 @@ import {
 } from "@/lib/tesla/hybrid/rest-sync";
 import {
   isBaselineOnReadyEnabled,
+  isRestFreezeEnabled,
   isTelemetryEnabled,
   resolveVehicleSyncMode,
   type VehicleSyncMode,
@@ -40,6 +41,10 @@ export type SyncVehiclesResult = {
   snapshotsWritten?: number;
   baselineAttempted?: number;
   baselineSucceeded?: number;
+  /** TRF: REST Freeze 활성 */
+  restFreeze?: boolean;
+  /** TRF: fallback=1 요청이 Freeze로 거절됨 */
+  frozenFallbackBlocked?: boolean;
   error?: string;
 };
 
@@ -229,9 +234,11 @@ export async function syncVehiclesFromProvider(
 ): Promise<SyncVehiclesResult> {
   const requestedProvider = getVehicleProviderName();
   const lastSyncedAt = new Date();
+  const restFreeze = isRestFreezeEnabled();
   const syncMode = resolveVehicleSyncMode(options);
   const registryOnly = syncMode === "registry";
-  const usedFallback = Boolean(options.forceFallback);
+  const usedFallback = Boolean(options.forceFallback) && !restFreeze;
+  const frozenFallbackBlocked = Boolean(options.forceFallback) && restFreeze;
 
   let resolvedUserId = userId;
   let teslaAccountId: string | null = null;
@@ -326,6 +333,20 @@ export async function syncVehiclesFromProvider(
   let snapshotsWritten = 0;
 
   for (const snapshot of snapshots) {
+    // TRF: Freeze — registry 메타만, Snapshot REST 금지
+    if (isRestFreezeEnabled()) {
+      if (effectiveProvider === "tesla") {
+        const vehicle = await upsertVehicleRegistry(snapshot, teslaAccountId);
+        await applyRegistryLifecycleHint(
+          vehicle.id,
+          snapshot.oemVehicleId,
+          keyPairedSet,
+          unpairedSet,
+        );
+      }
+      continue;
+    }
+
     if (registryOnly && effectiveProvider === "tesla") {
       const vehicle = await upsertVehicleRegistry(snapshot, teslaAccountId);
       await applyRegistryLifecycleHint(
@@ -367,6 +388,7 @@ export async function syncVehiclesFromProvider(
   let baselineAttempted = 0;
   let baselineSucceeded = 0;
   if (
+    !isRestFreezeEnabled() &&
     registryOnly &&
     effectiveProvider === "tesla" &&
     teslaAccountId &&
@@ -432,6 +454,8 @@ export async function syncVehiclesFromProvider(
     snapshotsWritten,
     baselineAttempted,
     baselineSucceeded,
+    restFreeze,
+    frozenFallbackBlocked,
     error: errorMessage,
   };
 }

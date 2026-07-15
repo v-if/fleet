@@ -860,6 +860,16 @@
 - [x] **CAF-4** UI — 충전 ETA/포트 · 속도 · 목적지 · TPMS Hard · OTA
 - [ ] **CAF-6** 실차 재구독 · GET config ⊇ §4 · Production migrate
 
+### Phase TRF Telemetry 검증 REST Freeze — 문서 ✅ · Freeze 코드 ✅ · QA/B ☐
+
+> [requirements-tesla-telemetry-rest-freeze.md](./requirements-tesla-telemetry-rest-freeze.md) · [checklist-tesla-telemetry-rest-freeze.md](./checklist-tesla-telemetry-rest-freeze.md)
+
+- [x] **TRF-1** Freeze · 게이트 · B① Baseline/VK · B② Wake 재정의 정책 문서
+- [x] **TRF-2 · TRF-3** A1~A7 Freeze 가드 · `TESLA_REST_FREEZE` · fallback UI · `restFreeze` 상태
+- [ ] **TRF-4** Freeze ON 하 Telemetry 확인 게이트 (CAF-6 연계)
+- [ ] **TRF-B-Doc** Baseline/VK · Wake 조회·갱신 필드 표 확정
+- [ ] **TRF-B** 재정의 구현 · Freeze 해제 · 실차
+
 ---
 
 ## Phase 5. 배포 및 데모 (M5)
@@ -985,4 +995,6 @@
 | 2026-07-15 | Phase LN-R 구현 — mergeSnapshotCoordinates · ln:verify · LN-QA 남음 |
 | 2026-07-15 | Phase CAF — Telemetry Config P0/P1 필드 정의·체크리스트 (코드 미착수) |
 | 2026-07-15 | Phase CAF-2~4 구현 — 44 fields · migrate · UI · caf:verify · CAF-6 남음 |
+| 2026-07-15 | Phase TRF — Telemetry REST Freeze · Baseline/Wake 재정의 요구·체크리스트 |
+| 2026-07-15 | Phase TRF-A — Freeze 코드 완료 (TRF-2·3) · QA(TRF-4)·B 대기 |
 

@@ -13,6 +13,7 @@ import { getTelemetryMetadata } from "@/lib/tesla/telemetry/ingress";
 import {
   getTelemetryWebhookUrl,
   isRestAutoSyncEnabled,
+  isRestFreezeEnabled,
   isTelemetryEnabled,
   isTelemetryPrimaryMode,
 } from "@/lib/tesla/telemetry/config";
@@ -52,6 +53,7 @@ export async function GET() {
       enabled: isTelemetryEnabled(),
       primaryMode: isTelemetryPrimaryMode(),
       restAutoSync: isRestAutoSyncEnabled(),
+      restFreeze: isRestFreezeEnabled(),
       webhookUrl: getTelemetryWebhookUrl(),
       lastReceivedAt: telemetryMetadata?.lastReceivedAt?.toISOString() ?? null,
       lastProcessedAt: telemetryMetadata?.lastProcessedAt?.toISOString() ?? null,

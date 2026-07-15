@@ -6,6 +6,7 @@ import { activeVehicleWhere } from "@/lib/vehicle-query";
 import {
   getTelemetryWebhookUrl,
   isRestAutoSyncEnabled,
+  isRestFreezeEnabled,
   isTelemetryEnabled,
   isTelemetryPrimaryMode,
 } from "./config";
@@ -86,6 +87,7 @@ export async function getTelemetryOperationalStatus() {
       telemetryEnabled: isTelemetryEnabled(),
       telemetryPrimaryMode: isTelemetryPrimaryMode(),
       restAutoSync: isRestAutoSyncEnabled(),
+      restFreeze: isRestFreezeEnabled(),
       webhookUrl: getTelemetryWebhookUrl(),
     },
     metadata: metadata

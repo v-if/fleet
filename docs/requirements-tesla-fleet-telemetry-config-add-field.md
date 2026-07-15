@@ -4,7 +4,7 @@
 |------|------|
 | 목적 | 대시보드·차량 상세에서 **실시간으로 보여줄 가치**가 있는 Telemetry 필드를 확정하고, **제원성(정적) 데이터는 REST 1회**로 분리한다 |
 | 근거 | research Grok / Gemini / ChatGPT 취합 + available-data.csv 검증 + FMS 현행 UI·하이브리드 수집 |
-| 관련 | [requirements-tesla-fleet-telemetry-config.md](./requirements-tesla-fleet-telemetry-config.md) (현행 create), [checklist-tesla-fleet-telemetry-config-add-field.md](./checklist-tesla-fleet-telemetry-config-add-field.md), [fleet-api/fleet-telemetry/available-data.csv](./fleet-api/fleet-telemetry/available-data.csv), [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md), [research/](./research/) |
+| 관련 | [requirements-tesla-fleet-telemetry-config.md](./requirements-tesla-fleet-telemetry-config.md) (현행 create), [checklist-tesla-fleet-telemetry-config-add-field.md](./checklist-tesla-fleet-telemetry-config-add-field.md), [fleet-api/fleet-telemetry/available-data.csv](./fleet-api/fleet-telemetry/available-data.csv), [requirements-tesla-fleet-api-telemetry-webhook.md](./requirements-tesla-fleet-api-telemetry-webhook.md), [requirements-tesla-telemetry-rest-freeze.md](./requirements-tesla-telemetry-rest-freeze.md) (검증 REST Freeze), [research/](./research/) |
 | 상태 | **CAF-2~4 코드 ✅ · CAF-6 실차 ☐** |
 | 작성일 | 2026-07-15 |
 | ID prefix | **CAF** (Config Add Field) |

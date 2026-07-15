@@ -80,10 +80,13 @@
 
 VIN: `LRWYGCFJ7SC214742`
 
+> 권장: [TRF Freeze](./checklist-tesla-telemetry-rest-freeze.md) ON 후 수행 (REST Snapshot 오염 없이).
+
 - [ ] disconnect → reconnect 로 config **재발행**
 - [ ] GET fields ⊇ §4 (44키) · `Version` 없음
 - [ ] Ingress P1 샘플 · Snapshot/UI 반영
 - [ ] `prisma migrate deploy` (Production)
+- [ ] (연계) TRF-4 Telemetry 확인 게이트
 
 ---
 

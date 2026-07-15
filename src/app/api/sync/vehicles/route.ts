@@ -56,6 +56,7 @@ export async function POST(request: Request) {
       forceFallback,
       mode: forceFallback ? "full" : "auto",
     });
+    const frozenBlocked = Boolean(result.frozenFallbackBlocked);
     await createAuditLogWithApiCall(
       {
         actorUserId: session?.userId ?? null,
@@ -63,15 +64,19 @@ export async function POST(request: Request) {
         action: "SYNC_VEHICLES",
         targetType: "System",
         requestId,
-        status: AuditLogStatus.SUCCESS,
-        summary: forceFallback
-          ? `수동 REST fallback 동기화 성공 (${result.vehicleCount}대)`
-          : `차량 동기화 성공 (${result.vehicleCount}대)`,
+        status: frozenBlocked ? AuditLogStatus.FAILURE : AuditLogStatus.SUCCESS,
+        summary: frozenBlocked
+          ? `REST Freeze: fallback 거부 (registry-only, ${result.vehicleCount}대)`
+          : forceFallback
+            ? `수동 REST fallback 동기화 성공 (${result.vehicleCount}대)`
+            : `차량 동기화 성공 (${result.vehicleCount}대)`,
         metadata: {
           forceFallback,
           syncMode: result.syncMode,
           usedFallback: result.usedFallback,
-          restSyncReason: forceFallback ? "MANUAL_FALLBACK" : null,
+          restFreeze: result.restFreeze ?? false,
+          frozenFallbackBlocked: frozenBlocked,
+          restSyncReason: forceFallback && !frozenBlocked ? "MANUAL_FALLBACK" : null,
           snapshotsWritten: result.snapshotsWritten,
           baselineAttempted: result.baselineAttempted,
           baselineSucceeded: result.baselineSucceeded,
@@ -85,12 +90,19 @@ export async function POST(request: Request) {
         method: request.method,
         url: request.url,
         path: new URL(request.url).pathname,
-        statusCode: 200,
-        success: true,
+        statusCode: frozenBlocked ? 403 : 200,
+        success: !frozenBlocked,
         requestHeaders: sanitizeHeaders(request.headers),
         responseBody: sanitizeBody(result),
+        errorMessage: frozenBlocked ? "rest_freeze" : null,
       },
     );
+    if (frozenBlocked) {
+      return NextResponse.json(
+        { ...result, error: "rest_freeze" },
+        { status: 403 },
+      );
+    }
     return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Sync failed";

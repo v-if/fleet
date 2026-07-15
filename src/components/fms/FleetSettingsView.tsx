@@ -31,6 +31,7 @@ type TeslaStatus = {
     enabled: boolean;
     primaryMode: boolean;
     restAutoSync: boolean;
+    restFreeze: boolean;
     webhookUrl: string | null;
     lastReceivedAt: string | null;
     lastProcessedAt: string | null;
@@ -60,6 +61,7 @@ export function FleetSettingsView() {
   const [isDisconnecting, setIsDisconnecting] = useState(false);
 
   const telemetryPrimary = status?.telemetry.primaryMode ?? false;
+  const restFreeze = status?.telemetry.restFreeze ?? false;
 
   const onboardingVehicles = useMemo(() => {
     return (vehiclesData?.vehicles ?? []).filter((vehicle) =>
@@ -233,16 +235,35 @@ export function FleetSettingsView() {
                       : "지금 동기화"}
                 </Button>
                 {telemetryPrimary ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => void handleFallbackSync()}
-                    disabled={isFallbackSyncing}
+                  <span
+                    title={
+                      restFreeze
+                        ? "TRF REST Freeze: Telemetry 확인 완료 전까지 Snapshot REST 금지"
+                        : undefined
+                    }
                   >
-                    {isFallbackSyncing ? "REST 동기화 중..." : "REST fallback 동기화"}
-                  </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void handleFallbackSync()}
+                      disabled={isFallbackSyncing || restFreeze}
+                    >
+                      {isFallbackSyncing
+                        ? "REST 동기화 중..."
+                        : "REST fallback 동기화"}
+                    </Button>
+                  </span>
                 ) : null}
               </div>
+
+              {restFreeze ? (
+                <p className="rounded-lg border border-warning-200 bg-warning-50 px-3 py-2 text-theme-xs text-warning-800 dark:border-warning-500/30 dark:bg-warning-500/10 dark:text-warning-200">
+                  <strong>REST Freeze (TRF)</strong> — Telemetry 검증 중 Snapshot용 Fleet REST(
+                  wake·Baseline·fallback·nearby 등)가 중지되어 있습니다. 목록 동기화·Telemetry
+                  구독만 가능합니다. 확인 후{" "}
+                  <code className="text-[11px]">TESLA_REST_FREEZE=false</code> 로 해제하세요.
+                </p>
+              ) : null}
 
               <p className="text-theme-xs text-gray-400 dark:text-gray-500">
                 {telemetryPrimary
@@ -267,7 +288,10 @@ export function FleetSettingsView() {
                   {status?.telemetry.enabled ? "Telemetry 활성" : "Telemetry 비활성"}
                 </Badge>
                 {status?.telemetry.primaryMode ? (
-                  <Badge color="success">Telemetry Primary</Badge>
+                  <Badge color="info">Telemetry primary</Badge>
+                ) : null}
+                {status?.telemetry.restFreeze ? (
+                  <Badge color="warning">REST Freeze</Badge>
                 ) : null}
                 {!status?.telemetry.restAutoSync && status?.telemetry.enabled ? (
                   <Badge color="info">REST 폴링 중지</Badge>
