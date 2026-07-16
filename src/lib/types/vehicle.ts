@@ -10,6 +10,10 @@ import type {
 export type NearbyChargingSiteDto = {
   name: string;
   distanceKm: number;
+  /** VD3-NM: 지도 마커용 · 구형 JSON은 null */
+  latitude: number | null;
+  longitude: number | null;
+  siteType: "destination" | "supercharger" | null;
 };
 
 export type NearbyChargingMetaDto = {

@@ -227,6 +227,7 @@
 | **VD3-R** | PC·모바일 상단 툴바 통일 · v2 링크 제거 — [vd3-responsive-toolbar](./requirements-vehicle-detail-vd3-responsive-toolbar.md) | ✅ 코드 · ☐ 검수 |
 | **VD3-NB** | 인근충전소 목록 있을 때만 블록 — [vd3-nearby-block](./requirements-vehicle-detail-vd3-nearby-block.md) | ✅ |
 | **VD3-DC** | 주행 목적지 주차·절전 클리어 — [vd3-destination-clear](./requirements-vehicle-detail-vd3-destination-clear.md) | ✅ 코드 · ☐ 실차 |
+| **VD3-NM** | 인근충전소 지도 마커 — [vd3-nearby-map](./requirements-vehicle-detail-vd3-nearby-map.md) | ✅ 코드 · ☐ 실차 |
 
 체크리스트: [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
 
@@ -261,4 +262,6 @@
 | 2026-07-16 | VD3-NB-2·3 — empty 숨김 · `nearbyEmptyReason` 삭제 |
 | 2026-07-16 | VD3-DC 링크 — 목적지 주차·절전 클리어 |
 | 2026-07-16 | VD3-DC-2·3 — P 엣지·ASLEEP destination* 클리어 |
+| 2026-07-16 | VD3-NM 링크 — 인근충전소 지도 마커 |
+| 2026-07-16 | VD3-NM-2·3 — 좌표 보존 · VehicleMap 마커·fitBounds · V3 연결 |
 |

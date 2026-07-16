@@ -217,6 +217,19 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
       ? Math.round((tpmsValues.reduce((a, b) => a + b, 0) / tpmsValues.length) * 10) / 10
       : null;
   const nearbySites = snapshot?.nearbyChargingSites ?? [];
+  const mapNearbySites = nearbySites.slice(0, 5).flatMap((site, index) => {
+    if (site.latitude == null || site.longitude == null) return [];
+    return [
+      {
+        id: `nearby-${index}-${site.name}`,
+        name: site.name,
+        latitude: site.latitude,
+        longitude: site.longitude,
+        distanceKm: site.distanceKm,
+        siteType: site.siteType,
+      },
+    ];
+  });
   const showTrip = shouldShowDrivingTripCard(mode, snapshot);
   const showCharging = shouldShowChargingSessionCard(snapshot?.chargingStatus);
   const dataFreshnessAt =
@@ -452,6 +465,7 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
                 selectedId={vehicle.id}
                 hideSelectionCard
                 height={256}
+                nearbySites={mapNearbySites}
               />
             </div>
           ) : (

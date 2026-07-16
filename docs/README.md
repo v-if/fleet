@@ -28,6 +28,7 @@
 | [requirements-vehicle-detail-vd3-responsive-toolbar.md](./requirements-vehicle-detail-vd3-responsive-toolbar.md) | **VD3-R** — 상세 상단 PC·모바일 통일 · v2 링크 제거 · 코드 ✅ · 검수 ☐ | V3 툴바 UX |
 | [requirements-vehicle-detail-vd3-nearby-block.md](./requirements-vehicle-detail-vd3-nearby-block.md) | **VD3-NB** — 인근충전소 목록 있을 때만 블록 · 코드 ✅ | V3 nearby UX |
 | [requirements-vehicle-detail-vd3-destination-clear.md](./requirements-vehicle-detail-vd3-destination-clear.md) | **VD3-DC** — 주행 목적지 주차·절전 클리어 · 코드 ✅ · 실차 ☐ | V3 트립 잔상 |
+| [requirements-vehicle-detail-vd3-nearby-map.md](./requirements-vehicle-detail-vd3-nearby-map.md) | **VD3-NM** — 인근충전소 지도 마커 · 코드 ✅ · 실차 ☐ | V3 nearby 맵 |
 | [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md) | Phase VD3-1b~4 ✅ · VD3-6~7 ☐ | VD3 검수 |
 | [research/research-vehicles-detail-chatgpt.md](./research/research-vehicles-detail-chatgpt.md) | 상세 UI 리서치 (FMS 관리자 IA) | VD3 근거 |
 | [research/research-vehicles-detail-gemini.md](./research/research-vehicles-detail-gemini.md) | 상세 UI 리서치 (Cockpit·모드·제어·네비) | VD3 근거 |
@@ -231,5 +232,7 @@
 | 2026-07-16 | VD3-NB-2·3 코드 ✅ — empty 숨김 |
 | 2026-07-16 | VD3-DC — 주행 목적지 주차·절전 클리어 요구 초안 |
 | 2026-07-16 | VD3-DC-2·3 코드 ✅ — destination* P/절전 클리어 |
+| 2026-07-16 | VD3-NM — 인근충전소 지도 마커 요구 초안 |
+| 2026-07-16 | VD3-NM-2·3 코드 ✅ — 좌표 보존 · VehicleMap 마커·fitBounds |
 | 2026-07-16 | TRF-B2e — park nearby 운행→P 엣지 트리거 요구 초안 |
 | 2026-07-16 | TRF-B2e-2·3 코드 ✅ — 엣지·이동 보완 · verify |

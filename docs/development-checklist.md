@@ -857,6 +857,16 @@
 - [x] **VD3-DC-3** ASLEEP 진입 시 동일 클리어
 - [ ] **VD3-DC-4** 실차 잔상 검수
 
+### Phase VD3-NM 인근충전소 지도 마커 — ✅ 코드 · ☐ 실차
+
+> [requirements-vehicle-detail-vd3-nearby-map.md](./requirements-vehicle-detail-vd3-nearby-map.md)
+
+- [x] **VD3-NM-1** 문서 승인 (GO)
+- [x] **VD3-NM-2** Site/DTO·mapper·catalog 좌표 보존
+- [x] **VD3-NM-3** VehicleMap nearby 마커 + V3 연결
+- [ ] **VD3-NM-4** (선택) 목록↔마커 연동
+- [ ] **VD3-NM-5** 실차 검수
+
 ### Telemetry Value Monitor (개발) — 요구1 ✅
 
 > [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md)
@@ -1104,6 +1114,8 @@
 | 2026-07-16 | VD3-NB-2·3 코드 — nearby 블록 조건부 · empty 헬퍼 삭제 |
 | 2026-07-16 | VD3-DC 주행 목적지 주차·절전 클리어 요구 초안 |
 | 2026-07-16 | VD3-DC-2·3 코드 — `clearTripDestinationFields` · P/ASLEEP |
+| 2026-07-16 | VD3-NM 인근충전소 지도 마커 요구 초안 |
+| 2026-07-16 | VD3-NM-2·3 코드 — 좌표 보존 · VehicleMap nearby 마커 · V3 연결 |
 | 2026-07-16 | TRF-B2e park nearby 운행→P 엣지 요구 초안 |
 | 2026-07-16 | TRF-B2e-2·3 코드 — 엣지·이동 보완 · `trf-b2:verify` |
 

@@ -75,19 +75,43 @@ export function mapNearbyChargingSites(
   destination: TeslaNearbyChargingSite[] = [],
   superchargers: TeslaNearbyChargingSite[] = [],
 ): NearbyChargingSite[] {
-  const sites = [...destination, ...superchargers]
-    .map((site) => {
-      const name = site.name?.trim();
-      if (!name) return null;
-      const miles = site.distance_miles;
-      return {
-        name,
-        distanceKm:
-          miles != null && Number.isFinite(miles)
-            ? Math.round(miles * 1.60934 * 10) / 10
-            : 0,
-      } satisfies NearbyChargingSite;
-    })
+  const mapOne = (
+    site: TeslaNearbyChargingSite,
+    fallbackType: "destination" | "supercharger",
+  ): NearbyChargingSite | null => {
+    const name = site.name?.trim();
+    if (!name) return null;
+    const miles = site.distance_miles;
+    const lat = site.location?.lat;
+    const lng = site.location?.long;
+    const hasCoords =
+      lat != null &&
+      lng != null &&
+      Number.isFinite(lat) &&
+      Number.isFinite(lng) &&
+      !(lat === 0 && lng === 0);
+    const rawType = site.type?.toLowerCase();
+    const siteType: "destination" | "supercharger" =
+      rawType === "supercharger" || rawType === "destination"
+        ? rawType
+        : fallbackType;
+
+    return {
+      name,
+      distanceKm:
+        miles != null && Number.isFinite(miles)
+          ? Math.round(miles * 1.60934 * 10) / 10
+          : 0,
+      latitude: hasCoords ? lat! : null,
+      longitude: hasCoords ? lng! : null,
+      siteType,
+    };
+  };
+
+  const sites = [
+    ...destination.map((s) => mapOne(s, "destination")),
+    ...superchargers.map((s) => mapOne(s, "supercharger")),
+  ]
     .filter((site): site is NearbyChargingSite => site != null)
     .sort((a, b) => a.distanceKm - b.distanceKm)
     .slice(0, 8);

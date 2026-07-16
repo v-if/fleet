@@ -61,6 +61,38 @@ export function serializeNearbyChargingSites(
   return JSON.stringify(envelope);
 }
 
+function asFiniteNumber(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  return value;
+}
+
+/** Snapshot JSON → DTO (구형 name+distance만 있어도 OK) */
+export function normalizeNearbySiteDto(raw: unknown): NearbyChargingSiteDto | null {
+  if (!raw || typeof raw !== "object") return null;
+  const site = raw as Record<string, unknown>;
+  if (typeof site.name !== "string" || !site.name.trim()) return null;
+  const distanceKm = asFiniteNumber(site.distanceKm) ?? 0;
+  const latitude = asFiniteNumber(site.latitude);
+  const longitude = asFiniteNumber(site.longitude);
+  const typeRaw = site.siteType;
+  const siteType =
+    typeRaw === "supercharger" || typeRaw === "destination" ? typeRaw : null;
+
+  return {
+    name: site.name.trim(),
+    distanceKm,
+    latitude:
+      latitude != null && longitude != null && !(latitude === 0 && longitude === 0)
+        ? latitude
+        : null,
+    longitude:
+      latitude != null && longitude != null && !(latitude === 0 && longitude === 0)
+        ? longitude
+        : null,
+    siteType,
+  };
+}
+
 export function parseNearbyChargingJson(json: string | null): NearbyChargingParsed {
   if (!json) {
     return {
@@ -74,14 +106,13 @@ export function parseNearbyChargingJson(json: string | null): NearbyChargingPars
   try {
     const parsed = JSON.parse(json) as
       | NearbyChargingEnvelope
-      | NearbyChargingSiteDto[];
+      | unknown[];
 
     if (Array.isArray(parsed)) {
       return {
-        sites: parsed.filter(
-          (s): s is NearbyChargingSiteDto =>
-            Boolean(s && typeof s.name === "string"),
-        ),
+        sites: parsed
+          .map(normalizeNearbySiteDto)
+          .filter((s): s is NearbyChargingSiteDto => s != null),
         capturedAt: null,
         capturedLat: null,
         capturedLng: null,
@@ -95,10 +126,9 @@ export function parseNearbyChargingJson(json: string | null): NearbyChargingPars
           ? parsed.source
           : null;
       return {
-        sites: parsed.sites.filter(
-          (s): s is NearbyChargingSiteDto =>
-            Boolean(s && typeof s.name === "string"),
-        ),
+        sites: parsed.sites
+          .map(normalizeNearbySiteDto)
+          .filter((s): s is NearbyChargingSiteDto => s != null),
         capturedAt:
           typeof parsed.capturedAt === "string" ? parsed.capturedAt : null,
         capturedLat:

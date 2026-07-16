@@ -8,6 +8,10 @@ import type {
 export type NearbyChargingSite = {
   name: string;
   distanceKm: number;
+  /** VD3-NM: 지도 마커용 */
+  latitude?: number | null;
+  longitude?: number | null;
+  siteType?: "destination" | "supercharger" | null;
 };
 
 export type VehicleSnapshotData = {

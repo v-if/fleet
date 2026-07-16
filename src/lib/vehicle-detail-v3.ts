@@ -112,7 +112,7 @@ export function buildOpsSummary(
   } else if (snapshot.batteryPercent != null) {
     items.push({
       tone: "ok",
-      text: `배터리 ${snapshot.batteryPercent.toFixed(0)}% · 충전 긴급도 낮음`,
+      text: `배터리 ${snapshot.batteryPercent.toFixed(0)}%`,
     });
   }
 

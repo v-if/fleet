@@ -7,6 +7,16 @@ import { SimpleMapFallback } from "@/components/fleet/simple-map-fallback";
 import { hasValidCoordinates, STATUS_LABEL } from "@/lib/vehicle-status";
 import type { MapVehicle } from "@/lib/types/vehicle";
 
+/** VD3-NM — 상세 맵 인근 충전소 핀 (좌표 있는 건만) */
+export type MapNearbySite = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  distanceKm?: number;
+  siteType?: "destination" | "supercharger" | null;
+};
+
 type VehicleMapProps = {
   vehicles: MapVehicle[];
   selectedId?: string | null;
@@ -16,6 +26,8 @@ type VehicleMapProps = {
   hero?: boolean;
   /** 상세 화면 등에서 번호·모델·「상세 보기」 선택 카드 숨김 */
   hideSelectionCard?: boolean;
+  /** 상세 V3 — 인근 충전소 마커 (목록과 동일 상위 N건) */
+  nearbySites?: MapNearbySite[];
 };
 
 type PositionedMapVehicle = MapVehicle & {
@@ -28,6 +40,13 @@ type NaverLatLng = unknown;
 type NaverMap = {
   setCenter: (center: NaverLatLng) => void;
   setZoom: (zoom: number) => void;
+  fitBounds: (
+    bounds: NaverLatLngBounds,
+    padding?: number | { top: number; right: number; bottom: number; left: number },
+  ) => void;
+};
+type NaverLatLngBounds = {
+  extend: (latlng: NaverLatLng) => void;
 };
 type NaverMarker = {
   setMap: (map: NaverMap | null) => void;
@@ -39,6 +58,7 @@ type NaverMarker = {
 type NaverMaps = {
   maps: {
     LatLng: new (lat: number, lng: number) => NaverLatLng;
+    LatLngBounds: new (sw?: NaverLatLng, ne?: NaverLatLng) => NaverLatLngBounds;
     Point: new (x: number, y: number) => unknown;
     Map: new (
       container: string | HTMLElement,
@@ -49,6 +69,7 @@ type NaverMaps = {
       position: NaverLatLng;
       icon?: { content: string | HTMLElement; anchor?: unknown };
       zIndex?: number;
+      title?: string;
     }) => NaverMarker;
   };
 };
@@ -273,6 +294,47 @@ function markerAnchor(naver: NaverMaps, selected: boolean) {
   return new naver.maps.Point(x, y);
 }
 
+function nearbyMarkerHtml(site: MapNearbySite) {
+  const isSuper = site.siteType === "supercharger";
+  const bg = isSuper ? "#e82127" : "#0d9488";
+  const label = isSuper ? "SC" : "DC";
+  const distance =
+    site.distanceKm != null ? `${site.distanceKm.toLocaleString("ko-KR")} km` : "";
+
+  return `
+    <div title="${escapeHtmlAttr(site.name)}" style="
+      display:flex;flex-direction:column;align-items:center;pointer-events:none;
+    ">
+      <div style="
+        width:28px;height:28px;border-radius:8px;border:2px solid white;
+        box-shadow:0 3px 10px rgba(0,0,0,0.28);background:${bg};
+        display:flex;align-items:center;justify-content:center;
+        color:white;font-size:9px;font-weight:800;letter-spacing:-0.02em;
+      ">${label}</div>
+      ${
+        distance
+          ? `<div style="
+        margin-top:3px;padding:1px 6px;border-radius:9999px;background:rgba(24,24,27,0.82);
+        color:white;font-size:9px;font-weight:600;white-space:nowrap;
+      ">${distance}</div>`
+          : ""
+      }
+    </div>
+  `;
+}
+
+function escapeHtmlAttr(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function nearbyMarkerAnchor(naver: NaverMaps) {
+  return new naver.maps.Point(14, 42);
+}
+
 export function VehicleMap({
   vehicles,
   selectedId,
@@ -281,6 +343,7 @@ export function VehicleMap({
   centerOnSelected = false,
   hero = false,
   hideSelectionCard = false,
+  nearbySites = [],
 }: VehicleMapProps) {
   const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID?.trim();
   const validVehicles = useMemo(
@@ -291,11 +354,19 @@ export function VehicleMap({
       ),
     [vehicles],
   );
+  const validNearbySites = useMemo(
+    () =>
+      nearbySites.filter((site) =>
+        hasValidCoordinates(site.latitude, site.longitude),
+      ),
+    [nearbySites],
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<NaverMap | null>(null);
   const markersRef = useRef<NaverMarker[]>([]);
   const onSelectRef = useRef(onSelect);
   const vehiclesRef = useRef<PositionedMapVehicle[]>([]);
+  const nearbyRef = useRef<MapNearbySite[]>([]);
   const [ready, setReady] = useState(false);
   const [useFallback, setUseFallback] = useState(false);
   const [fallbackReason, setFallbackReason] = useState<"no_key" | "load_failed" | "no_coords">(
@@ -313,10 +384,22 @@ export function VehicleMap({
     [validVehicles],
   );
 
+  const nearbySignature = useMemo(
+    () =>
+      validNearbySites
+        .map(
+          (site) =>
+            `${site.id}:${site.latitude}:${site.longitude}:${site.siteType ?? ""}:${site.distanceKm ?? ""}`,
+        )
+        .join("|"),
+    [validNearbySites],
+  );
+
   useEffect(() => {
     onSelectRef.current = onSelect;
     vehiclesRef.current = validVehicles;
-  }, [onSelect, validVehicles]);
+    nearbyRef.current = validNearbySites;
+  }, [onSelect, validVehicles, validNearbySites]);
 
   useEffect(() => {
     if (!clientId || vehiclesRef.current.length === 0) {
@@ -324,6 +407,7 @@ export function VehicleMap({
     }
 
     const currentVehicles = vehiclesRef.current;
+    const currentNearby = nearbyRef.current;
     let cancelled = false;
 
     loadNaverMaps(clientId)
@@ -346,7 +430,7 @@ export function VehicleMap({
             center,
             zoom: hero ? 12 : 13,
           });
-        } else if (centerOnSelected && selectedId) {
+        } else if (centerOnSelected && selectedId && currentNearby.length === 0) {
           mapRef.current.setCenter(center);
           mapRef.current.setZoom(hero ? 14 : 15);
         }
@@ -379,6 +463,45 @@ export function VehicleMap({
           markersRef.current.push(marker);
         });
 
+        currentNearby.forEach((site) => {
+          const position = new naver.maps.LatLng(site.latitude, site.longitude);
+          const content = document.createElement("div");
+          content.innerHTML = nearbyMarkerHtml(site);
+
+          const marker = new naver.maps.Marker({
+            map: mapRef.current,
+            position,
+            icon: {
+              content,
+              anchor: nearbyMarkerAnchor(naver),
+            },
+            title: site.name,
+            zIndex: 5,
+          });
+
+          markersRef.current.push(marker);
+        });
+
+        if (
+          mapRef.current &&
+          currentNearby.length > 0 &&
+          typeof naver.maps.LatLngBounds === "function"
+        ) {
+          const bounds = new naver.maps.LatLngBounds();
+          currentVehicles.forEach((vehicle) => {
+            bounds.extend(new naver.maps.LatLng(vehicle.latitude, vehicle.longitude));
+          });
+          currentNearby.forEach((site) => {
+            bounds.extend(new naver.maps.LatLng(site.latitude, site.longitude));
+          });
+          mapRef.current.fitBounds(bounds, {
+            top: 40,
+            right: 40,
+            bottom: 40,
+            left: 40,
+          });
+        }
+
         setUseFallback(false);
         setReady(true);
       })
@@ -394,7 +517,7 @@ export function VehicleMap({
     return () => {
       cancelled = true;
     };
-  }, [clientId, centerOnSelected, hero, selectedId, vehicleSignature]);
+  }, [clientId, centerOnSelected, hero, selectedId, vehicleSignature, nearbySignature]);
 
   if (!clientId || useFallback || validVehicles.length === 0) {
     const reason = !clientId

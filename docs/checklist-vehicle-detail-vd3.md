@@ -22,6 +22,7 @@
 | **VD3-R** | PC·모바일 툴바 통일 · v2 링크 제거 ([요구](./requirements-vehicle-detail-vd3-responsive-toolbar.md)) | ✅ 코드 · ☐ 검수 |
 | **VD3-NB** | 인근충전소 목록 있을 때만 ([요구](./requirements-vehicle-detail-vd3-nearby-block.md)) | ✅ |
 | **VD3-DC** | 주행 목적지 주차·절전 클리어 ([요구](./requirements-vehicle-detail-vd3-destination-clear.md)) | ✅ 코드 · ☐ 실차 |
+| **VD3-NM** | 인근충전소 지도 마커 ([요구](./requirements-vehicle-detail-vd3-nearby-map.md)) | ✅ 코드 · ☐ 실차 |
 
 ---
 
@@ -40,6 +41,7 @@
 | 8 | `FleetToolbar layout="inline"` · v2 UI 링크 제거 (VD3-R) | ✅ |
 | 9 | 인근충전소: sites>0일 때만 블록 (VD3-NB) | ✅ |
 | 10 | 목적지·ETA: P/절전 시 Snapshot 클리어 (VD3-DC) | ✅ |
+| 11 | nearby 좌표 보존 · 맵 마커·fitBounds (VD3-NM) | ✅ |
 
 ---
 
@@ -72,5 +74,7 @@ VIN: `LRWYGCFJ7SC214742`
 | 2026-07-16 | VD3-NB-2·3 코드 ✅ — empty 숨김 · `nearbyEmptyReason` 삭제 |
 | 2026-07-16 | VD3-DC 목적지 클리어 요구 링크 |
 | 2026-07-16 | VD3-DC-2·3 코드 ✅ · 실차 DC-4 ☐ |
+| 2026-07-16 | VD3-NM 인근충전소 지도 마커 요구 링크 |
+| 2026-07-16 | VD3-NM-2·3 코드 ✅ — 좌표 보존 · 맵 핀 · 실차 NM-5 ☐ |
 | 2026-07-16 | VD3-N 표시명 연필 편집 요구 링크 |
 |

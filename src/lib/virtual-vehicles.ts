@@ -83,11 +83,14 @@ function randomServiceStatus(): ServiceStatus {
   return pickOne(["OK", "OK", "OK", "DUE_SOON", "IN_SERVICE"] as const);
 }
 
-function randomNearbyChargingSites() {
+function randomNearbyChargingSites(originLat: number, originLng: number) {
   const count = randomInt(0, 2);
   return Array.from({ length: count }, (_, index) => ({
     name: `Supercharger ${index + 1}`,
     distanceKm: randomFloat(0.5, 8.5, 1),
+    latitude: originLat + (Math.random() - 0.5) * 0.04,
+    longitude: originLng + (Math.random() - 0.5) * 0.04,
+    siteType: "supercharger" as const,
   }));
 }
 
@@ -152,11 +155,14 @@ export async function createVirtualTeslaAccountWithVehicles(input: CreateVirtual
         sentryMode,
         serviceStatus: randomServiceStatus(),
         softwareVersion: pickOne(SOFTWARE_VERSIONS),
-        nearbyChargingSites: serializeNearbyChargingSites(randomNearbyChargingSites(), {
-          capturedAt: new Date(),
-          capturedLat: null,
-          capturedLng: null,
-        }),
+        nearbyChargingSites: serializeNearbyChargingSites(
+          randomNearbyChargingSites(coordinates.latitude, coordinates.longitude),
+          {
+            capturedAt: new Date(),
+            capturedLat: coordinates.latitude,
+            capturedLng: coordinates.longitude,
+          },
+        ),
         lastUpdatedAt: new Date(),
       },
       events: Array.from({ length: eventCount }, () => {

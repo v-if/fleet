@@ -124,11 +124,21 @@ export async function queryNearbyFromCatalog(
       return {
         name: row.name,
         distanceKm: Math.round(distanceKm * 10) / 10,
+        latitude: row.latitude,
+        longitude: row.longitude,
+        siteType:
+          row.siteType === "supercharger" ? ("supercharger" as const) : ("destination" as const),
         _distance: distanceKm,
       };
     })
     .filter((s) => s._distance <= radiusKm)
     .sort((a, b) => a._distance - b._distance)
     .slice(0, limit)
-    .map(({ name, distanceKm }) => ({ name, distanceKm }));
+    .map(({ name, distanceKm, latitude: lat, longitude: lng, siteType }) => ({
+      name,
+      distanceKm,
+      latitude: lat,
+      longitude: lng,
+      siteType,
+    }));
 }
