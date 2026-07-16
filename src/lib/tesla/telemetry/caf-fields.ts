@@ -28,10 +28,18 @@ export type CafSnapshotCoords = {
 export function mergeCafSnapshotFields(
   current: CafSnapshotCoords,
   previous?: CafSnapshotCoords | null,
+  options?: { suppressTripCoalesce?: boolean },
 ): Required<{ [K in keyof CafSnapshotCoords]: CafSnapshotCoords[K] | null }> {
+  const suppressTripCoalesce = options?.suppressTripCoalesce ?? false;
+
   return {
-    vehicleSpeedKmh: current.vehicleSpeedKmh ?? previous?.vehicleSpeedKmh ?? null,
-    gpsHeading: current.gpsHeading ?? previous?.gpsHeading ?? null,
+    vehicleSpeedKmh: mergeTripAwareField(
+      "vehicleSpeedKmh",
+      current,
+      previous,
+      suppressTripCoalesce,
+    ),
+    gpsHeading: mergeTripAwareField("gpsHeading", current, previous, suppressTripCoalesce),
     detailedChargeState:
       current.detailedChargeState ?? previous?.detailedChargeState ?? null,
     timeToFullChargeHours:
@@ -44,17 +52,42 @@ export function mergeCafSnapshotFields(
       current.fastChargerPresent ?? previous?.fastChargerPresent ?? null,
     tpmsHardWarnings: current.tpmsHardWarnings ?? previous?.tpmsHardWarnings ?? null,
     tpmsSoftWarnings: current.tpmsSoftWarnings ?? previous?.tpmsSoftWarnings ?? null,
-    destinationName: current.destinationName ?? previous?.destinationName ?? null,
-    destinationLatitude:
-      current.destinationLatitude ?? previous?.destinationLatitude ?? null,
-    destinationLongitude:
-      current.destinationLongitude ?? previous?.destinationLongitude ?? null,
-    minutesToArrival: current.minutesToArrival ?? previous?.minutesToArrival ?? null,
-    milesToArrival: current.milesToArrival ?? previous?.milesToArrival ?? null,
-    expectedEnergyPercentAtArrival:
-      current.expectedEnergyPercentAtArrival ??
-      previous?.expectedEnergyPercentAtArrival ??
-      null,
+    destinationName: mergeTripAwareField(
+      "destinationName",
+      current,
+      previous,
+      suppressTripCoalesce,
+    ),
+    destinationLatitude: mergeTripAwareField(
+      "destinationLatitude",
+      current,
+      previous,
+      suppressTripCoalesce,
+    ),
+    destinationLongitude: mergeTripAwareField(
+      "destinationLongitude",
+      current,
+      previous,
+      suppressTripCoalesce,
+    ),
+    minutesToArrival: mergeTripAwareField(
+      "minutesToArrival",
+      current,
+      previous,
+      suppressTripCoalesce,
+    ),
+    milesToArrival: mergeTripAwareField(
+      "milesToArrival",
+      current,
+      previous,
+      suppressTripCoalesce,
+    ),
+    expectedEnergyPercentAtArrival: mergeTripAwareField(
+      "expectedEnergyPercentAtArrival",
+      current,
+      previous,
+      suppressTripCoalesce,
+    ),
     preconditioningEnabled:
       current.preconditioningEnabled ?? previous?.preconditioningEnabled ?? null,
     valetModeEnabled: current.valetModeEnabled ?? previous?.valetModeEnabled ?? null,
@@ -80,7 +113,7 @@ export function pickCafSnapshotFields(
   return mergeCafSnapshotFields(source, null);
 }
 
-/** VD3-DC: 네비 목적지·ETA·도착 예상 SoC 잔상 제거 (주차/절전) */
+/** VD3-DC / VD3-DCf: 네비·ETA·도착 SoC·주행 속도/헤딩 잔상 제거 (주차/절전) */
 export function clearTripDestinationFields<T extends CafSnapshotCoords>(
   fields: T,
 ): T {
@@ -92,5 +125,30 @@ export function clearTripDestinationFields<T extends CafSnapshotCoords>(
     minutesToArrival: null,
     milesToArrival: null,
     expectedEnergyPercentAtArrival: null,
+    vehicleSpeedKmh: null,
+    gpsHeading: null,
   };
+}
+
+const TRIP_COALESCE_KEYS = [
+  "destinationName",
+  "destinationLatitude",
+  "destinationLongitude",
+  "minutesToArrival",
+  "milesToArrival",
+  "expectedEnergyPercentAtArrival",
+  "vehicleSpeedKmh",
+  "gpsHeading",
+] as const satisfies readonly (keyof CafSnapshotCoords)[];
+
+function mergeTripAwareField<K extends (typeof TRIP_COALESCE_KEYS)[number]>(
+  key: K,
+  current: CafSnapshotCoords,
+  previous: CafSnapshotCoords | null | undefined,
+  suppressTripCoalesce: boolean,
+): NonNullable<CafSnapshotCoords[K]> | null {
+  const value = suppressTripCoalesce
+    ? current[key]
+    : (current[key] ?? previous?.[key]);
+  return value ?? null;
 }

@@ -161,8 +161,7 @@ export function shouldShowDrivingTripCard(
     snapshot.destinationName ||
       snapshot.minutesToArrival != null ||
       snapshot.milesToArrival != null ||
-      snapshot.expectedEnergyPercentAtArrival != null ||
-      snapshot.vehicleSpeedKmh != null,
+      snapshot.expectedEnergyPercentAtArrival != null,
   );
 }
 

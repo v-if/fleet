@@ -857,6 +857,16 @@
 - [x] **VD3-DC-3** ASLEEP 진입 시 동일 클리어
 - [ ] **VD3-DC-4** 실차 잔상 검수
 
+### Phase VD3-DCf 트립 클리어 필드 잔상 — ✅ 코드 · ☐ 실차
+
+> [requirements-vehicle-detail-vd3-trip-clear-fields.md](./requirements-vehicle-detail-vd3-trip-clear-fields.md)
+
+- [x] **VD3-DCf-1** 문서 승인 (필드별 판정)
+- [x] **VD3-DCf-2** 도착 SoC 잔상 — P coalesce 억제·클리어
+- [x] **VD3-DCf-3** 속도(·heading) 클리어 whitelist 추가
+- [x] **VD3-DCf-4** 카드 게이트: 속도 단독 미표시
+- [ ] **VD3-DCf-5** 실차 검수
+
 ### Phase VD3-NM 인근충전소 지도 마커 — ✅ 코드 · ☐ 실차
 
 > [requirements-vehicle-detail-vd3-nearby-map.md](./requirements-vehicle-detail-vd3-nearby-map.md)
@@ -1124,6 +1134,8 @@
 | 2026-07-16 | VD3-NB-2·3 코드 — nearby 블록 조건부 · empty 헬퍼 삭제 |
 | 2026-07-16 | VD3-DC 주행 목적지 주차·절전 클리어 요구 초안 |
 | 2026-07-16 | VD3-DC-2·3 코드 — `clearTripDestinationFields` · P/ASLEEP |
+| 2026-07-16 | VD3-DCf 속도·도착 SoC 클리어 필드 잔상 요구 초안 |
+| 2026-07-16 | VD3-DCf-2·3·4 코드 — speed·heading 클리어 · P coalesce · 카드 게이트 |
 | 2026-07-16 | VD3-NM 인근충전소 지도 마커 요구 초안 |
 | 2026-07-16 | VD3-NM-2·3 코드 — 좌표 보존 · VehicleMap nearby 마커 · V3 연결 |
 | 2026-07-16 | VD3-NL 인근충전소 목록·맵 A–E 기호 매칭 요구 초안 |

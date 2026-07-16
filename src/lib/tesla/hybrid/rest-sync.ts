@@ -34,6 +34,7 @@ import {
 import { serializeNearbyChargingSites } from "@/lib/tesla/nearby-charging";
 import type { ParkNearbyTrigger } from "@/lib/tesla/park-nearby-trigger";
 import { mergeCafSnapshotFields, pickCafSnapshotFields } from "@/lib/tesla/telemetry/caf-fields";
+import { normalizeShiftState } from "@/lib/tesla/shift-state";
 import {
   getRestWakeCooldownMinutes,
   isBaselineOnReadyEnabled,
@@ -190,7 +191,11 @@ export async function writeRestSnapshot(
     snapshot,
     previousSnapshot,
   );
-  const cafFields = mergeCafSnapshotFields({}, previousSnapshot);
+  const suppressTripCoalesce =
+    normalizeShiftState(snapshot.shiftState ?? previousSnapshot?.shiftState) === "P";
+  const cafFields = mergeCafSnapshotFields({}, previousSnapshot, {
+    suppressTripCoalesce,
+  });
 
   const resolvedTelemetrySource =
     preserveTelemetryFields && previousSnapshot?.telemetrySource === "TELEMETRY"

@@ -227,6 +227,7 @@
 | **VD3-R** | PC·모바일 상단 툴바 통일 · v2 링크 제거 — [vd3-responsive-toolbar](./requirements-vehicle-detail-vd3-responsive-toolbar.md) | ✅ 코드 · ☐ 검수 |
 | **VD3-NB** | 인근충전소 목록 있을 때만 블록 — [vd3-nearby-block](./requirements-vehicle-detail-vd3-nearby-block.md) | ✅ |
 | **VD3-DC** | 주행 목적지 주차·절전 클리어 — [vd3-destination-clear](./requirements-vehicle-detail-vd3-destination-clear.md) | ✅ 코드 · ☐ 실차 |
+| **VD3-DCf** | 속도·도착 SoC 클리어 범위 — [vd3-trip-clear-fields](./requirements-vehicle-detail-vd3-trip-clear-fields.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-NM** | 인근충전소 지도 마커 — [vd3-nearby-map](./requirements-vehicle-detail-vd3-nearby-map.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-NL** | 목록·맵 A–E 기호 매칭 — [vd3-nearby-labels](./requirements-vehicle-detail-vd3-nearby-labels.md) | ✅ 코드 · ☐ 실차 |
 
@@ -263,6 +264,8 @@
 | 2026-07-16 | VD3-NB-2·3 — empty 숨김 · `nearbyEmptyReason` 삭제 |
 | 2026-07-16 | VD3-DC 링크 — 목적지 주차·절전 클리어 |
 | 2026-07-16 | VD3-DC-2·3 — P 엣지·ASLEEP destination* 클리어 |
+| 2026-07-16 | VD3-DCf 링크 — 속도·도착 SoC 클리어 필드 잔상 |
+| 2026-07-16 | VD3-DCf-2·3·4 — speed·heading 클리어 · P coalesce · 카드 게이트 |
 | 2026-07-16 | VD3-NM 링크 — 인근충전소 지도 마커 |
 | 2026-07-16 | VD3-NM-2·3 — 좌표 보존 · VehicleMap 마커·fitBounds · V3 연결 |
 | 2026-07-16 | VD3-NL 링크 — 목록·맵 A–E 기호 매칭 |

@@ -78,7 +78,7 @@ D2: 재탑승 · 주행(D) · (새 Nav 없음)
 | `destinationLatitude` · `destinationLongitude` | ✅ |
 | `minutesToArrival` · `milesToArrival` | ✅ |
 | `expectedEnergyPercentAtArrival` | ✅ |
-| `vehicleSpeedKmh` · `gpsHeading` | ❌ (기본) — 별 이슈 시 후속 |
+| `vehicleSpeedKmh` · `gpsHeading` | ✅ ([VD3-DCf](./requirements-vehicle-detail-vd3-trip-clear-fields.md)) |
 | 충전·TPMS·공조 CAF | ❌ |
 
 ---
@@ -152,6 +152,7 @@ if (driveThenPark || enteredAsleep) {
 | **VD3-DC-2** | `clearTripDestinationFields` · 비-P→P 시 Snapshot 클리어 | ✅ |
 | **VD3-DC-3** | ASLEEP 진입 시 동일 클리어 (보완) | ✅ |
 | **VD3-DC-4** | 실차: 어제 목적지 잔상 없음 · 주행 중 표시 유지 | ☐ |
+| **VD3-DCf** | 속도·도착 SoC 잔상 — [trip-clear-fields](./requirements-vehicle-detail-vd3-trip-clear-fields.md) | ✅ 코드 · ☐ 실차 |
 
 체크리스트: [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
 
@@ -183,3 +184,5 @@ if (driveThenPark || enteredAsleep) {
 |------|------|
 | 2026-07-16 | 초안 — 목적지 coalesce 잔상 · P/절전 클리어 · GO |
 | 2026-07-16 | 코드 — `clearTripDestinationFields` · P 엣지·ASLEEP · verify (DC-2·3 ✅) |
+| 2026-07-16 | VD3-DCf 링크 — 속도·도착 SoC 클리어 범위 재정의 |
+| 2026-07-16 | VD3-DCf-2·3·4 코드 — speed·heading · P coalesce · 카드 게이트 |

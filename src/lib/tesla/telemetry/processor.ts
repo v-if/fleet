@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
 import { maybeRefreshNearbyOnPark } from "@/lib/tesla/hybrid/rest-sync";
 import { resolveParkNearbyTrigger, isDriveThenParkTransition } from "@/lib/tesla/park-nearby-trigger";
+import { normalizeShiftState } from "@/lib/tesla/shift-state";
 import { patchVehicleSyncState } from "@/lib/tesla/hybrid/sync-state";
 import { shouldClearNearbyForLocation } from "@/lib/tesla/nearby-charging";
 
@@ -79,6 +80,9 @@ function mergeSnapshotFields(
     nearbyChargingSites = null;
   }
 
+  const suppressTripCoalesce =
+    normalizeShiftState(current.shiftState ?? previous?.shiftState) === "P";
+
   return {
     latitude: lat,
     longitude: lng,
@@ -112,7 +116,11 @@ function mergeSnapshotFields(
     serviceStatus: previous?.serviceStatus ?? null,
     softwareVersion: current.softwareVersion ?? previous?.softwareVersion ?? null,
     nearbyChargingSites,
-    ...mergeCafSnapshotFields(current, previous as import("./caf-fields").CafSnapshotCoords | undefined),
+    ...mergeCafSnapshotFields(
+      current,
+      previous as import("./caf-fields").CafSnapshotCoords | undefined,
+      { suppressTripCoalesce },
+    ),
   };
 }
 
@@ -136,8 +144,14 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
     previous?.isAsleepInferred === true || previous?.status === "ASLEEP";
   let merged = mergeSnapshotFields(fields, previous);
 
-  // VD3-DC: 운행→P 시 네비 목적지·ETA 잔상 클리어
-  if (isDriveThenParkTransition(previous?.shiftState, fields.shiftState)) {
+  // VD3-DC / VD3-DCf: 운행→P 또는 주차(P) 중 트립 Nav·속도 잔상 클리어
+  const effectiveShift = normalizeShiftState(
+    fields.shiftState ?? previous?.shiftState,
+  );
+  if (
+    isDriveThenParkTransition(previous?.shiftState, fields.shiftState) ||
+    effectiveShift === "P"
+  ) {
     merged = clearTripDestinationFields(merged);
   }
 
