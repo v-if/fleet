@@ -180,3 +180,36 @@ export function vehicleStatusForDisplay(
   if (snapshot.isAsleepInferred && snapshot.status !== "ASLEEP") return "ASLEEP";
   return snapshot.status;
 }
+
+/** VD3-NL — 인근 충전소 목록·맵 기호 (0→A … 4→E) */
+export function nearbySiteLabel(index: number): string {
+  return String.fromCharCode(65 + index);
+}
+
+/** VD3-NL — siteType별 마커·목록 뱃지 색 */
+export function nearbySiteTypeColor(
+  siteType: "destination" | "supercharger" | null | undefined,
+): string {
+  if (siteType === "supercharger") return "#e82127";
+  if (siteType === "destination") return "#0d9488";
+  return "#71717a";
+}
+
+export function nearbySiteMarkerTitle(
+  label: string,
+  name: string,
+  distanceKm: number | undefined,
+): string {
+  const distance =
+    distanceKm != null ? ` · ${distanceKm.toLocaleString("ko-KR")} km` : "";
+  return `${label} · ${name}${distance}`;
+}
+
+/** VD3-NL — 목록 보조 유형 뱃지 */
+export function nearbySiteTypeBadgeLabel(
+  siteType: "destination" | "supercharger" | null | undefined,
+): "SC" | "DC" | null {
+  if (siteType === "supercharger") return "SC";
+  if (siteType === "destination") return "DC";
+  return null;
+}

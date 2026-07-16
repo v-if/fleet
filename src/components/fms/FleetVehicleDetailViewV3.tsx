@@ -22,6 +22,9 @@ import type { MapVehicle } from "@/lib/types/vehicle";
 import {
   buildOpsSummary,
   convertTeslaTpmsToPsi,
+  nearbySiteLabel,
+  nearbySiteTypeBadgeLabel,
+  nearbySiteTypeColor,
   OPS_MODE_LABEL,
   opsModeBadgeColor,
   resolveVehicleOpsMode,
@@ -217,7 +220,8 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
       ? Math.round((tpmsValues.reduce((a, b) => a + b, 0) / tpmsValues.length) * 10) / 10
       : null;
   const nearbySites = snapshot?.nearbyChargingSites ?? [];
-  const mapNearbySites = nearbySites.slice(0, 5).flatMap((site, index) => {
+  const displayedNearbySites = nearbySites.slice(0, 5);
+  const mapNearbySites = displayedNearbySites.flatMap((site, index) => {
     if (site.latitude == null || site.longitude == null) return [];
     return [
       {
@@ -227,6 +231,7 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
         longitude: site.longitude,
         distanceKm: site.distanceKm,
         siteType: site.siteType,
+        label: nearbySiteLabel(index),
       },
     ];
   });
@@ -495,19 +500,49 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
                 ) : null}
               </div>
               <ul className="space-y-2">
-                {nearbySites.slice(0, 5).map((site) => (
-                  <li
-                    key={`${site.name}-${site.distanceKm}`}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 px-3 py-2.5 dark:border-gray-800"
-                  >
-                    <span className="text-theme-sm font-medium text-gray-800 dark:text-white/90">
-                      {site.name}
-                    </span>
-                    <span className="shrink-0 text-theme-xs text-gray-500">
-                      {site.distanceKm.toLocaleString("ko-KR")} km
-                    </span>
-                  </li>
-                ))}
+                {displayedNearbySites.map((site, index) => {
+                  const label = nearbySiteLabel(index);
+                  const badgeColor = nearbySiteTypeColor(site.siteType);
+                  const typeBadge = nearbySiteTypeBadgeLabel(site.siteType);
+
+                  return (
+                    <li
+                      key={`${label}-${site.name}-${site.distanceKm}`}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 px-3 py-2.5 dark:border-gray-800"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span
+                          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs font-bold text-white"
+                          style={{ backgroundColor: badgeColor }}
+                          aria-hidden
+                        >
+                          {label}
+                        </span>
+                        {typeBadge ? (
+                          <span
+                            className="inline-flex h-5 shrink-0 items-center rounded px-1.5 text-[10px] font-bold leading-none"
+                            style={{
+                              color: badgeColor,
+                              border: `1px solid ${badgeColor}`,
+                              backgroundColor: `${badgeColor}14`,
+                            }}
+                            aria-label={
+                              typeBadge === "SC" ? "슈퍼차저" : "데스티네이션 충전소"
+                            }
+                          >
+                            {typeBadge}
+                          </span>
+                        ) : null}
+                        <span className="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">
+                          {site.name}
+                        </span>
+                      </div>
+                      <span className="shrink-0 text-theme-xs text-gray-500">
+                        {site.distanceKm.toLocaleString("ko-KR")} km
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ) : null}

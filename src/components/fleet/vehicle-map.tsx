@@ -5,6 +5,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SimpleMapFallback } from "@/components/fleet/simple-map-fallback";
 import { hasValidCoordinates, STATUS_LABEL } from "@/lib/vehicle-status";
+import {
+  nearbySiteMarkerTitle,
+  nearbySiteTypeColor,
+} from "@/lib/vehicle-detail-v3";
 import type { MapVehicle } from "@/lib/types/vehicle";
 
 /** VD3-NM — 상세 맵 인근 충전소 핀 (좌표 있는 건만) */
@@ -15,6 +19,8 @@ export type MapNearbySite = {
   longitude: number;
   distanceKm?: number;
   siteType?: "destination" | "supercharger" | null;
+  /** VD3-NL — 목록과 동일 기호 (A–E) */
+  label: string;
 };
 
 type VehicleMapProps = {
@@ -295,30 +301,20 @@ function markerAnchor(naver: NaverMaps, selected: boolean) {
 }
 
 function nearbyMarkerHtml(site: MapNearbySite) {
-  const isSuper = site.siteType === "supercharger";
-  const bg = isSuper ? "#e82127" : "#0d9488";
-  const label = isSuper ? "SC" : "DC";
-  const distance =
-    site.distanceKm != null ? `${site.distanceKm.toLocaleString("ko-KR")} km` : "";
+  const bg = nearbySiteTypeColor(site.siteType);
+  const label = site.label;
+  const title = nearbySiteMarkerTitle(label, site.name, site.distanceKm);
 
   return `
-    <div title="${escapeHtmlAttr(site.name)}" style="
+    <div title="${escapeHtmlAttr(title)}" style="
       display:flex;flex-direction:column;align-items:center;pointer-events:none;
     ">
       <div style="
         width:28px;height:28px;border-radius:8px;border:2px solid white;
         box-shadow:0 3px 10px rgba(0,0,0,0.28);background:${bg};
         display:flex;align-items:center;justify-content:center;
-        color:white;font-size:9px;font-weight:800;letter-spacing:-0.02em;
-      ">${label}</div>
-      ${
-        distance
-          ? `<div style="
-        margin-top:3px;padding:1px 6px;border-radius:9999px;background:rgba(24,24,27,0.82);
-        color:white;font-size:9px;font-weight:600;white-space:nowrap;
-      ">${distance}</div>`
-          : ""
-      }
+        color:white;font-size:11px;font-weight:800;letter-spacing:-0.02em;
+      ">${escapeHtmlAttr(label)}</div>
     </div>
   `;
 }
@@ -332,7 +328,7 @@ function escapeHtmlAttr(value: string) {
 }
 
 function nearbyMarkerAnchor(naver: NaverMaps) {
-  return new naver.maps.Point(14, 42);
+  return new naver.maps.Point(14, 28);
 }
 
 export function VehicleMap({
@@ -389,7 +385,7 @@ export function VehicleMap({
       validNearbySites
         .map(
           (site) =>
-            `${site.id}:${site.latitude}:${site.longitude}:${site.siteType ?? ""}:${site.distanceKm ?? ""}`,
+            `${site.id}:${site.latitude}:${site.longitude}:${site.siteType ?? ""}:${site.distanceKm ?? ""}:${site.label}`,
         )
         .join("|"),
     [validNearbySites],
@@ -475,7 +471,7 @@ export function VehicleMap({
               content,
               anchor: nearbyMarkerAnchor(naver),
             },
-            title: site.name,
+            title: nearbySiteMarkerTitle(site.label, site.name, site.distanceKm),
             zIndex: 5,
           });
 

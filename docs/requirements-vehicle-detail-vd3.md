@@ -228,6 +228,7 @@
 | **VD3-NB** | 인근충전소 목록 있을 때만 블록 — [vd3-nearby-block](./requirements-vehicle-detail-vd3-nearby-block.md) | ✅ |
 | **VD3-DC** | 주행 목적지 주차·절전 클리어 — [vd3-destination-clear](./requirements-vehicle-detail-vd3-destination-clear.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-NM** | 인근충전소 지도 마커 — [vd3-nearby-map](./requirements-vehicle-detail-vd3-nearby-map.md) | ✅ 코드 · ☐ 실차 |
+| **VD3-NL** | 목록·맵 A–E 기호 매칭 — [vd3-nearby-labels](./requirements-vehicle-detail-vd3-nearby-labels.md) | ✅ 코드 · ☐ 실차 |
 
 체크리스트: [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
 
@@ -264,4 +265,7 @@
 | 2026-07-16 | VD3-DC-2·3 — P 엣지·ASLEEP destination* 클리어 |
 | 2026-07-16 | VD3-NM 링크 — 인근충전소 지도 마커 |
 | 2026-07-16 | VD3-NM-2·3 — 좌표 보존 · VehicleMap 마커·fitBounds · V3 연결 |
+| 2026-07-16 | VD3-NL 링크 — 목록·맵 A–E 기호 매칭 |
+| 2026-07-16 | VD3-NL-2·3 — 리스트 뱃지 · VehicleMap label 마커 |
+| 2026-07-16 | VD3-NL-5 — 목록 SC/DC 보조 뱃지 |
 |

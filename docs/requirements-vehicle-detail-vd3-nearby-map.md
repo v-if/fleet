@@ -147,7 +147,7 @@ nearbySites?: Array<{
 | **VD3-NM-1** | 본 문서 승인 (GO) | ✅ |
 | **VD3-NM-2** | Site/DTO·mapper·catalog에 좌표·siteType 보존 · API 노출 | ✅ |
 | **VD3-NM-3** | `VehicleMap` nearby 마커 + bounds · V3 연결 (리스트와 동일 5건) | ✅ |
-| **VD3-NM-4** | (선택) 목록↔마커 연동 · InfoWindow | ☐ |
+| **VD3-NM-4** | (선택) 목록↔마커 연동 · InfoWindow — 정적 기호는 [VD3-NL](./requirements-vehicle-detail-vd3-nearby-labels.md) | ☐ |
 | **VD3-NM-5** | 실차: REST/카탈로그 각각 맵 핀 검수 | ☐ |
 
 체크리스트: [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
@@ -167,7 +167,7 @@ nearbySites?: Array<{
 ### 주의
 
 - 기존 Snapshot nearby는 좌표가 비어 있을 수 있음 → **한 번 park nearby(또는 폴백) 갱신** 후 핀이 생김.
-- 마커는 리스트와 동일 **상위 5개** · Supercharger=`SC`(빨강) / Destination=`DC`(틸).
+- 마커는 리스트와 동일 **상위 5개** · 기호 **A–E** ([VD3-NL](./requirements-vehicle-detail-vd3-nearby-labels.md)) · siteType 색 유지
 
 ---
 

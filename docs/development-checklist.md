@@ -867,6 +867,16 @@
 - [ ] **VD3-NM-4** (선택) 목록↔마커 연동
 - [ ] **VD3-NM-5** 실차 검수
 
+### Phase VD3-NL 인근충전소 목록·맵 기호 — ✅ 코드 · ☐ 실차
+
+> [requirements-vehicle-detail-vd3-nearby-labels.md](./requirements-vehicle-detail-vd3-nearby-labels.md)
+
+- [x] **VD3-NL-1** 문서 승인 (GO)
+- [x] **VD3-NL-2** 리스트 A–E · label 맵 전달
+- [x] **VD3-NL-3** 마커 문구 SC/DC → label
+- [ ] **VD3-NL-4** 기호 일치 검수
+- [x] **VD3-NL-5** 목록 SC/DC 보조 뱃지
+
 ### Telemetry Value Monitor (개발) — 요구1 ✅
 
 > [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md)
@@ -1116,6 +1126,9 @@
 | 2026-07-16 | VD3-DC-2·3 코드 — `clearTripDestinationFields` · P/ASLEEP |
 | 2026-07-16 | VD3-NM 인근충전소 지도 마커 요구 초안 |
 | 2026-07-16 | VD3-NM-2·3 코드 — 좌표 보존 · VehicleMap nearby 마커 · V3 연결 |
+| 2026-07-16 | VD3-NL 인근충전소 목록·맵 A–E 기호 매칭 요구 초안 |
+| 2026-07-16 | VD3-NL-2·3 코드 — 리스트 뱃지 · VehicleMap label 마커 |
+| 2026-07-16 | VD3-NL-5 코드 — 목록 SC/DC 보조 뱃지 |
 | 2026-07-16 | TRF-B2e park nearby 운행→P 엣지 요구 초안 |
 | 2026-07-16 | TRF-B2e-2·3 코드 — 엣지·이동 보완 · `trf-b2:verify` |
 

@@ -23,6 +23,7 @@
 | **VD3-NB** | 인근충전소 목록 있을 때만 ([요구](./requirements-vehicle-detail-vd3-nearby-block.md)) | ✅ |
 | **VD3-DC** | 주행 목적지 주차·절전 클리어 ([요구](./requirements-vehicle-detail-vd3-destination-clear.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-NM** | 인근충전소 지도 마커 ([요구](./requirements-vehicle-detail-vd3-nearby-map.md)) | ✅ 코드 · ☐ 실차 |
+| **VD3-NL** | 목록·맵 A–E 기호 ([요구](./requirements-vehicle-detail-vd3-nearby-labels.md)) | ✅ 코드 · ☐ 실차 |
 
 ---
 
@@ -42,6 +43,7 @@
 | 9 | 인근충전소: sites>0일 때만 블록 (VD3-NB) | ✅ |
 | 10 | 목적지·ETA: P/절전 시 Snapshot 클리어 (VD3-DC) | ✅ |
 | 11 | nearby 좌표 보존 · 맵 마커·fitBounds (VD3-NM) | ✅ |
+| 12 | 목록·맵 A–E 기호 매칭 · 목록 SC/DC 뱃지 (VD3-NL) | ✅ |
 
 ---
 
@@ -76,5 +78,8 @@ VIN: `LRWYGCFJ7SC214742`
 | 2026-07-16 | VD3-DC-2·3 코드 ✅ · 실차 DC-4 ☐ |
 | 2026-07-16 | VD3-NM 인근충전소 지도 마커 요구 링크 |
 | 2026-07-16 | VD3-NM-2·3 코드 ✅ — 좌표 보존 · 맵 핀 · 실차 NM-5 ☐ |
+| 2026-07-16 | VD3-NL 목록·맵 A–E 기호 매칭 요구 링크 |
+| 2026-07-16 | VD3-NL-2·3 코드 ✅ — 리스트 뱃지 · 마커 label |
+| 2026-07-16 | VD3-NL-5 코드 ✅ — 목록 SC/DC 보조 뱃지 |
 | 2026-07-16 | VD3-N 표시명 연필 편집 요구 링크 |
 |
