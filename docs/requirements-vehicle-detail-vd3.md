@@ -127,7 +127,7 @@
 | UI | 출처 | 비고 |
 |----|------|------|
 | 지도 | Location | null UX 유지 (LN) |
-| 인근충전소 | park nearby REST | dest+supercharger 합침·거리순 (현행). 실패/절전 = empty + 「주차 후 갱신」. **2km stale → Snapshot null** 유지 |
+| 인근충전소 | park nearby REST | dest+supercharger 합침·거리순. **목록 있을 때만 UI 블록** (VD3-NB). 실패/절전 = 숨김. **2km stale → Snapshot null** 유지 |
 
 ### 5.3 관제 블록 — Telemetry CAF (P0~P1)
 
@@ -224,6 +224,9 @@
 | **VD3-7** | 컷오버 — 기본 URL VD3 · v2 보존 | ✅ |
 | **VD3-S** | Hero `i` 제원 모달 — [vd3-specs-popover](./requirements-vehicle-detail-vd3-specs-popover.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-N** | Hero 표시명 연필 인라인 편집 — [vd3-display-name](./requirements-vehicle-detail-vd3-display-name.md) | ✅ 코드 · ☐ 실차 |
+| **VD3-R** | PC·모바일 상단 툴바 통일 · v2 링크 제거 — [vd3-responsive-toolbar](./requirements-vehicle-detail-vd3-responsive-toolbar.md) | ✅ 코드 · ☐ 검수 |
+| **VD3-NB** | 인근충전소 목록 있을 때만 블록 — [vd3-nearby-block](./requirements-vehicle-detail-vd3-nearby-block.md) | ✅ |
+| **VD3-DC** | 주행 목적지 주차·절전 클리어 — [vd3-destination-clear](./requirements-vehicle-detail-vd3-destination-clear.md) | ✅ 코드 · ☐ 실차 |
 
 체크리스트: [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
 
@@ -252,4 +255,10 @@
 | 2026-07-16 | VD3-N 링크 — Hero 표시명 연필 인라인 편집 요구 |
 | 2026-07-16 | VD3-N-2·N-3 — PATCH API · plateNumberEditedAt · Hero 연필 UI |
 | 2026-07-16 | VD3-7 컷오버 — `/vehicles/[id]` 기본 VD3 · v2 · `/v3` 리다이렉트 |
+| 2026-07-16 | VD3-R 링크 — PC·모바일 상단 툴바 통일 · v2 링크 제거 |
+| 2026-07-16 | VD3-R-2 — `layout="inline"` · 기본 상세 v2 링크 제거 |
+| 2026-07-16 | VD3-NB 링크 — 인근충전소 블록 조건부 표시 |
+| 2026-07-16 | VD3-NB-2·3 — empty 숨김 · `nearbyEmptyReason` 삭제 |
+| 2026-07-16 | VD3-DC 링크 — 목적지 주차·절전 클리어 |
+| 2026-07-16 | VD3-DC-2·3 — P 엣지·ASLEEP destination* 클리어 |
 |

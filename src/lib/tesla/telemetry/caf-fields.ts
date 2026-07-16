@@ -79,3 +79,18 @@ export function pickCafSnapshotFields(
   if (!source) return {};
   return mergeCafSnapshotFields(source, null);
 }
+
+/** VD3-DC: 네비 목적지·ETA·도착 예상 SoC 잔상 제거 (주차/절전) */
+export function clearTripDestinationFields<T extends CafSnapshotCoords>(
+  fields: T,
+): T {
+  return {
+    ...fields,
+    destinationName: null,
+    destinationLatitude: null,
+    destinationLongitude: null,
+    minutesToArrival: null,
+    milesToArrival: null,
+    expectedEnergyPercentAtArrival: null,
+  };
+}

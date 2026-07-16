@@ -832,6 +832,31 @@
 - [x] **VD3-N-3** Hero 연필 · ✓/✕ 인라인 편집 · 쿼리 invalidate
 - [ ] **VD3-N-4** 실차 검수
 
+### Phase VD3-R 상세 툴바 PC·모바일 통일 — ✅ 코드 · ☐ 검수
+
+> [requirements-vehicle-detail-vd3-responsive-toolbar.md](./requirements-vehicle-detail-vd3-responsive-toolbar.md)
+
+- [x] **VD3-R-1** 문서 승인 (GO)
+- [x] **VD3-R-2** 상세 인라인 툴바 · 「이전 상세 (v2)」링크 제거 · 목록으로 유지
+- [ ] **VD3-R-3** 모바일·PC·회귀 검수
+
+### Phase VD3-NB 인근충전소 조건부 블록 — ✅
+
+> [requirements-vehicle-detail-vd3-nearby-block.md](./requirements-vehicle-detail-vd3-nearby-block.md)
+
+- [x] **VD3-NB-1** 문서 승인 (GO)
+- [x] **VD3-NB-2** sites>0일 때만 타이틀+리스트 · empty 숨김
+- [x] **VD3-NB-3** `nearbyEmptyReason` 정리 · VD3-4 문구 정합
+
+### Phase VD3-DC 주행 목적지 클리어 — ✅ 코드 · ☐ 실차
+
+> [requirements-vehicle-detail-vd3-destination-clear.md](./requirements-vehicle-detail-vd3-destination-clear.md)
+
+- [x] **VD3-DC-1** 문서 승인 (GO)
+- [x] **VD3-DC-2** 비-P→P 시 destination*/ETA* Snapshot 클리어
+- [x] **VD3-DC-3** ASLEEP 진입 시 동일 클리어
+- [ ] **VD3-DC-4** 실차 잔상 검수
+
 ### Telemetry Value Monitor (개발) — 요구1 ✅
 
 > [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md)
@@ -910,6 +935,15 @@
 - [ ] **TRF-B1-4** 실차 specs-only QA (Freeze ON 유지 가능)
 - [x] **TRF-B2-Doc** [절전→Online Wake](./requirements-tesla-wake-telemetry-rest.md) · 코드 ✅ (`trf-b2:verify`)
 - [ ] **TRF-B2-4** 실차: 절전→Online Telemetry only · Gear=P nearby
+
+### Phase TRF-B2e Park Nearby 운행→P 엣지 — ✅ 코드 · ☐ 실차
+
+> [requirements-tesla-park-nearby-drive-edge.md](./requirements-tesla-park-nearby-drive-edge.md)
+
+- [x] **TRF-B2e-1** 문서 승인 (GO)
+- [x] **TRF-B2e-2** `isDriveThenParkTransition` · processor 가드
+- [x] **TRF-B2e-3** (권고) 이동 거리 보완
+- [ ] **TRF-B2e-4** 실차: 재탑승 무호출 · 운행→P 호출
 
 ### Phase NCS 인근충전소 카탈로그 · asleep 폴백 — 코드 ✅ · 실차 ☐
 
@@ -1064,4 +1098,12 @@
 | 2026-07-16 | VD3-S-2·S-3 코드 — Hero `i` Specs Modal · 하단 제원 카드 제거 |
 | 2026-07-16 | VD3-N-2·N-3 코드 — PATCH 표시명 · plateNumberEditedAt · Hero 연필 UI |
 | 2026-07-16 | VD3-7 컷오버 — `/vehicles/[id]` 기본 VD3 · v2 · `/v3` 리다이렉트 |
+| 2026-07-16 | VD3-R 상세 툴바 PC·모바일 통일 · v2 링크 제거 요구 초안 |
+| 2026-07-16 | VD3-R-2 코드 — `FleetToolbar layout="inline"` · V3 v2 링크 제거 |
+| 2026-07-16 | VD3-NB 인근충전소 조건부 블록 요구 초안 |
+| 2026-07-16 | VD3-NB-2·3 코드 — nearby 블록 조건부 · empty 헬퍼 삭제 |
+| 2026-07-16 | VD3-DC 주행 목적지 주차·절전 클리어 요구 초안 |
+| 2026-07-16 | VD3-DC-2·3 코드 — `clearTripDestinationFields` · P/ASLEEP |
+| 2026-07-16 | TRF-B2e park nearby 운행→P 엣지 요구 초안 |
+| 2026-07-16 | TRF-B2e-2·3 코드 — 엣지·이동 보완 · `trf-b2:verify` |
 

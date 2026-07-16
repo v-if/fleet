@@ -152,23 +152,6 @@ export function buildOpsSummary(
   return items.slice(0, 6);
 }
 
-export function nearbyEmptyReason(
-  snapshot: VehicleSnapshotDto | null | undefined,
-  hasCoords: boolean,
-): string {
-  if (!hasCoords) return "위치가 없어 인근 충전소를 표시할 수 없습니다.";
-  const sites = snapshot?.nearbyChargingSites ?? [];
-  if (sites.length > 0) return "";
-  const mode = resolveVehicleOpsMode(snapshot);
-  if (mode === "DRIVING") {
-    return "주행 중 — 주차 후 갱신됩니다.";
-  }
-  if (mode === "ASLEEP") {
-    return "주차(절전) — 주차 직후 조회에 실패했거나 아직 갱신되지 않았을 수 있습니다. 깨어 있는 동안 Gear=P이면 자동 갱신됩니다.";
-  }
-  return "주차 후 갱신됩니다. (차량이 절전으로 들어가면 조회가 실패할 수 있습니다.)";
-}
-
 export function shouldShowDrivingTripCard(
   mode: VehicleOpsMode,
   snapshot: VehicleSnapshotDto | null | undefined,

@@ -32,6 +32,7 @@ import {
   upsertChargingStationsFromSeeds,
 } from "@/lib/tesla/charging-station-catalog";
 import { serializeNearbyChargingSites } from "@/lib/tesla/nearby-charging";
+import type { ParkNearbyTrigger } from "@/lib/tesla/park-nearby-trigger";
 import { mergeCafSnapshotFields, pickCafSnapshotFields } from "@/lib/tesla/telemetry/caf-fields";
 import {
   getRestWakeCooldownMinutes,
@@ -484,13 +485,15 @@ export async function tryBaselinesForAccount(teslaAccountId: string) {
 }
 
 /**
- * TRF-B2 / NCS: Gear=P 정차 시 nearby_charging_sites.
+ * TRF-B2 / NCS / B2e: 운행→P(또는 이동 보완) 후 nearby_charging_sites.
  * 성공 → 카탈로그 Upsert + Snapshot(TESLA_REST).
  * 실패 → 카탈로그 폴백(있으면 Snapshot CATALOG). 없으면 이전 nearby 유지(빈 덮어쓰기 금지).
  */
 export async function maybeRefreshNearbyOnPark(
   vehicleId: string,
+  options: { trigger?: ParkNearbyTrigger } = {},
 ): Promise<RestSyncOnceResult> {
+  const trigger = options.trigger ?? null;
   const subscription = await prisma.telemetrySubscription.findUnique({
     where: { vehicleId },
     select: { active: true },
@@ -566,6 +569,7 @@ export async function maybeRefreshNearbyOnPark(
         siteCount: sites.length,
         seeded: seeds.length,
         reason: RestSyncReason.PARK_NEARBY,
+        trigger,
       },
     });
 
@@ -617,6 +621,7 @@ export async function maybeRefreshNearbyOnPark(
             siteCount: catalogSites.length,
             restError: message,
             reason: RestSyncReason.PARK_NEARBY,
+            trigger,
           },
         });
 
@@ -637,6 +642,7 @@ export async function maybeRefreshNearbyOnPark(
           vin: ctx.vin,
           restError: message,
           preservedPrevious: true,
+          trigger,
         },
       });
       return { ok: false, skipped: true, error: "catalog_empty", vehicleId };
@@ -650,7 +656,13 @@ export async function maybeRefreshNearbyOnPark(
       teslaAccountId: ctx.teslaAccountId,
       status: AuditLogStatus.FAILURE,
       summary: `인근 충전소 갱신 실패: ${message}`,
-      metadata: { mode: "park_nearby", vin: ctx.vin, noWake: true, source: "empty" },
+      metadata: {
+        mode: "park_nearby",
+        vin: ctx.vin,
+        noWake: true,
+        source: "empty",
+        trigger,
+      },
     });
     return { ok: false, error: message, vehicleId };
   }

@@ -19,6 +19,9 @@
 | VD3-7 | 컷오버 — 기본 URL VD3 · v2 보존 · `/v3`→기본 리다이렉트 | ✅ |
 | **VD3-S** | Hero `i` 제원 모달 ([요구](./requirements-vehicle-detail-vd3-specs-popover.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-N** | Hero 표시명 연필 편집 ([요구](./requirements-vehicle-detail-vd3-display-name.md)) | ✅ 코드 · ☐ 실차 |
+| **VD3-R** | PC·모바일 툴바 통일 · v2 링크 제거 ([요구](./requirements-vehicle-detail-vd3-responsive-toolbar.md)) | ✅ 코드 · ☐ 검수 |
+| **VD3-NB** | 인근충전소 목록 있을 때만 ([요구](./requirements-vehicle-detail-vd3-nearby-block.md)) | ✅ |
+| **VD3-DC** | 주행 목적지 주차·절전 클리어 ([요구](./requirements-vehicle-detail-vd3-destination-clear.md)) | ✅ 코드 · ☐ 실차 |
 
 ---
 
@@ -34,6 +37,9 @@
 | 5 | 구 `/v3` URL → `/vehicles/{id}` 리다이렉트 | ✅ |
 | 6 | Hero `i` · Specs Modal · 하단 제원 카드 제거 (VD3-S) | ✅ |
 | 7 | Hero 연필 · 표시명 인라인 편집 · PATCH API (VD3-N) | ✅ |
+| 8 | `FleetToolbar layout="inline"` · v2 UI 링크 제거 (VD3-R) | ✅ |
+| 9 | 인근충전소: sites>0일 때만 블록 (VD3-NB) | ✅ |
+| 10 | 목적지·ETA: P/절전 시 Snapshot 클리어 (VD3-DC) | ✅ |
 
 ---
 
@@ -60,5 +66,11 @@ VIN: `LRWYGCFJ7SC214742`
 | 2026-07-16 | VD3-S-2·S-3 코드 ✅ · 실차 S-4 ☐ |
 | 2026-07-16 | VD3-N-2·N-3 코드 ✅ · 실차 N-4 ☐ |
 | 2026-07-16 | VD3-7 컷오버 — `/vehicles/[id]` 기본 VD3 · v2 보존 · `/v3` 리다이렉트 |
+| 2026-07-16 | VD3-R 상단 툴바 PC·모바일 통일 · v2 링크 제거 요구 링크 |
+| 2026-07-16 | VD3-R-2 코드 ✅ · 검수 R-3 ☐ |
+| 2026-07-16 | VD3-NB 인근충전소 조건부 블록 요구 링크 |
+| 2026-07-16 | VD3-NB-2·3 코드 ✅ — empty 숨김 · `nearbyEmptyReason` 삭제 |
+| 2026-07-16 | VD3-DC 목적지 클리어 요구 링크 |
+| 2026-07-16 | VD3-DC-2·3 코드 ✅ · 실차 DC-4 ☐ |
 | 2026-07-16 | VD3-N 표시명 연필 편집 요구 링크 |
 |

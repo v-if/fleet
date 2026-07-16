@@ -3,11 +3,16 @@ import { TelemetryIngressStatus, TelemetrySource, VehicleLifecycle } from "@pris
 import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
 import { maybeRefreshNearbyOnPark } from "@/lib/tesla/hybrid/rest-sync";
+import { resolveParkNearbyTrigger, isDriveThenParkTransition } from "@/lib/tesla/park-nearby-trigger";
 import { patchVehicleSyncState } from "@/lib/tesla/hybrid/sync-state";
 import { shouldClearNearbyForLocation } from "@/lib/tesla/nearby-charging";
 
 import { getTelemetryProcessBatchSize, getTelemetryStaleAfterMs, getTelemetryFreshnessMs } from "./config";
-import { mergeCafSnapshotFields, pickCafSnapshotFields } from "./caf-fields";
+import {
+  clearTripDestinationFields,
+  mergeCafSnapshotFields,
+  pickCafSnapshotFields,
+} from "./caf-fields";
 import { refreshTelemetryMetadataCounts } from "./ingress";
 import { extractTelemetryMessages, parseTelemetryMessage } from "./mapper";
 import type { ParsedTelemetryFields } from "./types";
@@ -129,7 +134,12 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
   const previous = vehicle.snapshots[0];
   const wasAsleep =
     previous?.isAsleepInferred === true || previous?.status === "ASLEEP";
-  const merged = mergeSnapshotFields(fields, previous);
+  let merged = mergeSnapshotFields(fields, previous);
+
+  // VD3-DC: 운행→P 시 네비 목적지·ETA 잔상 클리어
+  if (isDriveThenParkTransition(previous?.shiftState, fields.shiftState)) {
+    merged = clearTripDestinationFields(merged);
+  }
 
   await prisma.vehicleSnapshot.create({
     data: {
@@ -212,12 +222,21 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
     // TRF-B2: Wake REST 없음 — Telemetry SoT only
   }
 
-  // TRF-B2 / BF-C: P 정차 시 nearby만 (Freeze 졸업). Gear 보정 REST 폐기.
-  if (!isDisconnected && fields.shiftState != null && fields.shiftState === "P") {
-    try {
-      await maybeRefreshNearbyOnPark(vehicleId);
-    } catch (error) {
-      console.warn(`Nearby refresh on park failed for ${vehicleId}:`, error);
+  // TRF-B2e: 운행(비-P)→P 엣지(또는 이동 보완)일 때만 nearby. 재탑승·계속 P는 스킵.
+  if (!isDisconnected) {
+    const parkTrigger = resolveParkNearbyTrigger({
+      previousShiftState: previous?.shiftState,
+      currentShiftState: fields.shiftState,
+      currentLat: fields.latitude ?? previous?.latitude,
+      currentLng: fields.longitude ?? previous?.longitude,
+      nearbyChargingSitesJson: previous?.nearbyChargingSites,
+    });
+    if (parkTrigger) {
+      try {
+        await maybeRefreshNearbyOnPark(vehicleId, { trigger: parkTrigger });
+      } catch (error) {
+        console.warn(`Nearby refresh on park failed for ${vehicleId}:`, error);
+      }
     }
   }
 
@@ -472,7 +491,8 @@ export async function inferAsleepVehicles() {
         serviceStatus: snapshot.serviceStatus,
         softwareVersion: snapshot.softwareVersion,
         nearbyChargingSites: snapshot.nearbyChargingSites,
-        ...pickCafSnapshotFields(snapshot),
+        // VD3-DC: 절전 진입 시 목적지·ETA 잔상 클리어
+        ...clearTripDestinationFields(pickCafSnapshotFields(snapshot)),
         lastTelemetryAt: snapshot.lastTelemetryAt,
         lastRestSyncAt: snapshot.lastRestSyncAt,
         telemetrySource: snapshot.telemetrySource,

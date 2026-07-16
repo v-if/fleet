@@ -83,6 +83,7 @@ VIN: `LRWYGCFJ7SC214742` · **Freeze ON** (Baseline·park nearby 졸업 허용)
 - [ ] T4 ASLEEP→ONLINE 후 Wake REST Audit **없음**
 - [ ] T4b VK/온보딩 후 Baseline 제원 저장 · Audit `specs_only`
 - [ ] T4c Gear=P 후 `VEHICLE_NEARBY_REFRESH` · `mode: park_nearby` (선택)
+- [ ] T4c-e **운행→P** 후 nearby · **재탑승(계속 P)** 시 nearby 없음 (TRF-B2e)
 - [ ] T5 미졸업 경로 허용 시 `TESLA_REST_FREEZE=false` (선택)
 
 ---
@@ -141,3 +142,4 @@ VIN: `LRWYGCFJ7SC214742` · **Freeze ON** (Baseline·park nearby 졸업 허용)
 | 2026-07-15 | TRF-B2 절전→Online 요구 초안 (`wake-telemetry-rest`) |
 | 2026-07-15 | B2 nearby = 주차 진입 · Wake에서 제외 |
 | 2026-07-15 | **TRF-B2 코드 ✅** — Wake/Gear 폐기 · park nearby 졸업 · `trf-b2:verify` |
+| 2026-07-16 | TRF-B2e — 운행→P 엣지 · 재탑승 스킵 · 실차 T4c-e ☐ |

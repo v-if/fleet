@@ -144,6 +144,8 @@ nearby는 **§3.4 주차 진입**이 SoT 타이밍.
 
 **후속 (asleep 공백):** REST 성공분을 카탈로그에 쌓고 실패 시 DB 폴백 — [requirements-nearby-charging-catalog.md](./requirements-nearby-charging-catalog.md) (**NCS** · 코드 ✅ · 실차 ☐).
 
+**후속 (재탑승 오호출):** `shiftState===P` 레벨 조건 → **운행(비-P)→P 엣지**만 — [requirements-tesla-park-nearby-drive-edge.md](./requirements-tesla-park-nearby-drive-edge.md) (**TRF-B2e**).
+
 ---
 
 ## 4. 현행 코드에서 바꿔야 할 사항
@@ -240,4 +242,6 @@ VIN 예: `LRWYGCFJ7SC214742`
 | 2026-07-15 | 초안 — 절전→Online Telemetry SoT · Wake REST 갭 재정의 · 운영 의견 |
 | 2026-07-15 | §3.4 — nearby 시점: Wake ✕ · Online→주차(절전) ○ (채택 권고) |
 | 2026-07-15 | **코드 반영** — Wake/Gear no-op · park nearby 졸업 · `PARK_NEARBY` · `trf-b2:verify` |
+| 2026-07-16 | TRF-B2e 링크 — 재탑승 P 오호출 · 운행→P 엣지 요구 |
+| 2026-07-16 | TRF-B2e 코드 — processor 엣지·이동 보완 · Audit `trigger` |
 |

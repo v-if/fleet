@@ -25,6 +25,9 @@
 | [requirements-vehicle-detail-vd3.md](./requirements-vehicle-detail-vd3.md) | **VD3** — Telemetry 시대 상세 · 기본 `/vehicles/[id]` ✅ · v2 보존 | 상세 |
 | [requirements-vehicle-detail-vd3-specs-popover.md](./requirements-vehicle-detail-vd3-specs-popover.md) | **VD3-S** — Hero `i` 제원 모달 · Tier B 필드 · 코드 ✅ · 실차 ☐ | V3 제원 UX |
 | [requirements-vehicle-detail-vd3-display-name.md](./requirements-vehicle-detail-vd3-display-name.md) | **VD3-N** — Hero 표시명 연필 인라인 편집 · 코드 ✅ · 실차 ☐ | V3 표시명 UX |
+| [requirements-vehicle-detail-vd3-responsive-toolbar.md](./requirements-vehicle-detail-vd3-responsive-toolbar.md) | **VD3-R** — 상세 상단 PC·모바일 통일 · v2 링크 제거 · 코드 ✅ · 검수 ☐ | V3 툴바 UX |
+| [requirements-vehicle-detail-vd3-nearby-block.md](./requirements-vehicle-detail-vd3-nearby-block.md) | **VD3-NB** — 인근충전소 목록 있을 때만 블록 · 코드 ✅ | V3 nearby UX |
+| [requirements-vehicle-detail-vd3-destination-clear.md](./requirements-vehicle-detail-vd3-destination-clear.md) | **VD3-DC** — 주행 목적지 주차·절전 클리어 · 코드 ✅ · 실차 ☐ | V3 트립 잔상 |
 | [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md) | Phase VD3-1b~4 ✅ · VD3-6~7 ☐ | VD3 검수 |
 | [research/research-vehicles-detail-chatgpt.md](./research/research-vehicles-detail-chatgpt.md) | 상세 UI 리서치 (FMS 관리자 IA) | VD3 근거 |
 | [research/research-vehicles-detail-gemini.md](./research/research-vehicles-detail-gemini.md) | 상세 UI 리서치 (Cockpit·모드·제어·네비) | VD3 근거 |
@@ -50,6 +53,7 @@
 | [requirements-tesla-telemetry-rest-freeze.md](./requirements-tesla-telemetry-rest-freeze.md) | **TRF** — Freeze(미졸업 REST 차단) · Baseline 졸업 · Wake 대기 | 경로 졸업 모델 |
 | [requirements-tesla-telemetry-rest-baseline-specs.md](./requirements-tesla-telemetry-rest-baseline-specs.md) | **TRF-B1** — specs-only Baseline · Tier A/B/C · 코드 ✅ · 실차 ☐ | Baseline 제원 |
 | [requirements-tesla-wake-telemetry-rest.md](./requirements-tesla-wake-telemetry-rest.md) | **TRF-B2** — 절전→Online Telemetry · park nearby 졸업 · 코드 ✅ · 실차 ☐ | Wake 재정의 |
+| [requirements-tesla-park-nearby-drive-edge.md](./requirements-tesla-park-nearby-drive-edge.md) | **TRF-B2e** — nearby는 운행→P 엣지만 · 재탑승 P 제외 · 코드 ✅ · 실차 ☐ | park nearby 트리거 |
 | [requirements-nearby-charging-catalog.md](./requirements-nearby-charging-catalog.md) | **NCS** — nearby 카탈로그 Upsert · asleep 폴백 · 코드 ✅ · 실차 ☐ | 인근충전소 |
 | [checklist-nearby-charging-catalog.md](./checklist-nearby-charging-catalog.md) | Phase NCS-2~4 ✅ · NCS-5 ☐ | NCS 검수 |
 | [checklist-tesla-telemetry-rest-freeze.md](./checklist-tesla-telemetry-rest-freeze.md) | Phase TRF · Freeze ✅ · Baseline·park nearby 졸업 ✅ · B2 실차 ☐ | TRF 검수 |
@@ -221,3 +225,11 @@
 | 2026-07-16 | VD3-S-2·S-3 코드 ✅ — Specs Modal · 하단 제원 카드 제거 |
 | 2026-07-16 | VD3-N — Hero 표시명 연필 인라인 편집 요구 초안 |
 | 2026-07-16 | VD3-7 컷오버 — 기본 상세 VD3 · v2 이전 화면 · `/v3` 리다이렉트 |
+| 2026-07-16 | VD3-R — 상세 툴바 PC·모바일 통일 · v2 링크 제거 요구 초안 |
+| 2026-07-16 | VD3-R-2 코드 ✅ — inline 툴바 · 기본 상세 v2 링크 제거 |
+| 2026-07-16 | VD3-NB — 인근충전소 조건부 블록 요구 초안 |
+| 2026-07-16 | VD3-NB-2·3 코드 ✅ — empty 숨김 |
+| 2026-07-16 | VD3-DC — 주행 목적지 주차·절전 클리어 요구 초안 |
+| 2026-07-16 | VD3-DC-2·3 코드 ✅ — destination* P/절전 클리어 |
+| 2026-07-16 | TRF-B2e — park nearby 운행→P 엣지 트리거 요구 초안 |
+| 2026-07-16 | TRF-B2e-2·3 코드 ✅ — 엣지·이동 보완 · verify |

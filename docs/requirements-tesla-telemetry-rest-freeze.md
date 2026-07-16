@@ -202,7 +202,7 @@ TESLA_REST_FREEZE=true   # 기본 · 미졸업 Snapshot REST 차단
 
 | 모듈 | 상태 |
 |------|------|
-| `processor.ts` | Wake/Gear 호출 제거 · P→`maybeRefreshNearbyOnPark` |
+| `processor.ts` | Wake/Gear 호출 제거 · **비-P→P(또는 이동)→**`maybeRefreshNearbyOnPark` (TRF-B2e) |
 | `hybrid/rest-sync.ts` | Wake/Gear no-op · park nearby 졸업 |
 | `vehicle-sync.ts` / sync API | full · `fallback=1` Freeze 유지 |
 | `FleetSettingsView` | fallback 버튼 · Freeze 안내 갱신 |

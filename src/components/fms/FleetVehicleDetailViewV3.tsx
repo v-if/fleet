@@ -22,7 +22,6 @@ import type { MapVehicle } from "@/lib/types/vehicle";
 import {
   buildOpsSummary,
   convertTeslaTpmsToPsi,
-  nearbyEmptyReason,
   OPS_MODE_LABEL,
   opsModeBadgeColor,
   resolveVehicleOpsMode,
@@ -218,7 +217,6 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
       ? Math.round((tpmsValues.reduce((a, b) => a + b, 0) / tpmsValues.length) * 10) / 10
       : null;
   const nearbySites = snapshot?.nearbyChargingSites ?? [];
-  const nearbyEmpty = nearbyEmptyReason(snapshot, hasCoords);
   const showTrip = shouldShowDrivingTripCard(mode, snapshot);
   const showCharging = shouldShowChargingSessionCard(snapshot?.chargingStatus);
   const dataFreshnessAt =
@@ -241,6 +239,7 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
         description={`${vehicle.model} · ${vehicle.year}`}
         onRefresh={() => void handleRefresh()}
         isRefreshing={isRefreshing || isFetching}
+        layout="inline"
       />
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -249,12 +248,6 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
           className="inline-flex rounded-lg border border-gray-300 px-4 py-2 text-theme-sm dark:border-gray-700"
         >
           목록으로
-        </Link>
-        <Link
-          href={`/vehicles/${vehicleId}/v2`}
-          className="inline-flex rounded-lg border border-gray-300 px-4 py-2 text-theme-sm text-gray-500 dark:border-gray-700"
-        >
-          이전 상세 (v2)
         </Link>
       </div>
 
@@ -467,26 +460,26 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
             </p>
           )}
 
-          <div className="mt-4">
-            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-              <h5 className="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
-                인근 충전소
-              </h5>
-              {snapshot?.nearbyChargingMeta?.capturedAt ||
-              snapshot?.nearbyChargingMeta?.source ? (
-                <p className="text-theme-xs text-gray-500">
-                  {[
-                    labelNearbyChargingSource(snapshot.nearbyChargingMeta?.source),
-                    snapshot.nearbyChargingMeta?.capturedAt
-                      ? `수집 ${formatRelativeTime(snapshot.nearbyChargingMeta.capturedAt)}`
-                      : null,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </p>
-              ) : null}
-            </div>
-            {nearbySites.length > 0 ? (
+          {nearbySites.length > 0 ? (
+            <div className="mt-4">
+              <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+                <h5 className="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
+                  인근 충전소
+                </h5>
+                {snapshot?.nearbyChargingMeta?.capturedAt ||
+                snapshot?.nearbyChargingMeta?.source ? (
+                  <p className="text-theme-xs text-gray-500">
+                    {[
+                      labelNearbyChargingSource(snapshot.nearbyChargingMeta?.source),
+                      snapshot.nearbyChargingMeta?.capturedAt
+                        ? `수집 ${formatRelativeTime(snapshot.nearbyChargingMeta.capturedAt)}`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                ) : null}
+              </div>
               <ul className="space-y-2">
                 {nearbySites.slice(0, 5).map((site) => (
                   <li
@@ -502,12 +495,8 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
                   </li>
                 ))}
               </ul>
-            ) : (
-              <div className="rounded-xl border border-dashed border-gray-200 px-3 py-4 dark:border-gray-700">
-                <p className="text-theme-sm text-gray-600 dark:text-gray-300">{nearbyEmpty}</p>
-              </div>
-            )}
-          </div>
+            </div>
+          ) : null}
         </section>
       </div>
 
@@ -676,12 +665,6 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
           >
             {isRetryingBaseline ? "불러오는 중..." : "제원 다시 불러오기"}
           </Button>
-          <Link
-            href={`/vehicles/${vehicleId}/v2`}
-            className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-theme-sm dark:border-gray-700"
-          >
-            이전 상세 (v2)
-          </Link>
         </div>
       </section>
 
