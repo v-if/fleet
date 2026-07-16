@@ -544,6 +544,9 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
                   );
                 })}
               </ul>
+              <p className="mt-2 text-theme-xs text-gray-500">
+                `SC`는 슈퍼차저, `DC`는 데스티네이션 충전소를 뜻합니다.
+              </p>
             </div>
           ) : null}
         </section>

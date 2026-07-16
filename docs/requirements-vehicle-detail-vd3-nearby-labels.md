@@ -6,7 +6,7 @@
 | 배경 | VD3-NM으로 맵에 충전소 핀이 생겼으나, 마커 문구가 **SC/DC**(유형 코드)라 **어느 목록 행인지** 직관적으로 매칭되지 않는다 |
 | 관련 | [requirements-vehicle-detail-vd3-nearby-map.md](./requirements-vehicle-detail-vd3-nearby-map.md) (VD3-NM), [requirements-vehicle-detail-vd3-nearby-block.md](./requirements-vehicle-detail-vd3-nearby-block.md) (VD3-NB) |
 | 적용 | 기본 상세 `FleetVehicleDetailViewV3` + `VehicleMap` nearby 마커. `/map`·`/v2`는 **비범위** |
-| 상태 | **코드 ✅ (NL-2·3·5) · 실차 NL-4 ☐** |
+| 상태 | **코드 ✅ (NL-2·3·5·6·7) · 실차 NL-4 ☐** |
 | 작성일 | 2026-07-16 |
 | ID | **VD3-NL** |
 
@@ -67,7 +67,7 @@ VD3-NM-4(선택)는 hover/클릭·InfoWindow 연동이다.
 | 좌표 없는 행 | 목록에는 기호 유지 · **마커만 없음** (희귀). 기호 건너뛰기 금지(인덱스 어긋남 방지) |
 | siteType(SC/DC) | 마커 **문구는 기호**. 목록에는 A와 이름 사이 **SC/DC 보조 뱃지** (outline) · 맵은 **색**으로 유형 유지 |
 | 목록 UI | `[A] [SC] 이름` · 거리 우측 · siteType null이면 SC/DC 생략 |
-| 거리 뱃지(맵) | MVP: 기호 핀 위주. 거리 서브뱃지는 **유지 또는 제거 선택** — 좁은 맵에서 겹치면 기호만 남겨도 됨(권고: **기호만**, title/툴팁에 이름·거리) |
+| 거리 뱃지(맵) | **유지**. A–E 아래 `5.1 km` 같은 거리 서브뱃지를 표시해 목록 우측 km와 빠르게 대조 |
 | 지도 없을 때 | 위치 신호 없음 → 목록만(기호 포함). 맵 없으면 매칭 불필요하나 목록 일관성은 유지 |
 | `/map` | `nearbySites` 미전달 → 변경 없음 |
 
@@ -139,7 +139,7 @@ V3에서 `slice(0,5)` map 시 `label: nearbySiteLabel(i)` 부여.
 | 본문 | `label` (A–E) |
 | 배경색 | Supercharger `#e82127` · Destination `#0d9488` · type null 시 중립(예: zinc) |
 | title | `A · {name} · {km} km` |
-| 거리 서브뱃지 | **제거 권고**(기호 가독성) · 유지해도 수용 |
+| 거리 서브뱃지 | **표시** — A–E 아래 `n.n km` · anchor는 뱃지 높이에 맞춤 |
 
 목록 기호 뱃지는 마커와 **같은 색**. SC/DC는 **작은 outline 보조 뱃지** (맵에는 미표시).
 
@@ -153,6 +153,15 @@ V3에서 `slice(0,5)` map 시 `label: nearbySiteLabel(i)` 부여.
 | siteType null | 뱃지 생략 |
 | 맵 | 변경 없음 (A + 색) |
 
+### 3.6 SC/DC 설명 문구 (NL-7)
+
+| 항목 | 규칙 |
+|------|------|
+| 위치 | 인근 충전소 **목록 바로 아래** |
+| 문구 | ``SC`는 슈퍼차저, `DC`는 데스티네이션 충전소를 뜻합니다.`` |
+| 목적 | SC/DC 약어 의미를 모르는 사용자 보완 |
+| 노출 조건 | 인근 충전소 목록이 보일 때만 함께 표시 |
+
 ---
 
 ## 4. 수용 기준
@@ -164,6 +173,7 @@ V3에서 `slice(0,5)` map 시 `label: nearbySiteLabel(i)` 부여.
 5. 플릿 `/map`·차량만 있는 맵 **회귀 없음**.
 6. siteType 색 구분(또는 동등한 시각 단서)이 유지되거나, 의도적으로 통일한 경우 문서에 명시.
 7. 목록에 siteType이 있으면 A와 이름 사이 **SC/DC 보조 뱃지**가 보인다.
+8. 목록 아래에 **SC/DC 의미 설명 문구**가 보인다.
 
 ---
 
@@ -176,6 +186,8 @@ V3에서 `slice(0,5)` map 시 `label: nearbySiteLabel(i)` 부여.
 | **VD3-NL-3** | `VehicleMap` 마커 문구 SC/DC → `label` · 거리 뱃지 제거 | ✅ |
 | **VD3-NL-4** | 실차/시드: 목록↔핀 기호 일치 검수 | ☐ |
 | **VD3-NL-5** | 목록 A–이름 사이 SC/DC 보조 뱃지 | ✅ |
+| **VD3-NL-6** | 맵 마커 A–E 아래 거리(km) 서브뱃지 복원 | ✅ |
+| **VD3-NL-7** | 목록 아래 SC/DC 의미 설명 문구 | ✅ |
 
 체크리스트: [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
 
@@ -183,7 +195,7 @@ V3에서 `slice(0,5)` map 시 `label: nearbySiteLabel(i)` 부여.
 
 ## 6. 의견 · 진행 여부
 
-### 판단: **GO → 코드 반영 (NL-2·3·5 ✅)**
+### 판단: **GO → 코드 반영 (NL-2·3·5·6·7 ✅)**
 
 | 근거 | |
 |------|--|
@@ -200,3 +212,5 @@ V3에서 `slice(0,5)` map 시 `label: nearbySiteLabel(i)` 부여.
 | 2026-07-16 | 초안 — 목록·맵 A–E 기호 매칭 · GO |
 | 2026-07-16 | NL-2·3 코드 ✅ — 리스트 뱃지 · 마커 label · title |
 | 2026-07-16 | NL-5 코드 ✅ — 목록 SC/DC 보조 뱃지 |
+| 2026-07-16 | NL-6 코드 ✅ — 맵 마커 거리(km) 서브뱃지 복원 |
+| 2026-07-16 | NL-7 코드 ✅ — 목록 아래 SC/DC 의미 설명 문구 |

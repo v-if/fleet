@@ -229,7 +229,7 @@
 | **VD3-DC** | 주행 목적지 주차·절전 클리어 — [vd3-destination-clear](./requirements-vehicle-detail-vd3-destination-clear.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-DCf** | 속도·도착 SoC 클리어 범위 — [vd3-trip-clear-fields](./requirements-vehicle-detail-vd3-trip-clear-fields.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-NM** | 인근충전소 지도 마커 — [vd3-nearby-map](./requirements-vehicle-detail-vd3-nearby-map.md) | ✅ 코드 · ☐ 실차 |
-| **VD3-NL** | 목록·맵 A–E 기호 매칭 — [vd3-nearby-labels](./requirements-vehicle-detail-vd3-nearby-labels.md) | ✅ 코드 · ☐ 실차 |
+| **VD3-NL** | 목록·맵 A–E 기호 매칭 · SC/DC 뱃지 · 맵 거리(km) · 설명 문구 — [vd3-nearby-labels](./requirements-vehicle-detail-vd3-nearby-labels.md) | ✅ 코드 · ☐ 실차 |
 
 체크리스트: [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
 
@@ -271,4 +271,6 @@
 | 2026-07-16 | VD3-NL 링크 — 목록·맵 A–E 기호 매칭 |
 | 2026-07-16 | VD3-NL-2·3 — 리스트 뱃지 · VehicleMap label 마커 |
 | 2026-07-16 | VD3-NL-5 — 목록 SC/DC 보조 뱃지 |
+| 2026-07-16 | VD3-NL-6 — 맵 마커 거리(km) 서브뱃지 복원 |
+| 2026-07-16 | VD3-NL-7 — 목록 아래 SC/DC 의미 설명 문구 |
 |

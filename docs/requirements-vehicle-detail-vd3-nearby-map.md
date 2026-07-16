@@ -167,7 +167,7 @@ nearbySites?: Array<{
 ### 주의
 
 - 기존 Snapshot nearby는 좌표가 비어 있을 수 있음 → **한 번 park nearby(또는 폴백) 갱신** 후 핀이 생김.
-- 마커는 리스트와 동일 **상위 5개** · 기호 **A–E** ([VD3-NL](./requirements-vehicle-detail-vd3-nearby-labels.md)) · siteType 색 유지
+- 마커는 리스트와 동일 **상위 5개** · 기호 **A–E** ([VD3-NL](./requirements-vehicle-detail-vd3-nearby-labels.md)) · siteType 색 유지 · A–E 아래 거리(km) 표시
 
 ---
 
@@ -177,3 +177,4 @@ nearbySites?: Array<{
 |------|------|
 | 2026-07-16 | 초안 — 상세 맵 충전소 마커 · 좌표 파이프 갭 · GO(조건부) |
 | 2026-07-16 | NM-2·3 코드 ✅ — 좌표 보존 · VehicleMap 마커·fitBounds · V3 연결 |
+| 2026-07-16 | NL-6 연계 — 맵 마커 거리(km) 서브뱃지 복원 |

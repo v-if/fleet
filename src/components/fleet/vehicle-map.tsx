@@ -304,6 +304,8 @@ function nearbyMarkerHtml(site: MapNearbySite) {
   const bg = nearbySiteTypeColor(site.siteType);
   const label = site.label;
   const title = nearbySiteMarkerTitle(label, site.name, site.distanceKm);
+  const distance =
+    site.distanceKm != null ? `${site.distanceKm.toLocaleString("ko-KR")} km` : "";
 
   return `
     <div title="${escapeHtmlAttr(title)}" style="
@@ -315,6 +317,14 @@ function nearbyMarkerHtml(site: MapNearbySite) {
         display:flex;align-items:center;justify-content:center;
         color:white;font-size:11px;font-weight:800;letter-spacing:-0.02em;
       ">${escapeHtmlAttr(label)}</div>
+      ${
+        distance
+          ? `<div style="
+        margin-top:3px;padding:1px 6px;border-radius:9999px;background:rgba(24,24,27,0.82);
+        color:white;font-size:9px;font-weight:600;white-space:nowrap;
+      ">${distance}</div>`
+          : ""
+      }
     </div>
   `;
 }
@@ -328,7 +338,7 @@ function escapeHtmlAttr(value: string) {
 }
 
 function nearbyMarkerAnchor(naver: NaverMaps) {
-  return new naver.maps.Point(14, 28);
+  return new naver.maps.Point(14, 42);
 }
 
 export function VehicleMap({
