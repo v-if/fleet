@@ -920,6 +920,19 @@
 - [x] **VL-F-3** 필터 6종 · URL 매핑
 - [ ] **VL-F-4** 대시보드 딥링크 스모크
 
+### Phase VS Vehicles Settings — ✅ 코드 · ☐ 스모크
+
+> [requirements-vehicles-settings.md](./requirements-vehicles-settings.md)
+
+- [x] **VS-1** 문서 승인 (GO)
+- [x] **VS-2** 목록 「차량 추가」「차량 추가(가상)」UI 제거 · API 유지
+- [x] **VS-3** 사이드바 + `/vehicles/settings` 셸 · 계정 연동/sync
+- [x] **VS-4** 보드 · 위저드 · `_ak` 오픈 · Telemetry 등록
+- [x] **VS-5** `/vehicles` 완료 차량만 노출 (`scope=fleet`)
+- [x] **VS-6** disconnect/unlink · 재연동 시 QR 생략 · 가상시드 이관
+- [ ] **VS-7** 실차·대시보드/맵 · 팝업 폴백 스모크
+- [ ] **VS-8** (P1) `_ak` UX 보강
+
 ### Telemetry Value Monitor (개발) — 요구1 ✅
 
 > [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md)
@@ -1183,6 +1196,9 @@
 | 2026-07-16 | VL-P-5 코드 — 상세 툴바 식별 제거 · Hero SoT |
 | 2026-07-17 | VL-F 총 주행거리 · 조건부 충전 · 필터 정리 요구 초안 |
 | 2026-07-17 | VL-F-1~3 코드 — 총 주행거리 · 조건부 충전 · 필터 6종 · URL 매핑 |
+| 2026-07-17 | VS Vehicles Settings 등록·연동 허브 요구 초안 |
+| 2026-07-17 | VS `_ak` QR(최초만) · Telemetry 재연동 QR 생략 요구 반영 |
+| 2026-07-17 | VS-2~6 코드 — Settings 허브 · list scope · `_ak` · disconnect/unlink |
 | 2026-07-16 | TRF-B2e park nearby 운행→P 엣지 요구 초안 |
 | 2026-07-16 | TRF-B2e-2·3 코드 — 엣지·이동 보완 · `trf-b2:verify` |
 

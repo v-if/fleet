@@ -233,6 +233,7 @@
 | **VL** | 차량목록 ↔ VD3 언어·표시 통일 — [vehicle-list-vd3-align](./requirements-vehicle-list-vd3-align.md) | ✅ 코드 · ☐ 실차 |
 | **VL-P** | 목록 폴리시 · 상세 툴바 식별 제거 — [align-polish](./requirements-vehicle-list-vd3-align-polish.md) | ✅ 코드 · ☐ 검수 |
 | **VL-F** | 총 주행거리 · 조건부 충전 · 필터 — [filter-fields](./requirements-vehicle-list-filter-fields.md) | ✅ 코드 · ☐ 스모크 |
+| **VS** | Vehicles Settings 등록·연동 허브 — [vehicles-settings](./requirements-vehicles-settings.md) | ✅ 코드 · ☐ 실차 |
 
 체크리스트: [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
 
@@ -283,4 +284,6 @@
 | 2026-07-16 | VL-P-5 — 상세 툴바 식별 제거 · Hero SoT |
 | 2026-07-17 | VL-F 링크 — 총 주행거리 · 조건부 충전 · 필터 |
 | 2026-07-17 | VL-F-1~3 — `FleetVehicleTable` 열·필터·URL 매핑 |
+| 2026-07-17 | VS 링크 — Vehicles Settings 등록·연동 허브 |
+| 2026-07-17 | VS-2~6 — Settings 허브 · list fleet 필터 · `_ak` |
 |

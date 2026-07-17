@@ -51,7 +51,7 @@ export function FleetSettingsView() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const refreshVehicles = useVehicleRefresh();
-  const { data: vehiclesData } = useVehicles();
+  const { data: vehiclesData } = useVehicles({ scope: "all" });
   const { data: status, isLoading } = useQuery({
     queryKey: ["tesla-status"],
     queryFn: fetchTeslaStatus,
@@ -132,8 +132,11 @@ export function FleetSettingsView() {
               온보딩 대기 차량
             </h4>
             <p className="mb-4 text-theme-sm text-gray-600 dark:text-gray-300">
-              Virtual Key 확인 또는 Telemetry/Baseline이 끝나지 않은 차량입니다. 상세에서 키
-              확인·Baseline을 진행하세요. 서버는 차량을 자동으로 깨우지 않습니다.
+              Virtual Key·Telemetry 등록은{" "}
+              <Link href="/vehicles/settings" className="font-medium text-brand-500 underline">
+                Vehicles Settings
+              </Link>
+              에서 스텝으로 진행하세요. 서버는 차량을 자동으로 깨우지 않습니다.
             </p>
             <ul className="space-y-2">
               {onboardingVehicles.slice(0, 8).map((vehicle) => {
@@ -155,9 +158,9 @@ export function FleetSettingsView() {
                           {LIFECYCLE_LABEL[lifecycle]}
                         </Badge>
                       ) : null}
-                      <Link href={`/vehicles/${vehicle.id}`}>
+                      <Link href="/vehicles/settings">
                         <Button size="sm" variant="outline">
-                          상세
+                          등록 계속
                         </Button>
                       </Link>
                     </div>

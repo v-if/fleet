@@ -34,6 +34,7 @@
 | [requirements-vehicle-list-vd3-align.md](./requirements-vehicle-list-vd3-align.md) | **VL** — 차량목록 ↔ VD3 언어·표시 통일 · 코드 ✅ · 실차 ☐ | 목록 UX |
 | [requirements-vehicle-list-vd3-align-polish.md](./requirements-vehicle-list-vd3-align-polish.md) | **VL-P** — 목록 폴리시 · 상세 툴바 식별 제거 · 코드 ✅ · 검수 ☐ | 목록·상세 UX |
 | [requirements-vehicle-list-filter-fields.md](./requirements-vehicle-list-filter-fields.md) | **VL-F** — 총 주행거리 · 조건부 충전 · 필터 6종 · 코드 ✅ · 스모크 ☐ | 목록 UX |
+| [requirements-vehicles-settings.md](./requirements-vehicles-settings.md) | **VS** — Vehicles Settings 등록·연동 허브 · 코드 ✅ · 실차 ☐ | 온보딩 UX |
 | [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md) | Phase VD3-1b~4 ✅ · VD3-6~7 ☐ | VD3 검수 |
 | [research/research-vehicles-detail-chatgpt.md](./research/research-vehicles-detail-chatgpt.md) | 상세 UI 리서치 (FMS 관리자 IA) | VD3 근거 |
 | [research/research-vehicles-detail-gemini.md](./research/research-vehicles-detail-gemini.md) | 상세 UI 리서치 (Cockpit·모드·제어·네비) | VD3 근거 |
@@ -253,5 +254,7 @@
 | 2026-07-16 | VL-P-5 코드 ✅ — 상세 툴바 식별 제거 |
 | 2026-07-17 | VL-F — 총 주행거리 · 조건부 충전 · 필터 정리 요구 초안 |
 | 2026-07-17 | VL-F-1~3 코드 ✅ — `FleetVehicleTable` 열·필터·URL 매핑 |
+| 2026-07-17 | VS — Vehicles Settings 등록·연동 허브 요구 초안 |
+| 2026-07-17 | VS-2~6 코드 ✅ — `/vehicles/settings` · fleet scope · `_ak` QR |
 | 2026-07-16 | TRF-B2e — park nearby 운행→P 엣지 트리거 요구 초안 |
 | 2026-07-16 | TRF-B2e-2·3 코드 ✅ — 엣지·이동 보완 · verify |

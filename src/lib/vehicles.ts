@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { activeVehicleWhere } from "@/lib/vehicle-query";
+import { isFleetListLifecycle } from "@/lib/vehicle-lifecycle";
 import { isIdleVehicle } from "@/lib/vehicle-status";
 import { getSyncMetadata } from "@/lib/vehicle-sync";
 import { getVehicleProviderName } from "@/lib/vehicle-providers";
@@ -14,6 +15,9 @@ import type {
   VehiclesResponse,
 } from "@/lib/types/vehicle";
 import type { VehicleSnapshot, VehicleSyncState } from "@prisma/client";
+
+/** `fleet` = 관제 목록(READY·단절) · `all` = Vehicles Settings 온보딩 포함 */
+export type VehicleListScope = "fleet" | "all";
 
 function serializeSnapshot(snapshot: VehicleSnapshot) {
   const nearby = parseNearbyChargingJson(snapshot.nearbyChargingSites);
@@ -196,9 +200,16 @@ async function fetchVehiclesFromDb() {
   });
 }
 
-export async function getVehiclesResponse(): Promise<VehiclesResponse> {
+export async function getVehiclesResponse(
+  options?: { scope?: VehicleListScope },
+): Promise<VehiclesResponse> {
+  const scope = options?.scope ?? "fleet";
   const vehicles = await fetchVehiclesFromDb();
-  const items = vehicles.map(toListItem);
+  const items = vehicles
+    .map(toListItem)
+    .filter((item) =>
+      scope === "all" ? true : isFleetListLifecycle(item.syncState?.lifecycle),
+    );
   const snapshots = items
     .map((item) => item.snapshot)
     .filter((snapshot) => snapshot !== null);

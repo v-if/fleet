@@ -57,6 +57,25 @@ export function shouldShowLifecycleBadge(lifecycle: VehicleLifecycle | null | un
   return Boolean(lifecycle && lifecycle !== "READY");
 }
 
+/** `/vehicles` · 대시보드 · 맵에 노출 (VS-5) */
+export function isFleetListLifecycle(lifecycle: VehicleLifecycle | null | undefined) {
+  return lifecycle === "READY" || lifecycle === "TELEMETRY_DISCONNECTED";
+}
+
+/** Vehicles Settings 「연동 진행 중」 */
+export function isOnboardingLifecycle(lifecycle: VehicleLifecycle | null | undefined) {
+  return (
+    lifecycle === "REGISTERED" ||
+    lifecycle === "KEY_PENDING" ||
+    lifecycle === "TELEMETRY_PENDING"
+  );
+}
+
+/** 최초 등록 — Tesla `_ak` QR 필요 */
+export function needsVirtualKeyQr(lifecycle: VehicleLifecycle | null | undefined) {
+  return lifecycle === "REGISTERED" || lifecycle === "KEY_PENDING";
+}
+
 export function lifecycleGuidance(lifecycle: VehicleLifecycle | null | undefined): {
   title: string;
   body: string;

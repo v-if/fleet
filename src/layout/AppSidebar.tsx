@@ -34,12 +34,17 @@ const navItems: NavItem[] = [
     path: "/vehicles",
   },
   {
+    icon: <PlugInIcon />,
+    name: "Vehicles Settings",
+    path: "/vehicles/settings",
+  },
+  {
     icon: <BoxCubeIcon />,
     name: "Map",
     path: "/map",
   },
   {
-    icon: <PlugInIcon />,
+    icon: <PieChartIcon />,
     name: "Settings",
     path: "/settings",
   },

@@ -28,6 +28,7 @@
 | **VL** | 차량목록 ↔ VD3 통일 ([요구](./requirements-vehicle-list-vd3-align.md)) | ✅ 코드 · ☐ 실차 |
 | **VL-P** | 목록 폴리시 ([요구](./requirements-vehicle-list-vd3-align-polish.md)) | ✅ 코드 · ☐ 검수 |
 | **VL-F** | 열·충전·필터 정리 ([요구](./requirements-vehicle-list-filter-fields.md)) | ✅ 코드 · ☐ 딥링크 스모크 |
+| **VS** | Vehicles Settings 등록 허브 ([요구](./requirements-vehicles-settings.md)) | ✅ 코드 · ☐ 실차 |
 
 ---
 
@@ -53,6 +54,7 @@
 | 15 | 목록 폴리시: 아바타·부제·툴바 (VL-P) | ✅ |
 | 16 | 상세 툴바 식별 제거 · Hero SoT (VL-P-5) | ✅ |
 | 17 | 목록 총 주행거리 · 조건부 충전 · 필터 6종 (VL-F) | ✅ |
+| 18 | Vehicles Settings 허브 · list fleet 필터 · `_ak` (VS-2~6) | ✅ |
 
 ---
 
@@ -101,5 +103,8 @@ VIN: `LRWYGCFJ7SC214742`
 | 2026-07-16 | VL-P-5 코드 ✅ — 상세 툴바 식별 제거 |
 | 2026-07-17 | VL-F 열·충전·필터 정리 요구 링크 |
 | 2026-07-17 | VL-F-1~3 코드 ✅ — 총 주행거리 · 조건부 충전 · 필터 6종 · URL 매핑 |
+| 2026-07-17 | VS — Vehicles Settings 등록·연동 허브 요구 링크 |
+| 2026-07-17 | VS `_ak` QR · 재연동 QR 생략 요구 보강 |
+| 2026-07-17 | VS-2~6 코드 ✅ — `/vehicles/settings` · scope=fleet · `_ak` · 액션 이관 |
 | 2026-07-16 | VD3-N 표시명 연필 편집 요구 링크 |
 |

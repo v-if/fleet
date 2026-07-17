@@ -22,6 +22,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const forceRefresh = searchParams.get("refresh") === "1";
   const forceFallback = searchParams.get("fallback") === "1";
+  const scope = searchParams.get("scope") === "all" ? "all" : "fleet";
 
   if (forceRefresh || (await shouldAutoSync())) {
     try {
@@ -42,6 +43,6 @@ export async function GET(request: Request) {
     }
   }
 
-  const data = await getVehiclesResponse();
+  const data = await getVehiclesResponse({ scope });
   return NextResponse.json(data);
 }
