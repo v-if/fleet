@@ -5,7 +5,8 @@ import type { ReactNode } from "react";
 import Badge from "@/components/ui/badge/Badge";
 
 type FleetToolbarProps = {
-  title: string;
+  /** 생략 시 좌측 식별 블록 없음 (상세 VD3 — Hero가 SoT) */
+  title?: string;
   description?: string;
   provider?: string;
   lastUpdatedAt?: string;
@@ -30,8 +31,11 @@ export function FleetToolbar({
   layout = "default",
 }: FleetToolbarProps) {
   const isInline = layout === "inline";
+  const hasIdentity = Boolean(title || description || provider || lastUpdatedAt);
   const shellClass = isInline
-    ? "mb-6 flex flex-row items-start justify-between gap-3"
+    ? hasIdentity
+      ? "mb-6 flex flex-row items-start justify-between gap-3"
+      : "mb-6 flex flex-row items-center justify-end gap-3"
     : "mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between";
   const titleBlockClass = isInline ? "min-w-0 flex-1" : undefined;
   const titleClass = isInline
@@ -43,24 +47,28 @@ export function FleetToolbar({
 
   return (
     <div className={shellClass}>
-      <div className={titleBlockClass}>
-        <h2 className={titleClass} title={title}>
-          {title}
-        </h2>
-        {description ? (
-          <p className="mt-1 text-theme-sm text-gray-500 dark:text-gray-400">{description}</p>
-        ) : null}
-        {(provider || lastUpdatedAt) && (
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {provider ? <Badge color="info">{provider}</Badge> : null}
-            {lastUpdatedAt ? (
-              <span className="text-theme-xs text-gray-400 dark:text-gray-500">
-                갱신: {lastUpdatedAt}
-              </span>
-            ) : null}
-          </div>
-        )}
-      </div>
+      {hasIdentity ? (
+        <div className={titleBlockClass}>
+          {title ? (
+            <h2 className={titleClass} title={title}>
+              {title}
+            </h2>
+          ) : null}
+          {description ? (
+            <p className="mt-1 text-theme-sm text-gray-500 dark:text-gray-400">{description}</p>
+          ) : null}
+          {(provider || lastUpdatedAt) && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {provider ? <Badge color="info">{provider}</Badge> : null}
+              {lastUpdatedAt ? (
+                <span className="text-theme-xs text-gray-400 dark:text-gray-500">
+                  갱신: {lastUpdatedAt}
+                </span>
+              ) : null}
+            </div>
+          )}
+        </div>
+      ) : null}
 
       <div className={actionsClass}>
         {actions}

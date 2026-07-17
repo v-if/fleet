@@ -230,6 +230,9 @@
 | **VD3-DCf** | 속도·도착 SoC 클리어 범위 — [vd3-trip-clear-fields](./requirements-vehicle-detail-vd3-trip-clear-fields.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-NM** | 인근충전소 지도 마커 — [vd3-nearby-map](./requirements-vehicle-detail-vd3-nearby-map.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-NL** | 목록·맵 A–E 기호 매칭 · SC/DC 뱃지 · 맵 거리(km) · 설명 문구 — [vd3-nearby-labels](./requirements-vehicle-detail-vd3-nearby-labels.md) | ✅ 코드 · ☐ 실차 |
+| **VL** | 차량목록 ↔ VD3 언어·표시 통일 — [vehicle-list-vd3-align](./requirements-vehicle-list-vd3-align.md) | ✅ 코드 · ☐ 실차 |
+| **VL-P** | 목록 폴리시 · 상세 툴바 식별 제거 — [align-polish](./requirements-vehicle-list-vd3-align-polish.md) | ✅ 코드 · ☐ 검수 |
+| **VL-F** | 총 주행거리 · 조건부 충전 · 필터 — [filter-fields](./requirements-vehicle-list-filter-fields.md) | ✅ 코드 · ☐ 스모크 |
 
 체크리스트: [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
 
@@ -273,4 +276,11 @@
 | 2026-07-16 | VD3-NL-5 — 목록 SC/DC 보조 뱃지 |
 | 2026-07-16 | VD3-NL-6 — 맵 마커 거리(km) 서브뱃지 복원 |
 | 2026-07-16 | VD3-NL-7 — 목록 아래 SC/DC 의미 설명 문구 |
+| 2026-07-16 | VL 링크 — 차량목록 ↔ VD3 통일 |
+| 2026-07-16 | VL-2·3·4 — 가동 열 · 상대 신선도 · inline 툴바 |
+| 2026-07-16 | VL-P 링크 — 목록 폴리시 |
+| 2026-07-16 | VL-P-2·3·4 — 아바타·부제·툴바 정리 |
+| 2026-07-16 | VL-P-5 — 상세 툴바 식별 제거 · Hero SoT |
+| 2026-07-17 | VL-F 링크 — 총 주행거리 · 조건부 충전 · 필터 |
+| 2026-07-17 | VL-F-1~3 — `FleetVehicleTable` 열·필터·URL 매핑 |
 |

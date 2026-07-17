@@ -6,7 +6,6 @@ import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
 import { useVehicles, useVehicleRefresh } from "@/hooks/use-vehicles";
 import { useModal } from "@/hooks/useModal";
-import { formatProviderTime, providerLabel } from "@/lib/fms-badge-utils";
 import { FMS_NAME } from "@/lib/branding";
 import { useState } from "react";
 
@@ -80,10 +79,9 @@ export function FleetVehiclesListView() {
     <>
       <FleetToolbar
         title="차량 목록"
-        provider={providerLabel(data.provider)}
-        lastUpdatedAt={formatProviderTime(data.lastUpdatedAt)}
         onRefresh={() => void handleRefresh()}
         isRefreshing={isRefreshing || isFetching}
+        layout="inline"
         actions={
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => void handleSeedVirtualVehicles()} disabled={isSeedingVirtual}>

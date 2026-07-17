@@ -889,6 +889,37 @@
 - [x] **VD3-NL-6** 맵 마커 거리(km) 서브뱃지 복원
 - [x] **VD3-NL-7** 목록 아래 SC/DC 의미 설명 문구
 
+### Phase VL 차량목록 ↔ VD3 통일 — ✅ 코드 · ☐ 실차
+
+> [requirements-vehicle-list-vd3-align.md](./requirements-vehicle-list-vd3-align.md)
+
+- [x] **VL-1** 문서 승인 (GO)
+- [x] **VL-2** OPS_MODE 뱃지 · 상태/충전 열 통합
+- [x] **VL-3** 상대 신선도 · rangeKm
+- [x] **VL-4** 툴바 inline · 필터/카피 정렬
+- [ ] **VL-5** (선택) 대시보드 최근차량 동기
+- [ ] **VL-6** 실차 검수
+
+### Phase VL-P 목록 폴리시 — ✅ 코드 · ☐ 검수
+
+> [requirements-vehicle-list-vd3-align-polish.md](./requirements-vehicle-list-vd3-align-polish.md)
+
+- [x] **VL-P-1** 문서 승인 (GO)
+- [x] **VL-P-2** 아바타·부제·trim/색 뱃지
+- [x] **VL-P-3** 「관제준비·절전」삭제
+- [x] **VL-P-4** 툴바 provider·이중 시간 제거
+- [x] **VL-P-5** 상세 툴바 식별 제거 (Hero SoT)
+- [ ] **VL-P-6** 스모크 검수
+
+### Phase VL-F 목록 열·충전·필터 — ✅ 코드 · ☐ 스모크
+
+> [requirements-vehicle-list-filter-fields.md](./requirements-vehicle-list-filter-fields.md)
+
+- [x] **VL-F-1** 문서 승인 (GO)
+- [x] **VL-F-2** 총 주행거리 · 조건부 충전 열
+- [x] **VL-F-3** 필터 6종 · URL 매핑
+- [ ] **VL-F-4** 대시보드 딥링크 스모크
+
 ### Telemetry Value Monitor (개발) — 요구1 ✅
 
 > [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md)
@@ -1145,6 +1176,13 @@
 | 2026-07-16 | VD3-NL-5 코드 — 목록 SC/DC 보조 뱃지 |
 | 2026-07-16 | VD3-NL-6 코드 — 맵 마커 거리(km) 서브뱃지 복원 |
 | 2026-07-16 | VD3-NL-7 코드 — 목록 아래 SC/DC 의미 설명 문구 |
+| 2026-07-16 | VL 차량목록 ↔ VD3 언어·표시 통일 요구 초안 |
+| 2026-07-16 | VL-2·3·4 코드 — 가동 열 · 상대 신선도 · inline 툴바 · 필터 카피 |
+| 2026-07-16 | VL-P 목록 폴리시 요구 초안 |
+| 2026-07-16 | VL-P-2·3·4 코드 — 아바타·부제 model·color · 툴바 메타 제거 |
+| 2026-07-16 | VL-P-5 코드 — 상세 툴바 식별 제거 · Hero SoT |
+| 2026-07-17 | VL-F 총 주행거리 · 조건부 충전 · 필터 정리 요구 초안 |
+| 2026-07-17 | VL-F-1~3 코드 — 총 주행거리 · 조건부 충전 · 필터 6종 · URL 매핑 |
 | 2026-07-16 | TRF-B2e park nearby 운행→P 엣지 요구 초안 |
 | 2026-07-16 | TRF-B2e-2·3 코드 — 엣지·이동 보완 · `trf-b2:verify` |
 

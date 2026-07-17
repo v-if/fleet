@@ -14,36 +14,36 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { vehicleStatusBadgeColor } from "@/lib/fms-badge-utils";
 import {
-  chargingStatusBadgeColor,
-  vehicleStatusBadgeColor,
-} from "@/lib/fms-badge-utils";
+  OPS_MODE_LABEL,
+  opsModeBadgeColor,
+  resolveVehicleOpsMode,
+  type VehicleOpsMode,
+} from "@/lib/vehicle-detail-v3";
 import {
-  CHARGING_STATUS_LABEL,
   STATUS_LABEL,
   formatDateTime,
   formatOdometer,
+  formatRelativeTime,
 } from "@/lib/vehicle-status";
 import {
   LIFECYCLE_LABEL,
   formatColorBadge,
-  formatTrimBadge,
   lifecycleBadgeColor,
   shouldShowLifecycleBadge,
 } from "@/lib/vehicle-lifecycle";
 import type { VehicleListItemDto } from "@/lib/types/vehicle";
 
+/** VL-F — UI pill + 숨은 딥링크 값(idle) */
 type StatusFilter =
   | "ALL"
-  | "ONLINE"
-  | "WARNING"
-  | "ALERT"
-  | "OFFLINE"
-  | "ASLEEP"
-  | "IDLE"
+  | "DRIVING"
   | "CHARGING"
-  | "ABNORMAL"
-  | "TELEMETRY_DISCONNECTED";
+  | "PARKED"
+  | "WARNING"
+  | "ISSUE"
+  | "IDLE";
 
 type FleetVehicleTableProps = {
   vehicles: VehicleListItemDto[];
@@ -51,34 +51,76 @@ type FleetVehicleTableProps = {
   pageSize?: number;
 };
 
-const filterOptions: { value: StatusFilter; label: string }[] = [
+const filterOptions: { value: Exclude<StatusFilter, "IDLE">; label: string }[] = [
   { value: "ALL", label: "전체" },
-  { value: "ONLINE", label: "정상" },
-  { value: "CHARGING", label: "충전중" },
+  { value: "DRIVING", label: "운행 중" },
+  { value: "CHARGING", label: "충전 중" },
+  { value: "PARKED", label: "주차" },
   { value: "WARNING", label: "주의" },
-  { value: "ALERT", label: "이상" },
-  { value: "ABNORMAL", label: "이상상태" },
-  { value: "OFFLINE", label: "오프라인" },
-  { value: "ASLEEP", label: "주차(절전)" },
-  { value: "TELEMETRY_DISCONNECTED", label: "실시간 연동 꺼짐" },
-  { value: "IDLE", label: "미운행" },
+  { value: "ISSUE", label: "이상" },
 ];
 
 const tableColumns = [
-  { label: "차량", className: "w-[200px]" },
-  { label: "상태", className: "w-[72px] whitespace-nowrap" },
-  { label: "충전", className: "w-[84px] whitespace-nowrap" },
+  { label: "차량", className: "w-[180px]" },
+  { label: "가동", className: "w-[110px] whitespace-nowrap" },
+  { label: "충전", className: "w-[72px] whitespace-nowrap" },
   { label: "배터리", className: "w-[140px]" },
-  { label: "주행거리", className: "w-[92px] whitespace-nowrap" },
-  { label: "갱신", className: "w-[124px] whitespace-nowrap" },
+  { label: "총 주행거리", className: "w-[100px] whitespace-nowrap" },
+  { label: "갱신", className: "w-[100px] whitespace-nowrap" },
 ] as const;
 
+/** 대시보드 `?filter=` → VL-F 필터 (idle은 pill 없이 유지) */
 function resolveInitialFilter(param: string | null): StatusFilter {
-  if (param === "abnormal") return "ABNORMAL";
-  if (param === "idle") return "IDLE";
   if (param === "charging") return "CHARGING";
-  if (param === "telemetry_disconnected") return "TELEMETRY_DISCONNECTED";
+  if (param === "abnormal") return "ISSUE";
+  if (param === "telemetry_disconnected") return "ISSUE";
+  if (param === "idle") return "IDLE";
+  if (param === "driving") return "DRIVING";
+  if (param === "parked") return "PARKED";
+  if (param === "warning") return "WARNING";
+  if (param === "issue") return "ISSUE";
   return "ALL";
+}
+
+function rowFreshnessAt(vehicle: VehicleListItemDto): string | null {
+  return (
+    vehicle.freshness.lastTelemetryAt ??
+    vehicle.snapshot?.lastUpdatedAt ??
+    null
+  );
+}
+
+function matchesListFilter(
+  vehicle: VehicleListItemDto,
+  statusFilter: StatusFilter,
+): boolean {
+  const snapshot = vehicle.snapshot;
+  const mode: VehicleOpsMode = resolveVehicleOpsMode(snapshot);
+  const status = snapshot?.status;
+  const lifecycle = vehicle.syncState?.lifecycle;
+
+  switch (statusFilter) {
+    case "ALL":
+      return true;
+    case "DRIVING":
+      return mode === "DRIVING";
+    case "CHARGING":
+      return snapshot?.chargingStatus === "CHARGING";
+    case "PARKED":
+      return mode === "STANDBY" || mode === "ASLEEP";
+    case "WARNING":
+      return status === "WARNING";
+    case "ISSUE":
+      return (
+        status === "ALERT" ||
+        status === "OFFLINE" ||
+        lifecycle === "TELEMETRY_DISCONNECTED"
+      );
+    case "IDLE":
+      return vehicle.isIdle;
+    default:
+      return true;
+  }
 }
 
 export function FleetVehicleTable({
@@ -95,23 +137,11 @@ export function FleetVehicleTable({
 
   const filtered = useMemo(() => {
     return vehicles.filter((vehicle) => {
-      const snapshot = vehicle.snapshot;
       const haystack =
         `${vehicle.plateNumber} ${vehicle.model} ${vehicle.carType ?? ""} ${vehicle.trimBadging ?? ""} ${vehicle.exteriorColor ?? ""}`.toLowerCase();
       const matchesQuery = haystack.includes(query.trim().toLowerCase());
-
       if (!matchesQuery) return false;
-      if (statusFilter === "ALL") return true;
-      if (statusFilter === "IDLE") return vehicle.isIdle;
-      if (statusFilter === "CHARGING") return snapshot?.chargingStatus === "CHARGING";
-      if (statusFilter === "TELEMETRY_DISCONNECTED") {
-        return vehicle.syncState?.lifecycle === "TELEMETRY_DISCONNECTED";
-      }
-      if (statusFilter === "ABNORMAL") {
-        const status = snapshot?.status;
-        return status === "OFFLINE" || status === "ASLEEP" || status === "WARNING" || status === "ALERT";
-      }
-      return snapshot?.status === statusFilter;
+      return matchesListFilter(vehicle, statusFilter);
     });
   }, [query, statusFilter, vehicles]);
 
@@ -137,6 +167,11 @@ export function FleetVehicleTable({
               <button
                 key={option.value}
                 type="button"
+                title={
+                  option.value === "PARKED"
+                    ? "주차 · 대기 및 주차 (절전) 포함"
+                    : undefined
+                }
                 onClick={() => {
                   setStatusFilter(option.value);
                   setPage(1);
@@ -174,71 +209,63 @@ export function FleetVehicleTable({
               {paged.map((vehicle) => {
                 const snapshot = vehicle.snapshot;
                 const status = snapshot?.status ?? "OFFLINE";
-                const chargingStatus = snapshot?.chargingStatus ?? "DISCONNECTED";
+                const mode = resolveVehicleOpsMode(snapshot);
                 const lifecycle = vehicle.syncState?.lifecycle ?? null;
-                const trimLabel = formatTrimBadge(vehicle);
                 const colorLabel = formatColorBadge(vehicle);
+                const freshAt = rowFreshnessAt(vehicle);
+                const isCharging = snapshot?.chargingStatus === "CHARGING";
+                const showHealthBadge =
+                  (status === "WARNING" || status === "ALERT") &&
+                  mode !== "OFFLINE";
+                const subtitle = colorLabel
+                  ? `${vehicle.model} · ${colorLabel}`
+                  : vehicle.model;
 
                 return (
                   <TableRow key={vehicle.id}>
                     <TableCell className={`px-4 py-4 ${tableColumns[0].className}`}>
-                      <Link
-                        href={`/vehicles/${vehicle.id}`}
-                        className="flex min-w-0 items-center gap-3"
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
-                          <span className="font-semibold text-brand-500">
-                            {vehicle.plateNumber.slice(0, 1)}
-                          </span>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">
-                            {vehicle.plateNumber}
-                          </p>
-                          <span className="block truncate text-theme-xs text-gray-500 dark:text-gray-400">
-                            {vehicle.model} · {vehicle.year}
-                          </span>
-                          {(trimLabel || colorLabel) && (
-                            <div className="mt-1 flex flex-wrap gap-1">
-                              {trimLabel ? (
-                                <Badge size="sm" color="light">
-                                  {trimLabel}
-                                </Badge>
-                              ) : null}
-                              {colorLabel ? (
-                                <Badge size="sm" color="light">
-                                  {colorLabel}
-                                </Badge>
-                              ) : null}
-                            </div>
-                          )}
-                        </div>
+                      <Link href={`/vehicles/${vehicle.id}`} className="block min-w-0">
+                        <p className="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">
+                          {vehicle.plateNumber}
+                        </p>
+                        <span className="mt-0.5 block truncate text-theme-xs text-gray-500 dark:text-gray-400">
+                          {subtitle}
+                        </span>
                       </Link>
                     </TableCell>
                     <TableCell className={`px-3 py-4 ${tableColumns[1].className}`}>
                       <div className="flex flex-col items-start gap-1">
-                        <Badge size="sm" color={vehicleStatusBadgeColor(status)}>
-                          {STATUS_LABEL[status]}
+                        <Badge size="sm" color={opsModeBadgeColor(mode)}>
+                          {OPS_MODE_LABEL[mode]}
                         </Badge>
+                        {showHealthBadge ? (
+                          <Badge size="sm" color={vehicleStatusBadgeColor(status)}>
+                            {STATUS_LABEL[status]}
+                          </Badge>
+                        ) : null}
                         {shouldShowLifecycleBadge(lifecycle) && lifecycle ? (
                           <Badge size="sm" color={lifecycleBadgeColor(lifecycle)}>
                             {LIFECYCLE_LABEL[lifecycle]}
                           </Badge>
                         ) : null}
-                        {status === "ASLEEP" && lifecycle === "READY" ? (
-                          <span className="text-[10px] leading-tight text-gray-400">
-                            관제준비·절전
-                          </span>
-                        ) : null}
                       </div>
                     </TableCell>
                     <TableCell className={`px-3 py-4 ${tableColumns[2].className}`}>
-                      <Badge size="sm" color={chargingStatusBadgeColor(chargingStatus)}>
-                        {CHARGING_STATUS_LABEL[chargingStatus]}
-                      </Badge>
+                      {isCharging ? (
+                        <Badge size="sm" color="info">
+                          충전 중
+                        </Badge>
+                      ) : null}
                     </TableCell>
                     <TableCell className={`px-3 py-4 ${tableColumns[3].className}`}>
-                      <BatteryProgressBar percent={snapshot?.batteryPercent} expanded />
+                      <div className="space-y-1">
+                        <BatteryProgressBar percent={snapshot?.batteryPercent} expanded />
+                        {snapshot?.rangeKm != null ? (
+                          <p className="text-theme-xs text-gray-500 dark:text-gray-400">
+                            잔여 {Math.round(snapshot.rangeKm).toLocaleString("ko-KR")} km
+                          </p>
+                        ) : null}
+                      </div>
                     </TableCell>
                     <TableCell
                       className={`px-3 py-4 text-theme-sm text-gray-500 dark:text-gray-400 ${tableColumns[4].className}`}
@@ -248,7 +275,9 @@ export function FleetVehicleTable({
                     <TableCell
                       className={`px-3 py-4 text-theme-sm text-gray-500 dark:text-gray-400 ${tableColumns[5].className}`}
                     >
-                      {formatDateTime(snapshot?.lastUpdatedAt ?? null)}
+                      <span title={freshAt ? formatDateTime(freshAt) : undefined}>
+                        {formatRelativeTime(freshAt)}
+                      </span>
                     </TableCell>
                   </TableRow>
                 );

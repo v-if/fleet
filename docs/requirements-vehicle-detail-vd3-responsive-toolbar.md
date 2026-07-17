@@ -6,7 +6,7 @@
 | 배경 | PC는 `FleetToolbar`가 `lg:flex-row`라 제목·새로고침이 한 줄. 모바일은 `flex-col`이라 제목 → 새로고침이 줄바꿈되고, 그 아래 **목록으로 · 이전 상세 (v2)** 행이 이어져 **3단 스택**처럼 보인다. VD3 컷오버(VD3-7) 이후 일상 관제는 기본 상세만 쓰므로 v2 링크는 상단 CTA로 둘 필요가 없다 |
 | 관련 | [requirements-vehicle-detail-vd3.md](./requirements-vehicle-detail-vd3.md) (컷오버), [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md) |
 | 적용 | **기본 상세만** (`FleetVehicleDetailViewV3` · `/vehicles/[id]`). `/vehicles/[id]/v2` 화면·URL은 **유지** (직접 접속·롤백용) |
-| 상태 | **코드 ✅ (VD3-R-2) · 검수 VD3-R-3 ☐** |
+| 상태 | **코드 ✅ (VD3-R-2) · 검수 VD3-R-3 ☐ · 식별 표시는 VL-P-5로 Hero만** |
 | 작성일 | 2026-07-16 |
 | ID | **VD3-R** |
 
@@ -164,3 +164,4 @@ plateNumber                    [새로고침]
 |------|------|
 | 2026-07-16 | 초안 — 상세 툴바 인라인 · v2 링크 제거 · GO |
 | 2026-07-16 | 코드 — `FleetToolbar layout="inline"` · V3 v2 링크 제거 (R-2 ✅) |
+| 2026-07-16 | VL-P-5 — 상세 툴바 plate/model 식별 제거 · Hero SoT |

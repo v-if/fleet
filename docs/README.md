@@ -31,6 +31,9 @@
 | [requirements-vehicle-detail-vd3-trip-clear-fields.md](./requirements-vehicle-detail-vd3-trip-clear-fields.md) | **VD3-DCf** — 속도·도착 SoC 클리어 · 코드 ✅ · 실차 ☐ | V3 트립 잔상 |
 | [requirements-vehicle-detail-vd3-nearby-map.md](./requirements-vehicle-detail-vd3-nearby-map.md) | **VD3-NM** — 인근충전소 지도 마커 · 코드 ✅ · 실차 ☐ | V3 nearby 맵 |
 | [requirements-vehicle-detail-vd3-nearby-labels.md](./requirements-vehicle-detail-vd3-nearby-labels.md) | **VD3-NL** — 목록·맵 A–E · SC/DC 뱃지 · 맵 거리(km) · 설명 문구 · 코드 ✅ · 실차 ☐ | V3 nearby UX |
+| [requirements-vehicle-list-vd3-align.md](./requirements-vehicle-list-vd3-align.md) | **VL** — 차량목록 ↔ VD3 언어·표시 통일 · 코드 ✅ · 실차 ☐ | 목록 UX |
+| [requirements-vehicle-list-vd3-align-polish.md](./requirements-vehicle-list-vd3-align-polish.md) | **VL-P** — 목록 폴리시 · 상세 툴바 식별 제거 · 코드 ✅ · 검수 ☐ | 목록·상세 UX |
+| [requirements-vehicle-list-filter-fields.md](./requirements-vehicle-list-filter-fields.md) | **VL-F** — 총 주행거리 · 조건부 충전 · 필터 6종 · 코드 ✅ · 스모크 ☐ | 목록 UX |
 | [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md) | Phase VD3-1b~4 ✅ · VD3-6~7 ☐ | VD3 검수 |
 | [research/research-vehicles-detail-chatgpt.md](./research/research-vehicles-detail-chatgpt.md) | 상세 UI 리서치 (FMS 관리자 IA) | VD3 근거 |
 | [research/research-vehicles-detail-gemini.md](./research/research-vehicles-detail-gemini.md) | 상세 UI 리서치 (Cockpit·모드·제어·네비) | VD3 근거 |
@@ -243,5 +246,12 @@
 | 2026-07-16 | VD3-NL-5 코드 ✅ — 목록 SC/DC 보조 뱃지 |
 | 2026-07-16 | VD3-NL-6 코드 ✅ — 맵 마커 거리(km) 서브뱃지 복원 |
 | 2026-07-16 | VD3-NL-7 코드 ✅ — 목록 아래 SC/DC 의미 설명 문구 |
+| 2026-07-16 | VL — 차량목록 ↔ VD3 언어·표시 통일 요구 초안 |
+| 2026-07-16 | VL-2·3·4 코드 ✅ — 가동 열 · 상대 신선도 · inline 툴바 |
+| 2026-07-16 | VL-P — 목록 폴리시(아바타·부제·툴바) 요구 초안 |
+| 2026-07-16 | VL-P-2·3·4 코드 ✅ — Hero 정렬 폴리시 |
+| 2026-07-16 | VL-P-5 코드 ✅ — 상세 툴바 식별 제거 |
+| 2026-07-17 | VL-F — 총 주행거리 · 조건부 충전 · 필터 정리 요구 초안 |
+| 2026-07-17 | VL-F-1~3 코드 ✅ — `FleetVehicleTable` 열·필터·URL 매핑 |
 | 2026-07-16 | TRF-B2e — park nearby 운행→P 엣지 트리거 요구 초안 |
 | 2026-07-16 | TRF-B2e-2·3 코드 ✅ — 엣지·이동 보완 · verify |

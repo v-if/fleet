@@ -253,21 +253,18 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
   return (
     <>
       <FleetToolbar
-        title={vehicle.plateNumber}
-        description={`${vehicle.model} · ${vehicle.year}`}
         onRefresh={() => void handleRefresh()}
         isRefreshing={isRefreshing || isFetching}
         layout="inline"
+        actions={
+          <Link
+            href="/vehicles"
+            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+          >
+            목록으로
+          </Link>
+        }
       />
-
-      <div className="mb-4 flex flex-wrap gap-2">
-        <Link
-          href="/vehicles"
-          className="inline-flex rounded-lg border border-gray-300 px-4 py-2 text-theme-sm dark:border-gray-700"
-        >
-          목록으로
-        </Link>
-      </div>
 
       {actionMessage ? (
         <p className="mb-4 rounded-lg border border-gray-200 bg-white px-3 py-2 text-theme-sm dark:border-gray-800 dark:bg-white/[0.03]">

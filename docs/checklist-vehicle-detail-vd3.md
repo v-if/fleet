@@ -19,12 +19,15 @@
 | VD3-7 | 컷오버 — 기본 URL VD3 · v2 보존 · `/v3`→기본 리다이렉트 | ✅ |
 | **VD3-S** | Hero `i` 제원 모달 ([요구](./requirements-vehicle-detail-vd3-specs-popover.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-N** | Hero 표시명 연필 편집 ([요구](./requirements-vehicle-detail-vd3-display-name.md)) | ✅ 코드 · ☐ 실차 |
-| **VD3-R** | PC·모바일 툴바 통일 · v2 링크 제거 ([요구](./requirements-vehicle-detail-vd3-responsive-toolbar.md)) | ✅ 코드 · ☐ 검수 |
+| **VD3-R** | PC·모바일 툴바 통일 · v2 링크 제거 ([요구](./requirements-vehicle-detail-vd3-responsive-toolbar.md)) | ✅ 코드 · ☐ 검수 · **식별은 VL-P-5로 Hero만** |
 | **VD3-NB** | 인근충전소 목록 있을 때만 ([요구](./requirements-vehicle-detail-vd3-nearby-block.md)) | ✅ |
 | **VD3-DC** | 주행 목적지 주차·절전 클리어 ([요구](./requirements-vehicle-detail-vd3-destination-clear.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-DCf** | 속도·도착 SoC 클리어 범위 ([요구](./requirements-vehicle-detail-vd3-trip-clear-fields.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-NM** | 인근충전소 지도 마커 ([요구](./requirements-vehicle-detail-vd3-nearby-map.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-NL** | 목록·맵 A–E 기호 ([요구](./requirements-vehicle-detail-vd3-nearby-labels.md)) | ✅ 코드 · ☐ 실차 |
+| **VL** | 차량목록 ↔ VD3 통일 ([요구](./requirements-vehicle-list-vd3-align.md)) | ✅ 코드 · ☐ 실차 |
+| **VL-P** | 목록 폴리시 ([요구](./requirements-vehicle-list-vd3-align-polish.md)) | ✅ 코드 · ☐ 검수 |
+| **VL-F** | 열·충전·필터 정리 ([요구](./requirements-vehicle-list-filter-fields.md)) | ✅ 코드 · ☐ 딥링크 스모크 |
 
 ---
 
@@ -46,6 +49,10 @@
 | 11 | nearby 좌표 보존 · 맵 마커·fitBounds (VD3-NM) | ✅ |
 | 12 | 목록·맵 A–E 기호 매칭 · 목록 SC/DC 뱃지 · 맵 거리(km) · SC/DC 설명 (VD3-NL) | ✅ |
 | 13 | 트립 클리어 확장: speed·SoC 잔상 · 카드 게이트 (VD3-DCf) | ✅ |
+| 14 | 목록 OPS_MODE · 상대 신선도 · inline 툴바 (VL) | ✅ |
+| 15 | 목록 폴리시: 아바타·부제·툴바 (VL-P) | ✅ |
+| 16 | 상세 툴바 식별 제거 · Hero SoT (VL-P-5) | ✅ |
+| 17 | 목록 총 주행거리 · 조건부 충전 · 필터 6종 (VL-F) | ✅ |
 
 ---
 
@@ -87,5 +94,12 @@ VIN: `LRWYGCFJ7SC214742`
 | 2026-07-16 | VD3-NL-5 코드 ✅ — 목록 SC/DC 보조 뱃지 |
 | 2026-07-16 | VD3-NL-6 코드 ✅ — 맵 마커 거리(km) 서브뱃지 복원 |
 | 2026-07-16 | VD3-NL-7 코드 ✅ — 목록 아래 SC/DC 의미 설명 문구 |
+| 2026-07-16 | VL 차량목록 ↔ VD3 통일 요구 링크 |
+| 2026-07-16 | VL-2·3·4 코드 ✅ — 가동 열 · 상대 신선도 · inline 툴바 |
+| 2026-07-16 | VL-P 목록 폴리시 요구 링크 |
+| 2026-07-16 | VL-P-2·3·4 코드 ✅ — 아바타·부제·툴바 정리 |
+| 2026-07-16 | VL-P-5 코드 ✅ — 상세 툴바 식별 제거 |
+| 2026-07-17 | VL-F 열·충전·필터 정리 요구 링크 |
+| 2026-07-17 | VL-F-1~3 코드 ✅ — 총 주행거리 · 조건부 충전 · 필터 6종 · URL 매핑 |
 | 2026-07-16 | VD3-N 표시명 연필 편집 요구 링크 |
 |
