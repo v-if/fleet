@@ -388,6 +388,12 @@ model VehicleActivitySession {
   energyAddedPercent     Float?
   chargingPowerKind      String?
   peakChargerPowerKw     Float?
+  /// VD3-SOH: 세션 종료(또는 COMPLETE) 시점 잔여 km
+  endRangeKm             Float?
+  /// VD3-SOH: 당시 충전 한도 %
+  endChargeLimitSoc      Float?
+  /// VD3-SOH: 한도 도달 샘플 적격
+  sohSampleEligible      Boolean              @default(false)
   source                 ActivitySessionSource  @default(TELEMETRY)
   createdAt              DateTime               @default(now()) @db.Timestamptz(3)
   updatedAt              DateTime               @updatedAt @db.Timestamptz(3)
@@ -395,6 +401,7 @@ model VehicleActivitySession {
   @@index([vehicleId, startedAt])
   @@index([vehicleId, kind, startedAt])
   @@index([vehicleId, endedAt])
+  @@index([vehicleId, sohSampleEligible, endedAt])
 }
 
 model AuditLog {

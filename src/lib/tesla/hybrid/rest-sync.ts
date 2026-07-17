@@ -279,6 +279,8 @@ export async function writeRestSnapshot(
           : (snapshot.chargingPowerKind ?? null),
         chargerPowerKw: snapshot.chargerPowerKw ?? null,
         vehicleSpeedKmh: null,
+        rangeKm: snapshot.rangeKm ?? null,
+        chargeLimitSoc: snapshot.chargeLimitSoc ?? null,
       },
       "DERIVED",
     );

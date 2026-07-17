@@ -954,6 +954,17 @@
 - [x] **VD3-HS-3** Hero 관제 요약 오늘/미운행
 - [ ] **VD3-HS-4** 스모크
 
+### Phase VD3-SOH 완충(한도) 잔여 km 추이 — ✅ 코드 · ☐ 실차
+
+> [requirements-vehicle-detail-soh.md](./requirements-vehicle-detail-soh.md) · [checklist-vehicle-detail-soh.md](./checklist-vehicle-detail-soh.md)
+
+- [x] **VD3-SOH-0** 문서 승인 (GO)
+- [x] **VD3-SOH-1** `endRangeKm` 캡처 · migrate
+- [x] **VD3-SOH-2** 샘플 API · verify
+- [x] **VD3-SOH-3** VD3 UI 카드+차트
+- [x] **VD3-SOH-4** 가상 시드
+- [ ] **VD3-SOH-5** 실차 검수
+
 ### Telemetry Value Monitor (개발) — 요구1 ✅
 
 > [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md)
@@ -1225,6 +1236,8 @@
 | 2026-07-18 | VD3-H 주행·충전 히스토리 요구 초안 (조건부 GO) |
 | 2026-07-18 | VD3-H-0~3·H-5 코드 — ActivitySession migrate · FSM · API · UI · verify |
 | 2026-07-18 | VD3-HS-0~3 코드 — 히스토리 한 줄 · Hero 오늘/미운행 · verify |
+| 2026-07-18 | VD3-SOH 완충(한도) 잔여 km 추이 요구 초안 (조건부 GO) |
+| 2026-07-18 | VD3-SOH-0~4 코드 — endRangeKm · soh API · VehicleSohCard · 시드 · verify |
 | 2026-07-17 | CI-C2 — sample3 `TpmsDiagram` 차체·알로이 휠·연결선 |
 | 2026-07-17 | CI-C3 — sample4 Ultimate `TpmsDiagram` · SVG 가이드 |
 | 2026-07-17 | CI-C3b — 화이트·실버 차체 · 타이어 카드 우측 상단 알림 |

@@ -12,6 +12,7 @@ import {
   shouldShowChargingSessionCard,
 } from "@/components/fms/ChargingSessionCard";
 import { VehicleActivityHistoryCard } from "@/components/fms/VehicleActivityHistoryCard";
+import { VehicleSohCard } from "@/components/fms/VehicleSohCard";
 import { FleetToolbar } from "@/components/fms/FleetToolbar";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
@@ -701,6 +702,9 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
 
       {/* VD3-H: 주행·충전 히스토리 */}
       <VehicleActivityHistoryCard vehicleId={vehicleId} />
+
+      {/* VD3-SOH: 한도 도달 시 잔여 km 추이 */}
+      <VehicleSohCard vehicleId={vehicleId} />
 
       {/* Ops */}
       <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">

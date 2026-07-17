@@ -8,6 +8,7 @@ import type {
 
 import { prisma } from "@/lib/prisma";
 import { normalizeShiftState } from "@/lib/tesla/shift-state";
+import { evaluateSohSampleEligible } from "@/lib/vehicle-soh-rules";
 
 /** 주행 노이즈: 30초 미만 또는 0.1km 미만 → 세션 삭제 */
 export const DRIVE_NOISE_MIN_MS = 30_000;
@@ -27,6 +28,9 @@ export type ActivityObservation = {
   chargingPowerKind?: string | null;
   chargerPowerKw?: number | null;
   vehicleSpeedKmh?: number | null;
+  /** VD3-SOH */
+  rangeKm?: number | null;
+  chargeLimitSoc?: number | null;
 };
 
 export type OpenActivitySessions = {
@@ -273,6 +277,9 @@ export async function applyActivitySessionFromObservation(
           endBatteryPercent: observation.batteryPercent ?? null,
           chargingPowerKind: observation.chargingPowerKind ?? null,
           peakChargerPowerKw: observation.chargerPowerKw ?? null,
+          endRangeKm: observation.rangeKm ?? null,
+          endChargeLimitSoc: observation.chargeLimitSoc ?? null,
+          sohSampleEligible: false,
           source,
         },
       });
@@ -280,14 +287,18 @@ export async function applyActivitySessionFromObservation(
     }
 
     if (decision.type === "update_charge" && charge) {
+      const endBatteryPercent =
+        observation.batteryPercent ?? charge.endBatteryPercent;
+      const endRangeKm = observation.rangeKm ?? charge.endRangeKm;
+      const endChargeLimitSoc =
+        observation.chargeLimitSoc ?? charge.endChargeLimitSoc;
       charge = await prisma.vehicleActivitySession.update({
         where: { id: charge.id },
         data: {
-          endBatteryPercent:
-            observation.batteryPercent ?? charge.endBatteryPercent,
+          endBatteryPercent,
           energyAddedPercent: computeEnergyAdded(
             charge.startBatteryPercent,
-            observation.batteryPercent ?? charge.endBatteryPercent,
+            endBatteryPercent,
           ),
           chargingPowerKind:
             observation.chargingPowerKind ?? charge.chargingPowerKind,
@@ -295,6 +306,8 @@ export async function applyActivitySessionFromObservation(
             charge.peakChargerPowerKw,
             observation.chargerPowerKw,
           ),
+          endRangeKm,
+          endChargeLimitSoc,
         },
       });
       continue;
@@ -302,6 +315,9 @@ export async function applyActivitySessionFromObservation(
 
     if (decision.type === "close_charge" && charge) {
       const endBat = observation.batteryPercent ?? charge.endBatteryPercent;
+      const endRangeKm = observation.rangeKm ?? charge.endRangeKm;
+      const endChargeLimitSoc =
+        observation.chargeLimitSoc ?? charge.endChargeLimitSoc;
       const energyAddedPercent = computeEnergyAdded(
         charge.startBatteryPercent,
         endBat,
@@ -309,6 +325,13 @@ export async function applyActivitySessionFromObservation(
       if (decision.discardNoise) {
         await prisma.vehicleActivitySession.delete({ where: { id: charge.id } });
       } else {
+        const sohSampleEligible = evaluateSohSampleEligible({
+          endedAt: observation.at,
+          endBatteryPercent: endBat,
+          endRangeKm,
+          endChargeLimitSoc,
+          sawComplete: observation.chargingStatus === "COMPLETE",
+        });
         await prisma.vehicleActivitySession.update({
           where: { id: charge.id },
           data: {
@@ -321,6 +344,9 @@ export async function applyActivitySessionFromObservation(
               charge.peakChargerPowerKw,
               observation.chargerPowerKw,
             ),
+            endRangeKm,
+            endChargeLimitSoc,
+            sohSampleEligible,
           },
         });
       }

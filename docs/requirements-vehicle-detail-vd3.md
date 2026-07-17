@@ -152,6 +152,7 @@
 |----|------|-------|
 | 오늘 운행 km·시간 | ActivitySession 집계 · 히스토리 한 줄 + Hero 오늘/미운행 | **[VD3-HS](./requirements-vehicle-detail-history-summary.md)** ✅ |
 | **주행·충전 히스토리 리스트** | Snapshot 전이 → ActivitySession · 1카드+필터 | **[VD3-H](./requirements-vehicle-detail-history.md)** ✅ |
+| **완충(한도) 시 잔여 km 추이** | CHARGE `endRangeKm` 캡처 · 추정 차트 | **[VD3-SOH](./requirements-vehicle-detail-soh.md)** ✅ |
 | 이벤트 타임라인 | Ingress/Audit 요약 파이프 | VD3-D |
 | 원격 제어 | Command Proxy · RBAC | 별도 Phase |
 | LLM AI Summary | 프롬프트·비용·환각 | 데모 후 |
@@ -237,6 +238,7 @@
 | **VS** | Vehicles Settings 등록·연동 허브 — [vehicles-settings](./requirements-vehicles-settings.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-H** | 주행·충전 히스토리 — [vehicle-detail-history](./requirements-vehicle-detail-history.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-HS** | 운행 요약(히스토리·Hero) — [history-summary](./requirements-vehicle-detail-history-summary.md) | ✅ 코드 · ☐ 스모크 |
+| **VD3-SOH** | 완충(한도) 시 잔여 km 추이 — [soh](./requirements-vehicle-detail-soh.md) | ✅ 코드 · ☐ 실차 |
 
 체크리스트: [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md)
 
@@ -292,4 +294,6 @@
 | 2026-07-18 | VD3-H 링크 — 주행·충전 히스토리 (조건부 GO) |
 | 2026-07-18 | VD3-H-0~3 — ActivitySession · FSM · API · UI |
 | 2026-07-18 | VD3-HS 링크 — 히스토리 한 줄 · Hero 오늘/미운행 |
+| 2026-07-18 | VD3-SOH 링크 — 완충(한도) 시 잔여 km 추이 (조건부 GO) |
+| 2026-07-18 | VD3-SOH-0~4 — endRangeKm · API · UI · 시드 |
 |

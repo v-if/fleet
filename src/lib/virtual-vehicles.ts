@@ -234,8 +234,33 @@ export async function createVirtualTeslaAccountWithVehicles(input: CreateVirtual
   });
 
   // VD3-H: 데모용 샘플 주행·충전 세션
+  // VD3-SOH: 한도 도달 CHARGE 샘플 (약 10개월 하락 곡선)
   const now = Date.now();
   for (const vehicle of createdVehicles) {
+    const sohCharges = Array.from({ length: 10 }, (_, i) => {
+      const monthsAgo = 9 - i;
+      const day = new Date(now);
+      day.setMonth(day.getMonth() - monthsAgo);
+      day.setHours(14, 0, 0, 0);
+      const end = new Date(day.getTime() + 2 * 60 * 60 * 1000);
+      const rangeKm = Math.round((420 - i * 3.2) * 10) / 10;
+      return {
+        vehicleId: vehicle.id,
+        kind: "CHARGE" as const,
+        startedAt: day,
+        endedAt: end,
+        startBatteryPercent: 35,
+        endBatteryPercent: 80,
+        energyAddedPercent: 45,
+        chargingPowerKind: "AC",
+        peakChargerPowerKw: 7,
+        endRangeKm: rangeKm,
+        endChargeLimitSoc: 80,
+        sohSampleEligible: true,
+        source: "DERIVED" as const,
+      };
+    });
+
     await prisma.vehicleActivitySession.createMany({
       data: [
         {
@@ -260,6 +285,9 @@ export async function createVirtualTeslaAccountWithVehicles(input: CreateVirtual
           energyAddedPercent: 36,
           chargingPowerKind: "AC",
           peakChargerPowerKw: 7.2,
+          endRangeKm: 310,
+          endChargeLimitSoc: 80,
+          sohSampleEligible: false,
           source: "DERIVED",
         },
         {
@@ -274,6 +302,7 @@ export async function createVirtualTeslaAccountWithVehicles(input: CreateVirtual
           endBatteryPercent: 75,
           source: "DERIVED",
         },
+        ...sohCharges,
       ],
     });
   }

@@ -13,6 +13,12 @@ import {
   isParkedOrAsleepObservation,
   planActivityTransitions,
 } from "../src/lib/vehicle-activity-session.ts";
+import {
+  computeSohDelta90d,
+  evaluateSohSampleEligible,
+  markSohOutliers,
+  SOH_MIN_SAMPLES_FOR_CHART,
+} from "../src/lib/vehicle-soh-rules.ts";
 
 let failed = false;
 function assert(cond, msg) {
@@ -253,5 +259,96 @@ const oldDrive = {
   assert(buildHeroActivityLine(s).text === null, "HS hero omit when no history");
 }
 
+// —— VD3-SOH ——
+assert(
+  evaluateSohSampleEligible({
+    endedAt: now,
+    endBatteryPercent: 80,
+    endRangeKm: 400,
+    endChargeLimitSoc: 80,
+  }) === true,
+  "SOH eligible near limit",
+);
+assert(
+  evaluateSohSampleEligible({
+    endedAt: now,
+    endBatteryPercent: 70,
+    endRangeKm: 350,
+    endChargeLimitSoc: 80,
+  }) === false,
+  "SOH not eligible below limit",
+);
+assert(
+  evaluateSohSampleEligible({
+    endedAt: now,
+    endBatteryPercent: 70,
+    endRangeKm: 350,
+    endChargeLimitSoc: 80,
+    sawComplete: true,
+  }) === true,
+  "SOH eligible via COMPLETE",
+);
+assert(
+  evaluateSohSampleEligible({
+    endedAt: now,
+    endBatteryPercent: 80,
+    endRangeKm: null,
+    endChargeLimitSoc: 80,
+  }) === false,
+  "SOH needs rangeKm",
+);
+
+{
+  const pts = markSohOutliers([
+    {
+      sessionId: "a",
+      at: "2026-01-01T00:00:00.000Z",
+      rangeKm: 400,
+      batteryPercent: 80,
+      chargeLimitSoc: 80,
+      outlier: false,
+    },
+    {
+      sessionId: "b",
+      at: "2026-02-01T00:00:00.000Z",
+      rangeKm: 395,
+      batteryPercent: 80,
+      chargeLimitSoc: 80,
+      outlier: false,
+    },
+    {
+      sessionId: "c",
+      at: "2026-03-01T00:00:00.000Z",
+      rangeKm: 100,
+      batteryPercent: 80,
+      chargeLimitSoc: 80,
+      outlier: false,
+    },
+  ]);
+  assert(pts[2].outlier === true, "SOH outlier ±25%");
+  assert(SOH_MIN_SAMPLES_FOR_CHART === 3, "SOH min samples");
+  const delta = computeSohDelta90d(
+    markSohOutliers([
+      {
+        sessionId: "a",
+        at: "2026-01-01T00:00:00.000Z",
+        rangeKm: 410,
+        batteryPercent: 80,
+        chargeLimitSoc: 80,
+        outlier: false,
+      },
+      {
+        sessionId: "b",
+        at: "2026-04-01T00:00:00.000Z",
+        rangeKm: 398,
+        batteryPercent: 80,
+        chargeLimitSoc: 80,
+        outlier: false,
+      },
+    ]),
+  );
+  assert(delta.delta90dKm === -12, `SOH delta (got ${delta.delta90dKm})`);
+}
+
 if (failed) process.exit(1);
-console.log("VD3-H / VD3-HS verify OK");
+console.log("VD3-H / VD3-HS / VD3-SOH verify OK");

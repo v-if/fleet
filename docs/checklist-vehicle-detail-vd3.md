@@ -31,6 +31,7 @@
 | **VS** | Vehicles Settings 등록 허브 ([요구](./requirements-vehicles-settings.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-H** | 주행·충전 히스토리 ([요구](./requirements-vehicle-detail-history.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-HS** | 운행 요약 히스토리·Hero ([요구](./requirements-vehicle-detail-history-summary.md)) | ✅ 코드 · ☐ 스모크 |
+| **VD3-SOH** | 완충(한도) 잔여 km 추이 ([요구](./requirements-vehicle-detail-soh.md)) | ✅ 코드 · ☐ 실차 |
 
 ---
 
@@ -111,5 +112,7 @@ VIN: `LRWYGCFJ7SC214742`
 | 2026-07-18 | VD3-H 주행·충전 히스토리 요구 초안 (조건부 GO) |
 | 2026-07-18 | VD3-H-0~3·H-5 코드 ✅ — Session · FSM · API · UI · 시드 · `vd3-h:verify` |
 | 2026-07-18 | VD3-HS 운행 요약(히스토리·Hero) 요구·코드 ✅ |
+| 2026-07-18 | VD3-SOH 완충(한도) 잔여 km 추이 요구 초안 (조건부 GO) |
+| 2026-07-18 | VD3-SOH-0~4 코드 ✅ — migrate · API · UI · 시드 · verify |
 | 2026-07-16 | VD3-N 표시명 연필 편집 요구 링크 |
 |

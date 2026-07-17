@@ -180,6 +180,8 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
       chargingPowerKind: merged.chargingPowerKind,
       chargerPowerKw: merged.chargerPowerKw,
       vehicleSpeedKmh: merged.vehicleSpeedKmh,
+      rangeKm: merged.rangeKm,
+      chargeLimitSoc: merged.chargeLimitSoc,
     });
   } catch (error) {
     console.warn(`Activity session FSM failed for ${vehicleId}:`, error);
@@ -547,6 +549,8 @@ export async function inferAsleepVehicles() {
         chargingPowerKind: snapshot.chargingPowerKind,
         chargerPowerKw: snapshot.chargerPowerKw,
         vehicleSpeedKmh: null,
+        rangeKm: snapshot.rangeKm,
+        chargeLimitSoc: snapshot.chargeLimitSoc,
       });
     } catch (error) {
       console.warn(`Activity session FSM (asleep) failed for ${vehicle.id}:`, error);
