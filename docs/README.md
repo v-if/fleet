@@ -34,6 +34,10 @@
 | [requirements-vehicle-list-vd3-align.md](./requirements-vehicle-list-vd3-align.md) | **VL** — 차량목록 ↔ VD3 언어·표시 통일 · 코드 ✅ · 실차 ☐ | 목록 UX |
 | [requirements-vehicle-list-vd3-align-polish.md](./requirements-vehicle-list-vd3-align-polish.md) | **VL-P** — 목록 폴리시 · 상세 툴바 식별 제거 · 코드 ✅ · 검수 ☐ | 목록·상세 UX |
 | [requirements-vehicle-list-filter-fields.md](./requirements-vehicle-list-filter-fields.md) | **VL-F** — 총 주행거리 · 조건부 충전 · 필터 6종 · 코드 ✅ · 스모크 ☐ | 목록 UX |
+| [requirements-vehicle-detail-history.md](./requirements-vehicle-detail-history.md) | **VD3-H** — 상세 주행·충전 히스토리 · 세션화 · 코드 ✅ · 실차 ☐ | V3 이력 |
+| [checklist-vehicle-detail-history.md](./checklist-vehicle-detail-history.md) | Phase VD3-H 체크리스트 · 실차 검수 남음 | VD3-H 검수 |
+| [requirements-vehicle-detail-history-summary.md](./requirements-vehicle-detail-history-summary.md) | **VD3-HS** — 히스토리 한 줄·Hero 오늘/미운행 · 코드 ✅ · 스모크 ☐ | V3 운행 요약 |
+| [checklist-vehicle-detail-history-summary.md](./checklist-vehicle-detail-history-summary.md) | Phase VD3-HS 체크리스트 | VD3-HS 검수 |
 | [requirements-vehicles-settings.md](./requirements-vehicles-settings.md) | **VS** — Vehicles Settings 등록·연동 허브 · 코드 ✅ · 실차 ☐ | 온보딩 UX |
 | [checklist-vehicle-detail-vd3.md](./checklist-vehicle-detail-vd3.md) | Phase VD3-1b~4 ✅ · VD3-6~7 ☐ | VD3 검수 |
 | [research/research-vehicles-detail-chatgpt.md](./research/research-vehicles-detail-chatgpt.md) | 상세 UI 리서치 (FMS 관리자 IA) | VD3 근거 |
@@ -256,6 +260,9 @@
 | 2026-07-17 | VL-F-1~3 코드 ✅ — `FleetVehicleTable` 열·필터·URL 매핑 |
 | 2026-07-17 | VS — Vehicles Settings 등록·연동 허브 요구 초안 |
 | 2026-07-17 | VS-2~6 코드 ✅ — `/vehicles/settings` · fleet scope · `_ak` QR |
+| 2026-07-18 | VD3-H — 상세 주행·충전 히스토리 요구 초안 (조건부 GO) |
+| 2026-07-18 | VD3-H-0~3·H-5 코드 ✅ — ActivitySession · FSM · activity API · 1카드 UI · verify |
+| 2026-07-18 | VD3-HS — 히스토리 한 줄·Hero 오늘/미운행 요구·코드 ✅ |
 | 2026-07-17 | CI-C2 — sample3 TPMS 차체·알로이 휠 고도화 |
 | 2026-07-17 | CI-C3 — sample4 Ultimate TPMS · SVG 가이드 |
 | 2026-07-17 | CI-C3b — TPMS 화이트·실버 차체 · 헤더 우측 알림 |

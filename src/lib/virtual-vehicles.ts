@@ -233,6 +233,51 @@ export async function createVirtualTeslaAccountWithVehicles(input: CreateVirtual
     },
   });
 
+  // VD3-H: 데모용 샘플 주행·충전 세션
+  const now = Date.now();
+  for (const vehicle of createdVehicles) {
+    await prisma.vehicleActivitySession.createMany({
+      data: [
+        {
+          vehicleId: vehicle.id,
+          kind: "DRIVE",
+          startedAt: new Date(now - 5 * 60 * 60 * 1000),
+          endedAt: new Date(now - 4.5 * 60 * 60 * 1000),
+          startOdometerKm: 12000,
+          endOdometerKm: 12012.4,
+          distanceKm: 12.4,
+          startBatteryPercent: 72,
+          endBatteryPercent: 65,
+          source: "DERIVED",
+        },
+        {
+          vehicleId: vehicle.id,
+          kind: "CHARGE",
+          startedAt: new Date(now - 4 * 60 * 60 * 1000),
+          endedAt: new Date(now - 2.5 * 60 * 60 * 1000),
+          startBatteryPercent: 42,
+          endBatteryPercent: 78,
+          energyAddedPercent: 36,
+          chargingPowerKind: "AC",
+          peakChargerPowerKw: 7.2,
+          source: "DERIVED",
+        },
+        {
+          vehicleId: vehicle.id,
+          kind: "DRIVE",
+          startedAt: new Date(now - 90 * 60 * 1000),
+          endedAt: new Date(now - 55 * 60 * 1000),
+          startOdometerKm: 12012.4,
+          endOdometerKm: 12015.5,
+          distanceKm: 3.1,
+          startBatteryPercent: 78,
+          endBatteryPercent: 75,
+          source: "DERIVED",
+        },
+      ],
+    });
+  }
+
   const result = {
     accountId: account.id,
     teslaEmail: account.teslaEmail,

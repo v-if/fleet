@@ -933,6 +933,27 @@
 - [ ] **VS-7** 실차·대시보드/맵 · 팝업 폴백 스모크
 - [ ] **VS-8** (P1) `_ak` UX 보강
 
+### Phase VD3-H 주행·충전 히스토리 — ✅ 코드 · ☐ 실차
+
+> [requirements-vehicle-detail-history.md](./requirements-vehicle-detail-history.md)
+
+- [x] **VD3-H-0** 문서 승인 (GO)
+- [x] **VD3-H-1** Snapshot 전이 FSM verify (`npm run vd3-h:verify`)
+- [x] **VD3-H-2** `VehicleActivitySession` · writer FSM (Telemetry/REST/ASLEEP)
+- [x] **VD3-H-3** activity API · VD3 1카드+필터 UI
+- [ ] **VD3-H-4** 실차 검수
+- [x] **VD3-H-5** (P1) 가상 시드 · 노이즈 필터 — retention ☐
+
+### Phase VD3-HS 운행 요약 (히스토리·Hero) — ✅ 코드 · ☐ 스모크
+
+> [requirements-vehicle-detail-history-summary.md](./requirements-vehicle-detail-history-summary.md) · [checklist-vehicle-detail-history-summary.md](./checklist-vehicle-detail-history-summary.md)
+
+- [x] **VD3-HS-0** 문서 승인
+- [x] **VD3-HS-1** summarize · verify
+- [x] **VD3-HS-2** 히스토리 헤더 한 줄
+- [x] **VD3-HS-3** Hero 관제 요약 오늘/미운행
+- [ ] **VD3-HS-4** 스모크
+
 ### Telemetry Value Monitor (개발) — 요구1 ✅
 
 > [requirements-tesla-fleet-telemetry-value-monitor.md](./requirements-tesla-fleet-telemetry-value-monitor.md)
@@ -1201,6 +1222,9 @@
 | 2026-07-17 | VS Vehicles Settings 등록·연동 허브 요구 초안 |
 | 2026-07-17 | VS `_ak` QR(최초만) · Telemetry 재연동 QR 생략 요구 반영 |
 | 2026-07-17 | VS-2~6 코드 — Settings 허브 · list scope · `_ak` · disconnect/unlink |
+| 2026-07-18 | VD3-H 주행·충전 히스토리 요구 초안 (조건부 GO) |
+| 2026-07-18 | VD3-H-0~3·H-5 코드 — ActivitySession migrate · FSM · API · UI · verify |
+| 2026-07-18 | VD3-HS-0~3 코드 — 히스토리 한 줄 · Hero 오늘/미운행 · verify |
 | 2026-07-17 | CI-C2 — sample3 `TpmsDiagram` 차체·알로이 휠·연결선 |
 | 2026-07-17 | CI-C3 — sample4 Ultimate `TpmsDiagram` · SVG 가이드 |
 | 2026-07-17 | CI-C3b — 화이트·실버 차체 · 타이어 카드 우측 상단 알림 |

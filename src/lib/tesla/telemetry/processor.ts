@@ -7,6 +7,7 @@ import { resolveParkNearbyTrigger, isDriveThenParkTransition } from "@/lib/tesla
 import { normalizeShiftState } from "@/lib/tesla/shift-state";
 import { patchVehicleSyncState } from "@/lib/tesla/hybrid/sync-state";
 import { shouldClearNearbyForLocation } from "@/lib/tesla/nearby-charging";
+import { applyActivitySessionFromObservation } from "@/lib/vehicle-activity-session";
 
 import { getTelemetryProcessBatchSize, getTelemetryStaleAfterMs, getTelemetryFreshnessMs } from "./config";
 import {
@@ -166,6 +167,23 @@ async function applyTelemetryFields(vehicleId: string, fields: ParsedTelemetryFi
       lastUpdatedAt: fields.eventAt,
     },
   });
+
+  // VD3-H: Snapshot 전이 → ActivitySession FSM
+  try {
+    await applyActivitySessionFromObservation(vehicleId, {
+      at: fields.eventAt,
+      shiftState: merged.shiftState,
+      chargingStatus: merged.chargingStatus,
+      status: merged.status,
+      odometerKm: merged.odometerKm,
+      batteryPercent: merged.batteryPercent,
+      chargingPowerKind: merged.chargingPowerKind,
+      chargerPowerKw: merged.chargerPowerKw,
+      vehicleSpeedKmh: merged.vehicleSpeedKmh,
+    });
+  } catch (error) {
+    console.warn(`Activity session FSM failed for ${vehicleId}:`, error);
+  }
 
   // Vehicle 제원 컬럼은 Telemetry로 갱신하지 않음 (Phase 4.4.B)
   // 소프트웨어 단절 상태면 구독을 다시 활성화하지 않음 (Phase 4.5)
@@ -516,6 +534,24 @@ export async function inferAsleepVehicles() {
         lastUpdatedAt: new Date(),
       },
     });
+
+    // VD3-H: 절전 추론 시 열린 주행 세션 종료
+    try {
+      await applyActivitySessionFromObservation(vehicle.id, {
+        at: new Date(),
+        shiftState: snapshot.shiftState,
+        chargingStatus: snapshot.chargingStatus,
+        status: "ASLEEP",
+        odometerKm: snapshot.odometerKm,
+        batteryPercent: snapshot.batteryPercent,
+        chargingPowerKind: snapshot.chargingPowerKind,
+        chargerPowerKw: snapshot.chargerPowerKw,
+        vehicleSpeedKmh: null,
+      });
+    } catch (error) {
+      console.warn(`Activity session FSM (asleep) failed for ${vehicle.id}:`, error);
+    }
+
     updated += 1;
   }
 

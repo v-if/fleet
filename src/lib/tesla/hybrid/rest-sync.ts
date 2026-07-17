@@ -20,6 +20,7 @@ import {
   isRestWakeCooldownElapsed,
   patchVehicleSyncState,
 } from "@/lib/tesla/hybrid/sync-state";
+import { applyActivitySessionFromObservation } from "@/lib/vehicle-activity-session";
 import { TeslaFleetClient } from "@/lib/tesla/mapper";
 import {
   extractVehicleSpecs,
@@ -261,6 +262,29 @@ export async function writeRestSnapshot(
       lastUpdatedAt: snapshot.lastUpdatedAt,
     },
   });
+
+  // VD3-H: REST Snapshot 전이 → ActivitySession FSM
+  try {
+    await applyActivitySessionFromObservation(
+      vehicle.id,
+      {
+        at: snapshot.lastUpdatedAt ?? lastRestSyncAt,
+        shiftState: snapshot.shiftState ?? null,
+        chargingStatus: snapshot.chargingStatus ?? null,
+        status: snapshot.status ?? null,
+        odometerKm: snapshot.odometerKm ?? null,
+        batteryPercent: snapshot.batteryPercent ?? null,
+        chargingPowerKind: preserveTelemetryFields
+          ? (previousSnapshot?.chargingPowerKind ?? snapshot.chargingPowerKind ?? null)
+          : (snapshot.chargingPowerKind ?? null),
+        chargerPowerKw: snapshot.chargerPowerKw ?? null,
+        vehicleSpeedKmh: null,
+      },
+      "DERIVED",
+    );
+  } catch (error) {
+    console.warn(`Activity session FSM failed for ${vehicle.id}:`, error);
+  }
 
   if (restSyncReason) {
     const syncPatch: Parameters<typeof patchVehicleSyncState>[1] = {

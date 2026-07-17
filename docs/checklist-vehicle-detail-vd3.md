@@ -29,6 +29,8 @@
 | **VL-P** | 목록 폴리시 ([요구](./requirements-vehicle-list-vd3-align-polish.md)) | ✅ 코드 · ☐ 검수 |
 | **VL-F** | 열·충전·필터 정리 ([요구](./requirements-vehicle-list-filter-fields.md)) | ✅ 코드 · ☐ 딥링크 스모크 |
 | **VS** | Vehicles Settings 등록 허브 ([요구](./requirements-vehicles-settings.md)) | ✅ 코드 · ☐ 실차 |
+| **VD3-H** | 주행·충전 히스토리 ([요구](./requirements-vehicle-detail-history.md)) | ✅ 코드 · ☐ 실차 |
+| **VD3-HS** | 운행 요약 히스토리·Hero ([요구](./requirements-vehicle-detail-history-summary.md)) | ✅ 코드 · ☐ 스모크 |
 
 ---
 
@@ -106,5 +108,8 @@ VIN: `LRWYGCFJ7SC214742`
 | 2026-07-17 | VS — Vehicles Settings 등록·연동 허브 요구 링크 |
 | 2026-07-17 | VS `_ak` QR · 재연동 QR 생략 요구 보강 |
 | 2026-07-17 | VS-2~6 코드 ✅ — `/vehicles/settings` · scope=fleet · `_ak` · 액션 이관 |
+| 2026-07-18 | VD3-H 주행·충전 히스토리 요구 초안 (조건부 GO) |
+| 2026-07-18 | VD3-H-0~3·H-5 코드 ✅ — Session · FSM · API · UI · 시드 · `vd3-h:verify` |
+| 2026-07-18 | VD3-HS 운행 요약(히스토리·Hero) 요구·코드 ✅ |
 | 2026-07-16 | VD3-N 표시명 연필 편집 요구 링크 |
 |

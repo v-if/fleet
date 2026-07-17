@@ -7,6 +7,7 @@ import { getVehicleProviderName } from "@/lib/vehicle-providers";
 import { parseNearbyChargingJson } from "@/lib/tesla/nearby-charging";
 import { isTelemetryValueMonitorEnabled } from "@/lib/tesla/telemetry/config";
 import { listTelemetryMonitorLinesForVehicle } from "@/lib/tesla/telemetry/value-monitor";
+import { summarizeVehicleActivity } from "@/lib/vehicle-activity-session";
 import type {
   VehicleDetailDto,
   VehicleFreshnessDto,
@@ -289,6 +290,13 @@ export async function getVehicleDetail(
       }
     : null;
 
+  let activitySummary: VehicleDetailDto["activitySummary"] = null;
+  try {
+    activitySummary = await summarizeVehicleActivity(vehicle.id);
+  } catch (error) {
+    console.warn(`activitySummary failed for ${vehicle.id}:`, error);
+  }
+
   return {
     ...base,
     createdAt: vehicle.createdAt.toISOString(),
@@ -313,6 +321,7 @@ export async function getVehicleDetail(
           lastError: subscription.lastError,
         }
       : null,
+    activitySummary,
     telemetryValueMonitor,
   };
 }

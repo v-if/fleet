@@ -192,6 +192,17 @@ export type VehicleDetailDto = VehicleListItemDto & {
   updatedAt: string;
   events: VehicleEventDto[];
   telemetrySubscription: VehicleTelemetrySubscriptionDto | null;
+  /** VD3-HS: 오늘 운행·미운행 집계 */
+  activitySummary: {
+    todayDistanceKm: number;
+    todayDriveDurationMs: number;
+    todayChargeCount: number;
+    idleDays: number | null;
+    hasTodayDrive: boolean;
+    historyLine: string;
+    heroLine: string | null;
+    heroTone: "info" | "warn" | null;
+  } | null;
   /** 개발용 Telemetry 수신 모니터. flag OFF면 null */
   telemetryValueMonitor: {
     lines: Array<{

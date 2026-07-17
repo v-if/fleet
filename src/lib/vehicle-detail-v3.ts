@@ -104,6 +104,13 @@ export function buildOpsSummary(
     items.push({ tone: "ok", text: "주차 · 대기" });
   }
 
+  // VD3-HS: 오늘 운행 / 미운행 (모드 직후)
+  const heroLine = vehicle.activitySummary?.heroLine;
+  const heroTone = vehicle.activitySummary?.heroTone;
+  if (heroLine && heroTone) {
+    items.push({ tone: heroTone, text: heroLine });
+  }
+
   if (snapshot.batteryPercent != null && snapshot.batteryPercent < 20) {
     items.push({
       tone: "warn",
