@@ -4,7 +4,7 @@
 |------|------|
 | 목적 | 「실시간 차량 정보」에서 **3×2 퀵타일**로 잠금·감시·공조·변속·온도를 보고, **「타이어 · 차체」**는 TPMS 비주얼 SoT |
 | 적용 | `FleetVehicleDetailView` · `TpmsDiagram` |
-| 관련 | [requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md) (§4.9), [requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md) (IA), [sample-html/vehicle-sample.html](./sample-html/vehicle-sample.html) (CI-C), [sample-html/vehicle-sample2.html](./sample-html/vehicle-sample2.html) (비주얼 후보) |
+| 관련 | [requirements-vehicle-detail-ui2.md](./requirements-vehicle-detail-ui2.md) (§4.9), [requirements-vehicle-detail-ui.md](./requirements-vehicle-detail-ui.md) (IA), [sample-html/vehicle-sample.html](./sample-html/vehicle-sample.html) (CI-C), [sample-html/vehicle-sample3.html](./sample-html/vehicle-sample3.html) (CI-C2), [sample-html/vehicle-sample4.html](./sample-html/vehicle-sample4.html) (CI-C3), [sample-html/vehicle-sample2.html](./sample-html/vehicle-sample2.html) (비주얼 후보) |
 | 데이터 | Snapshot — `locked` · `sentryMode` · `climateOn` · `shiftState` · `insideTempC` · `outsideTempC` · `tpms*` |
 | 상태 | **CI-A~D 구현 완료** · §10 평가·개선안 추가 (후속 미착수) |
 | 체크리스트 | [checklist-car-info-card.md](./checklist-car-info-card.md) |
@@ -54,10 +54,34 @@
 
 ---
 
-## 4. CI-C 비주얼 (유지)
+## 4. CI-C 비주얼 (유지) · CI-C2 · CI-C3 고도화
 
 `docs/sample-html/vehicle-sample.html` — 글래스 루프 차체 · 측면 타이어바 · 정상/주의.  
-실내·실외·변속 오버레이 **없음**.
+실내·실외·변속 오버레이 **없음**. **CI-C ✅**
+
+### 4.0 CI-C2 — sample3 고도화 ✅
+
+`docs/sample-html/vehicle-sample3.html` → `TpmsDiagram` 반영:
+
+| 요소 | 내용 |
+|------|------|
+| 차체 | 그라데이션·인셋 하이라이트 · 사이드미러 · 헤드/테일램프 · 글래스 루프 |
+| 타이어 | 3D 알로이 휠(림 그라데이션) · 주의 시 앰버 테두리·펄스 |
+| 연결선 | 수치↔타이어 dashed connector · 주의 시 앰버 펄스 |
+| 요약 | 저압 1개 이상 시 「수치 불균형」칩 |
+
+### 4.0b CI-C3 — sample4 Ultimate ✅ · C3b 색상·헤더 알림
+
+`docs/sample-html/vehicle-sample4.html` → `TpmsDiagram` 최신 SoT:
+
+| 요소 | 내용 |
+|------|------|
+| 차체 | **화이트·실버** 그라데이션 (`from-slate-100`→`to-slate-200`) · 앰버 헤드램프 · 글래스 루프 |
+| 타이어 | 리얼 트레드 · 정상/주의(로즈) · 핑 |
+| 가이드 | SVG dashed `#CBD5E1` · 경고 시 rose + `tpms-guide-alert` |
+| 칩 | 카드 **제목 행 우측 상단** (`TpmsAlertChip`) — 예: 「후좌측 압력 저하」 |
+
+**CI-C3b (2026-07-17):** 다크 사이버 차체를 기존 라이트 실버로 복원 · 알림을 다이어그램 중앙에서 카드 헤더 우측으로 이동.
 
 ### 4.1 sample2 (후보 · 미반영)
 
@@ -106,6 +130,8 @@
 | **CI-A** | 다이어그램 merge(당시) · 제목 | ✅ (CI-D로 배치 변경) |
 | **CI-B** | 퀵타일 4칸 | ✅ → **CI-D로 대체** |
 | **CI-C** | sample 비주얼 | ✅ |
+| **CI-C2** | sample3 차체·휠·연결선 고도화 | ✅ |
+| **CI-C3** | sample4 Ultimate · 화이트·실버 차체 · 헤더 우측 알림 | ✅ |
 | **CI-D** | 3×2 퀵타일 확정 · 다이어그램에서 온도·변속 원복 | ✅ |
 | **CI-E** | §10 개선안 (선택·후속) | ☐ |
 
@@ -126,6 +152,9 @@
 | 2026-07-14 | **CI-D** — 실내·실외·변속 퀵타일 원복 · 순서 확정 |
 | 2026-07-14 | **§10** 「실시간 차량 정보」카드 평가·개선안 |
 | 2026-07-14 | sample2 HTML — SVG 탑뷰·관제 요약 시안 (§4.1) |
+| 2026-07-17 | **CI-C2** — sample3 차체·알로이 휠·연결선 · `TpmsDiagram` |
+| 2026-07-17 | **CI-C3** — sample4 Ultimate · SVG 가이드 · LOW rose · `TpmsDiagram` |
+| 2026-07-17 | **CI-C3b** — sample4 화이트·실버 차체 복원 · 알림 카드 우측 상단 |
 
 ---
 
@@ -142,7 +171,7 @@ FMS 차량 상세 컨셉 기준:
 ② 상태 · SOC바 · 주행가능 km · 이슈 · 신선도 / 절전 시 마지막 신호
 ③ 충전 서브카드 (조건부, CC)
 ④ 3×2 퀵타일 (CI-D)
-⑤ 「타이어 · 차체」TPMS (CI-C)
+⑤ 「타이어 · 차체」TPMS (CI-C · CI-C2 · **CI-C3**)
 ```
 
 우측 「현재 위치」는 1뷰포트 페어로 평가하되, 본 절의 개선 ID는 좌측 중심.

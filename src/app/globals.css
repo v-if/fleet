@@ -750,3 +750,15 @@ span.flatpickr-weekday,
   opacity: 0.8;
   cursor: grabbing; /* Changes the cursor to indicate dragging */
 }
+
+/* TPMS sample4 — 경고 가이드 라인 dash 애니메이션 */
+@keyframes tpms-alert-dash {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+.tpms-guide-alert {
+  stroke-dasharray: 4 3;
+  animation: tpms-alert-dash 0.8s linear infinite;
+}

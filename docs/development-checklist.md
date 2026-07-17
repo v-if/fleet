@@ -959,13 +959,15 @@
 - [x] **CC-D** 완속/급속 (`chargingPowerKind`)
 - [ ] `prisma migrate` · 실차 충전 세션 수동 검수
 
-### Phase CI 차체·TPMS 통합 다이어그램 — ✅ A~D
+### Phase CI 차체·TPMS 통합 다이어그램 — ✅ A~D · C2 · C3
 
-> [requirements-car-info-card.md](./requirements-car-info-card.md) · [checklist-car-info-card.md](./checklist-car-info-card.md) · [sample-html/vehicle-sample.html](./sample-html/vehicle-sample.html)
+> [requirements-car-info-card.md](./requirements-car-info-card.md) · [checklist-car-info-card.md](./checklist-car-info-card.md) · [sample-html/vehicle-sample.html](./sample-html/vehicle-sample.html) · [sample-html/vehicle-sample3.html](./sample-html/vehicle-sample3.html) · [sample-html/vehicle-sample4.html](./sample-html/vehicle-sample4.html)
 
 - [x] **CI-A** 「타이어 · 차체」제목 · PSI 다이어그램
 - [x] **CI-B** (중간) 퀵타일 4칸 — **CI-D로 대체**
 - [x] **CI-C** sample HTML — 글래스 루프 차체 · 측면 타이어바
+- [x] **CI-C2** sample3 — 3D 차체·알로이 휠·연결선 · 수치 불균형 칩
+- [x] **CI-C3** sample4 — 화이트·실버 실루엣 · 트레드 휠 · SVG 가이드 · 카드 헤더 우측 알림
 - [x] **CI-D** 3×2: 잠금·변속·감시모드·공조·실내·실외 · 다이어그램에서 온도·변속 제거
 - [ ] **CI-E** §10 개선 (개폐 시인성·타일 강조·신선도 등) — 미착수
 - [ ] 실차 수동 검수
@@ -1199,6 +1201,9 @@
 | 2026-07-17 | VS Vehicles Settings 등록·연동 허브 요구 초안 |
 | 2026-07-17 | VS `_ak` QR(최초만) · Telemetry 재연동 QR 생략 요구 반영 |
 | 2026-07-17 | VS-2~6 코드 — Settings 허브 · list scope · `_ak` · disconnect/unlink |
+| 2026-07-17 | CI-C2 — sample3 `TpmsDiagram` 차체·알로이 휠·연결선 |
+| 2026-07-17 | CI-C3 — sample4 Ultimate `TpmsDiagram` · SVG 가이드 |
+| 2026-07-17 | CI-C3b — 화이트·실버 차체 · 타이어 카드 우측 상단 알림 |
 | 2026-07-16 | TRF-B2e park nearby 운행→P 엣지 요구 초안 |
 | 2026-07-16 | TRF-B2e-2·3 코드 — 엣지·이동 보완 · `trf-b2:verify` |
 

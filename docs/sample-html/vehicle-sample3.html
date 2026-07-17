@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FMS Advanced TPMS Dashboard</title>
+  <!-- Tailwind CSS CDN 로드 -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+
+  <!-- FMS 차량 상세 카드 샘플 컨테이너 -->
+  <div class="w-full max-w-sm bg-white border border-gray-100 rounded-3xl p-6 shadow-xl shadow-gray-100/70">
+    
+    <!-- ==========================================
+         [ 고도화 TPMS 컴포넌트 시작 ]
+         ========================================== -->
+    <div class="border-t border-gray-100 pt-5">
+      <div class="flex items-center justify-between mb-2">
+        <h5 class="text-sm font-bold text-gray-800">TPMS (타이어 공기압)</h5>
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-600 border border-amber-100 animate-pulse">
+          ⚠️ 수치 불균형
+        </span>
+      </div>
+      <p class="mb-5 text-[11px] text-gray-400" title="2026. 7. 14. 오후 8:32:26">
+        출처: 마지막 상세 조회 기준 · 35분 전
+      </p>
+      
+      <!-- 차량 탑뷰 관제 레이아웃 콘텍스트 -->
+      <div class="relative mx-auto w-full max-w-[320px] py-6 select-none">
+        <p class="mb-6 text-center text-xs font-medium text-gray-400">단위: PSI</p>
+        
+        <!-- 🚗 [고도화] 자동차 본체 3D 스타일 실루엣 -->
+        <div class="relative mx-auto h-52 w-24 bg-gradient-to-b from-slate-100 to-slate-200 border border-slate-300 shadow-[inset_0_3px_6px_rgba(255,255,255,0.9),0_12px_24px_-8px_rgba(15,23,42,0.15)]"
+             style="border-radius: 32px 32px 22px 22px;">
+          
+          <!-- 좌우 사이드 미러 (Side Mirrors) -->
+          <div class="absolute -left-2 top-14 w-2 h-4 bg-slate-300 rounded-l-md border-y border-l border-slate-400/60 shadow-sm"></div>
+          <div class="absolute -right-2 top-14 w-2 h-4 bg-slate-300 rounded-r-md border-y border-r border-slate-400/60 shadow-sm"></div>
+
+          <!-- 전면부 헤드라이트 그래픽 -->
+          <div class="absolute top-[3px] left-2 w-3 h-1 bg-amber-200 rounded-full opacity-70"></div>
+          <div class="absolute top-[3px] right-2 w-3 h-1 bg-amber-200 rounded-full opacity-70"></div>
+
+          <!-- 앞유리 (Windshield with Gradients) -->
+          <div class="absolute top-[30px] left-1.5 right-1.5 h-12 bg-gradient-to-b from-slate-400/20 to-slate-500/40 border-t border-b border-white/40 shadow-inner"
+               style="border-radius: 20px 20px 4px 4px;"></div>
+          
+          <!-- 파노라마 글래스 루프 (Premium Glass Roof Accent) -->
+          <div class="absolute top-[86px] left-1.5 right-1.5 h-18 bg-gradient-to-b from-slate-500/40 to-slate-600/50 border-b border-white/30"
+               style="border-radius: 4px 4px 14px 14px;"></div>
+          
+          <!-- 보닛 기하학 라인 (Hood Character Line) -->
+          <div class="absolute top-[16px] left-5 right-5 h-[1.5px] bg-slate-300/80"></div>
+          
+          <!-- 후면 테일램프 그래픽 -->
+          <div class="absolute bottom-[2px] left-4 right-4 h-1 bg-red-500 rounded-full opacity-80"></div>
+        </div>
+
+        <!-- 🛞 타이어 및 공기압 수치 매핑 인터페이스 (포인터 인디케이터 라인 추가) -->
+        
+        <!-- [1] 전좌 (Front-Left) -->
+        <div class="flex items-center absolute top-8 left-0 w-[110px] justify-end">
+          <div class="flex flex-col items-end gap-0.5">
+            <span class="text-sm font-black text-slate-800 leading-none">42</span>
+            <span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1 py-0.5 rounded border border-emerald-100">정상</span>
+          </div>
+          <!-- 연결선 -->
+          <div class="w-4 border-b border-dashed border-slate-300 mx-1.5"></div>
+          <!-- 3D 알로이 휠 스타일 타이어 -->
+          <div class="w-4 h-11 bg-slate-800 rounded-sm border border-slate-900 flex flex-col justify-between items-center py-1 shadow-md">
+            <div class="w-2.5 h-[1.5px] bg-slate-600"></div>
+            <div class="w-2 h-4 bg-gradient-to-r from-slate-500 to-slate-400 rounded-sm shadow-inner"></div>
+            <div class="w-2.5 h-[1.5px] bg-slate-600"></div>
+          </div>
+        </div>
+
+        <!-- [2] 전우 (Front-Right) -->
+        <div class="flex items-center absolute top-8 right-0 w-[110px] justify-start">
+          <!-- 3D 알로이 휠 스타일 타이어 -->
+          <div class="w-4 h-11 bg-slate-800 rounded-sm border border-slate-900 flex flex-col justify-between items-center py-1 shadow-md">
+            <div class="w-2.5 h-[1.5px] bg-slate-600"></div>
+            <div class="w-2 h-4 bg-gradient-to-r from-slate-500 to-slate-400 rounded-sm shadow-inner"></div>
+            <div class="w-2.5 h-[1.5px] bg-slate-600"></div>
+          </div>
+          <!-- 연결선 -->
+          <div class="w-4 border-b border-dashed border-slate-300 mx-1.5"></div>
+          <div class="flex flex-col items-start gap-0.5">
+            <span class="text-sm font-black text-slate-800 leading-none">42</span>
+            <span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1 py-0.5 rounded border border-emerald-100">정상</span>
+          </div>
+        </div>
+
+        <!-- [3] 후좌 (Rear-Left) -->
+        <div class="flex items-center absolute bottom-10 left-0 w-[110px] justify-end">
+          <div class="flex flex-col items-end gap-0.5">
+            <span class="text-sm font-black text-amber-600 leading-none">37</span>
+            <span class="text-[9px] text-amber-600 font-bold bg-amber-50 px-1 py-0.5 rounded border border-amber-100">주의</span>
+          </div>
+          <!-- 경고용 점멸 연결선 -->
+          <div class="w-4 border-b border-dashed border-amber-300 mx-1.5 animate-pulse"></div>
+          <!-- 3D 경고용 테두리 강조 타이어 -->
+          <div class="w-4 h-11 bg-slate-800 rounded-sm border border-amber-500 flex flex-col justify-between items-center py-1 shadow-md shadow-amber-100 animate-pulse">
+            <div class="w-2.5 h-[1.5px] bg-slate-600"></div>
+            <div class="w-2 h-4 bg-gradient-to-r from-amber-500 to-amber-400 rounded-sm shadow-inner"></div>
+            <div class="w-2.5 h-[1.5px] bg-slate-600"></div>
+          </div>
+        </div>
+
+        <!-- [4] 후우 (Rear-Right) -->
+        <div class="flex items-center absolute bottom-10 right-0 w-[110px] justify-start">
+          <!-- 3D 알로이 휠 스타일 타이어 -->
+          <div class="w-4 h-11 bg-slate-800 rounded-sm border border-slate-900 flex flex-col justify-between items-center py-1 shadow-md">
+            <div class="w-2.5 h-[1.5px] bg-slate-600"></div>
+            <div class="w-2 h-4 bg-gradient-to-r from-slate-500 to-slate-400 rounded-sm shadow-inner"></div>
+            <div class="w-2.5 h-[1.5px] bg-slate-600"></div>
+          </div>
+          <!-- 연결선 -->
+          <div class="w-4 border-b border-dashed border-slate-300 mx-1.5"></div>
+          <div class="flex flex-col items-start gap-0.5">
+            <span class="text-sm font-black text-slate-800 leading-none">42</span>
+            <span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1 py-0.5 rounded border border-emerald-100">정상</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- ==========================================
+         [ TPMS 컴포넌트 끝 ]
+         ========================================== -->
+
+  </div>
+
+</body>
+</html>

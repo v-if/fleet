@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { BatteryHealthGauge } from "@/components/fleet/battery-health-gauge";
-import { TpmsDiagram } from "@/components/fleet/tpms-diagram";
+import { TpmsDiagram, TpmsAlertChip, buildTpmsPressureAlertLabel } from "@/components/fleet/tpms-diagram";
 import { VehicleMap } from "@/components/fleet/vehicle-map";
 import { BatteryProgressBar } from "@/components/fms/BatteryProgressBar";
 import {
@@ -628,6 +628,10 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
     tpms &&
       (tpms.fl != null || tpms.fr != null || tpms.rl != null || tpms.rr != null),
   );
+  const tpmsAlertLabel =
+    showBodyDiagram && tpms
+      ? buildTpmsPressureAlertLabel(tpms.fl, tpms.fr, tpms.rl, tpms.rr)
+      : null;
 
   return (
     <>
@@ -770,9 +774,12 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
 
           {showBodyDiagram && tpms ? (
             <div className="mt-5 border-t border-gray-100 pt-5 dark:border-gray-800">
-              <h5 className="mb-2 text-sm font-semibold text-gray-800 dark:text-white/90">
-                타이어 · 차체
-              </h5>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h5 className="text-sm font-semibold text-gray-800 dark:text-white/90">
+                  타이어 · 차체
+                </h5>
+                {tpmsAlertLabel ? <TpmsAlertChip label={tpmsAlertLabel} /> : null}
+              </div>
               <p
                 className="mb-3 text-theme-xs text-gray-500 dark:text-gray-400"
                 title={formatDateTime(tpmsSourceAt)}
@@ -784,6 +791,7 @@ export function FleetVehicleDetailView({ vehicleId }: FleetVehicleDetailViewProp
                 frontRight={tpms.fr}
                 rearLeft={tpms.rl}
                 rearRight={tpms.rr}
+                hideInlineAlert
               />
             </div>
           ) : null}

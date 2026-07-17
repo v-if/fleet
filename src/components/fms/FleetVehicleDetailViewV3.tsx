@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
-import { TpmsDiagram } from "@/components/fleet/tpms-diagram";
+import { TpmsDiagram, TpmsAlertChip, buildTpmsPressureAlertLabel } from "@/components/fleet/tpms-diagram";
 import { VehicleMap } from "@/components/fleet/vehicle-map";
 import { BatteryProgressBar } from "@/components/fms/BatteryProgressBar";
 import {
@@ -212,6 +212,10 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
   const showTpms = Boolean(
     tpms && (tpms.fl != null || tpms.fr != null || tpms.rl != null || tpms.rr != null),
   );
+  const tpmsAlertLabel =
+    showTpms && tpms
+      ? buildTpmsPressureAlertLabel(tpms.fl, tpms.fr, tpms.rl, tpms.rr)
+      : null;
   const tpmsValues = [tpms?.fl, tpms?.fr, tpms?.rl, tpms?.rr].filter(
     (v): v is number => v != null,
   );
@@ -640,7 +644,10 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
         </section>
 
         <section className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-          <h4 className="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">타이어</h4>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">타이어</h4>
+            {tpmsAlertLabel ? <TpmsAlertChip label={tpmsAlertLabel} /> : null}
+          </div>
           {showTpms && tpms ? (
             <>
               <TpmsDiagram
@@ -648,6 +655,7 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
                 frontRight={tpms.fr}
                 rearLeft={tpms.rl}
                 rearRight={tpms.rr}
+                hideInlineAlert
               />
               <div className="mt-3 flex flex-wrap gap-3 text-theme-xs text-gray-500">
                 {tpmsAvg != null ? <span>평균 {tpmsAvg} PSI</span> : null}

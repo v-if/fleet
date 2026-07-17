@@ -41,7 +41,7 @@
 | [checklist-vehicle-detail-ops-copy.md](./checklist-vehicle-detail-ops-copy.md) | Phase VD-OPS ✅ | 검수 |
 | [requirements-charging-card.md](./requirements-charging-card.md) | 상세 「충전 중」서브카드 (CC-A~D ✅) — 완속/급속 포함 | 충전 UX · migrate·실차 검수 |
 | [checklist-charging-card.md](./checklist-charging-card.md) | Phase CC 체크리스트 · 실차 검수 남음 | CC 구현·검수 |
-| [requirements-car-info-card.md](./requirements-car-info-card.md) | 상세 3×2+TPMS (CI-A~D ✅) · **§10 카드 평가·CI-E 후보** | 차체·퀵타일 · 개선 검토 |
+| [requirements-car-info-card.md](./requirements-car-info-card.md) | 상세 3×2+TPMS (CI-A~D · **CI-C2·C3** ✅) · §10 · CI-E 후보 | 차체·퀵타일 · 개선 검토 |
 | [checklist-car-info-card.md](./checklist-car-info-card.md) | Phase CI 체크리스트 · 실차 검수 남음 | CI 구현·검수 |
 | [requirements-vehicle-asleep-status.md](./requirements-vehicle-asleep-status.md) | 절전/ONLINE 정합 · **Hobby=안1** · **Pro Cron=보류** | 목록·상세 뱃지 |
 | [checklist-vehicle-asleep-status.md](./checklist-vehicle-asleep-status.md) | Phase AS-H ✅ · AS-B(Pro) 보류 · AS-C 검수 | AS 검수 |
@@ -256,5 +256,8 @@
 | 2026-07-17 | VL-F-1~3 코드 ✅ — `FleetVehicleTable` 열·필터·URL 매핑 |
 | 2026-07-17 | VS — Vehicles Settings 등록·연동 허브 요구 초안 |
 | 2026-07-17 | VS-2~6 코드 ✅ — `/vehicles/settings` · fleet scope · `_ak` QR |
+| 2026-07-17 | CI-C2 — sample3 TPMS 차체·알로이 휠 고도화 |
+| 2026-07-17 | CI-C3 — sample4 Ultimate TPMS · SVG 가이드 |
+| 2026-07-17 | CI-C3b — TPMS 화이트·실버 차체 · 헤더 우측 알림 |
 | 2026-07-16 | TRF-B2e — park nearby 운행→P 엣지 트리거 요구 초안 |
 | 2026-07-16 | TRF-B2e-2·3 코드 ✅ — 엣지·이동 보완 · verify |
