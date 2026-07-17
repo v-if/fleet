@@ -298,9 +298,9 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
         </div>
       ) : null}
 
-      {/* Hero + Map */}
-      <div className="mb-6 grid gap-6 xl:grid-cols-2">
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+      {/* Hero + Map — min-w-0: 모바일에서 Naver Map min-content가 우측 padding을 밀어내지 않도록 */}
+      <div className="mb-6 grid min-w-0 gap-6 xl:grid-cols-2">
+        <section className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <Badge color={opsModeBadgeColor(mode)}>{OPS_MODE_LABEL[mode]}</Badge>
             {snapshot?.shiftState ? (
@@ -458,10 +458,10 @@ export function FleetVehicleDetailViewV3({ vehicleId }: Props) {
           ) : null}
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+        <section className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
           <h4 className="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">위치</h4>
           {hasCoords ? (
-            <div className="h-64 overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800">
+            <div className="h-64 w-full min-w-0 overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800">
               <VehicleMap
                 vehicles={mapVehicle}
                 selectedId={vehicle.id}

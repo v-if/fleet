@@ -553,10 +553,10 @@ export function VehicleMap({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="w-full min-w-0 space-y-3">
       <div
         ref={containerRef}
-        className="overflow-hidden rounded-xl border shadow-sm"
+        className="h-full w-full min-w-0 overflow-hidden rounded-xl border shadow-sm"
         style={{ height }}
       />
       {!ready ? (
