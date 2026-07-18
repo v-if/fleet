@@ -28,6 +28,7 @@
 | [requirements-vehicle-detail-vd3-responsive-toolbar.md](./requirements-vehicle-detail-vd3-responsive-toolbar.md) | **VD3-R** — 상세 상단 PC·모바일 통일 · v2 링크 제거 · 코드 ✅ · 검수 ☐ | V3 툴바 UX |
 | [requirements-vehicle-detail-vd3-nearby-block.md](./requirements-vehicle-detail-vd3-nearby-block.md) | **VD3-NB** — 인근충전소 목록 있을 때만 블록 · 코드 ✅ | V3 nearby UX |
 | [requirements-vehicle-detail-vd3-destination-clear.md](./requirements-vehicle-detail-vd3-destination-clear.md) | **VD3-DC** — 주행 목적지 주차·절전 클리어 · 코드 ✅ · 실차 ☐ | V3 트립 잔상 |
+| [requirements-vehicle-detail-nav-cancel-clear.md](./requirements-vehicle-detail-nav-cancel-clear.md) | **VD3-DCn** — 주행 중 안내 종료 목적지 클리어 · 코드 ✅ · 실차 ☐ | V3 트립 잔상 |
 | [requirements-vehicle-detail-vd3-trip-clear-fields.md](./requirements-vehicle-detail-vd3-trip-clear-fields.md) | **VD3-DCf** — 속도·도착 SoC 클리어 · 코드 ✅ · 실차 ☐ | V3 트립 잔상 |
 | [requirements-vehicle-detail-vd3-nearby-map.md](./requirements-vehicle-detail-vd3-nearby-map.md) | **VD3-NM** — 인근충전소 지도 마커 · 코드 ✅ · 실차 ☐ | V3 nearby 맵 |
 | [requirements-vehicle-detail-vd3-nearby-labels.md](./requirements-vehicle-detail-vd3-nearby-labels.md) | **VD3-NL** — 목록·맵 A–E · SC/DC 뱃지 · 맵 거리(km) · 설명 문구 · 코드 ✅ · 실차 ☐ | V3 nearby UX |
@@ -267,6 +268,8 @@
 | 2026-07-18 | VD3-HS — 히스토리 한 줄·Hero 오늘/미운행 요구·코드 ✅ |
 | 2026-07-18 | VD3-SOH — 완충(한도) 시 잔여 km 추이 요구 초안 (조건부 GO) |
 | 2026-07-18 | VD3-SOH-0~4 코드 ✅ — endRangeKm · soh API · VehicleSohCard · 시드 · verify |
+| 2026-07-18 | VD3-DCn — 주행 중 안내 종료 목적지 클리어 요구 초안 (GO) |
+| 2026-07-18 | VD3-DCn 코드 완료 · 실차 ☐ |
 | 2026-07-17 | CI-C2 — sample3 TPMS 차체·알로이 휠 고도화 |
 | 2026-07-17 | CI-C3 — sample4 Ultimate TPMS · SVG 가이드 |
 | 2026-07-17 | CI-C3b — TPMS 화이트·실버 차체 · 헤더 우측 알림 |

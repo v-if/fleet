@@ -229,6 +229,7 @@
 | **VD3-R** | PC·모바일 상단 툴바 통일 · v2 링크 제거 — [vd3-responsive-toolbar](./requirements-vehicle-detail-vd3-responsive-toolbar.md) | ✅ 코드 · ☐ 검수 |
 | **VD3-NB** | 인근충전소 목록 있을 때만 블록 — [vd3-nearby-block](./requirements-vehicle-detail-vd3-nearby-block.md) | ✅ |
 | **VD3-DC** | 주행 목적지 주차·절전 클리어 — [vd3-destination-clear](./requirements-vehicle-detail-vd3-destination-clear.md) | ✅ 코드 · ☐ 실차 |
+| **VD3-DCn** | 주행 중 안내 종료 목적지 클리어 — [nav-cancel-clear](./requirements-vehicle-detail-nav-cancel-clear.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-DCf** | 속도·도착 SoC 클리어 범위 — [vd3-trip-clear-fields](./requirements-vehicle-detail-vd3-trip-clear-fields.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-NM** | 인근충전소 지도 마커 — [vd3-nearby-map](./requirements-vehicle-detail-vd3-nearby-map.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-NL** | 목록·맵 A–E 기호 매칭 · SC/DC 뱃지 · 맵 거리(km) · 설명 문구 — [vd3-nearby-labels](./requirements-vehicle-detail-vd3-nearby-labels.md) | ✅ 코드 · ☐ 실차 |
@@ -296,4 +297,6 @@
 | 2026-07-18 | VD3-HS 링크 — 히스토리 한 줄 · Hero 오늘/미운행 |
 | 2026-07-18 | VD3-SOH 링크 — 완충(한도) 시 잔여 km 추이 (조건부 GO) |
 | 2026-07-18 | VD3-SOH-0~4 — endRangeKm · API · UI · 시드 |
+| 2026-07-18 | VD3-DCn 링크 — 주행 중 안내 종료 목적지 클리어 (GO) |
+| 2026-07-18 | VD3-DCn 코드 완료 · 실차 ☐ |
 |

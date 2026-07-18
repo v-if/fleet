@@ -6,6 +6,7 @@
 | 배경 | 어제 목적지를 「집」으로 설정·주행 → 도착·하차·절전. 아침 재탑승 후 주행 시, **새 목적지가 없는데도** 상세 「주행 · 목적지」에 어제 「집」이 남는다 |
 | 관련 | [requirements-vehicle-detail-vd3.md](./requirements-vehicle-detail-vd3.md) (VD3-3 주행 카드), [requirements-tesla-fleet-telemetry-config-add-field.md](./requirements-tesla-fleet-telemetry-config-add-field.md) (CAF Destination*), [requirements-tesla-park-nearby-drive-edge.md](./requirements-tesla-park-nearby-drive-edge.md) (P 엣지 패턴) |
 | 적용 | Telemetry Snapshot merge · (선택) ASLEEP 전이 · UI는 데이터 정합 후 자동 반영 (`FleetVehicleDetailViewV3`) |
+| 후속 | **주행 중 안내 종료** 잔상 — [VD3-DCn](./requirements-vehicle-detail-nav-cancel-clear.md) · 코드 ✅ · 실차 ☐ |
 | 상태 | **코드 ✅ (DC-2·DC-3) · 실차 DC-4 ☐** |
 | 작성일 | 2026-07-16 |
 | ID | **VD3-DC** |

@@ -396,6 +396,117 @@ function hasDataField(
   return getDataField(data, keys) !== undefined;
 }
 
+const DEST_NAME_KEYS = ["DestinationName", "destination_name"] as const;
+const DEST_LOC_KEYS = ["DestinationLocation", "destination_location"] as const;
+const DEST_MINUTES_KEYS = ["MinutesToArrival", "minutes_to_arrival"] as const;
+const DEST_MILES_KEYS = ["MilesToArrival", "miles_to_arrival"] as const;
+const DEST_ENERGY_KEYS = [
+  "ExpectedEnergyPercentAtTripArrival",
+  "expected_energy_percent_at_trip_arrival",
+] as const;
+
+/** Destination* presence + Invalid/빈 값 → Nav 스위트 클리어 (VD3-DCn) */
+function isNavFieldUnusable(
+  raw: TelemetryFieldValue | unknown,
+  kind: "string" | "number" | "location",
+): boolean {
+  if (raw == null) return true;
+  if (typeof raw === "string") {
+    const t = raw.trim();
+    return !t || /^invalid$/i.test(t);
+  }
+  if (kind === "string") {
+    return readUsableString(raw) === undefined;
+  }
+  if (kind === "number") {
+    if (typeof raw === "object") {
+      const field = raw as TelemetryFieldValue;
+      const token = field.stringValue?.trim();
+      if (token && /^invalid$/i.test(token)) return true;
+    }
+    return readNumber(raw) === undefined;
+  }
+  const loc = readLocation(raw);
+  if (typeof raw === "object" && raw != null) {
+    const field = raw as TelemetryFieldValue;
+    const token = field.stringValue?.trim();
+    if (token && /^invalid$/i.test(token)) return true;
+  }
+  return !hasUsableCoordinates(loc?.latitude ?? null, loc?.longitude ?? null);
+}
+
+function resolveTripNavFields(
+  data: Record<string, TelemetryFieldValue | unknown> | undefined,
+): Pick<
+  ParsedTelemetryFields,
+  | "destinationName"
+  | "destinationLatitude"
+  | "destinationLongitude"
+  | "minutesToArrival"
+  | "milesToArrival"
+  | "expectedEnergyPercentAtArrival"
+  | "tripNavCleared"
+> {
+  const namePresent = hasDataField(data, [...DEST_NAME_KEYS]);
+  const locPresent = hasDataField(data, [...DEST_LOC_KEYS]);
+  const minutesPresent = hasDataField(data, [...DEST_MINUTES_KEYS]);
+  const milesPresent = hasDataField(data, [...DEST_MILES_KEYS]);
+  const energyPresent = hasDataField(data, [...DEST_ENERGY_KEYS]);
+
+  const nameRaw = namePresent ? getDataField(data, [...DEST_NAME_KEYS]) : undefined;
+  const locRaw = locPresent ? getDataField(data, [...DEST_LOC_KEYS]) : undefined;
+  const minutesRaw = minutesPresent
+    ? getDataField(data, [...DEST_MINUTES_KEYS])
+    : undefined;
+  const milesRaw = milesPresent ? getDataField(data, [...DEST_MILES_KEYS]) : undefined;
+  const energyRaw = energyPresent
+    ? getDataField(data, [...DEST_ENERGY_KEYS])
+    : undefined;
+
+  const tripNavCleared =
+    (namePresent && isNavFieldUnusable(nameRaw, "string")) ||
+    (locPresent && isNavFieldUnusable(locRaw, "location")) ||
+    (minutesPresent && isNavFieldUnusable(minutesRaw, "number")) ||
+    (milesPresent && isNavFieldUnusable(milesRaw, "number")) ||
+    (energyPresent && isNavFieldUnusable(energyRaw, "number"));
+
+  if (tripNavCleared) {
+    return {
+      tripNavCleared: true,
+      destinationName: null,
+      destinationLatitude: null,
+      destinationLongitude: null,
+      minutesToArrival: null,
+      milesToArrival: null,
+      expectedEnergyPercentAtArrival: null,
+    };
+  }
+
+  const out: ReturnType<typeof resolveTripNavFields> = {};
+  if (namePresent) {
+    out.destinationName = readUsableString(nameRaw) ?? null;
+  }
+  if (locPresent) {
+    const destLoc = readLocation(locRaw);
+    const usable = hasUsableCoordinates(
+      destLoc?.latitude ?? null,
+      destLoc?.longitude ?? null,
+    );
+    out.destinationLatitude = usable ? (destLoc?.latitude ?? null) : null;
+    out.destinationLongitude = usable ? (destLoc?.longitude ?? null) : null;
+  }
+  if (minutesPresent) {
+    out.minutesToArrival = readNumber(minutesRaw) ?? null;
+  }
+  if (milesPresent) {
+    out.milesToArrival = readNumber(milesRaw) ?? null;
+  }
+  if (energyPresent) {
+    out.expectedEnergyPercentAtArrival = readNumber(energyRaw) ?? null;
+  }
+  return out;
+}
+
 export function parseTelemetryMessage(message: TelemetryMessage): ParsedTelemetryFields | null {
   const vin = extractVin(message);
   if (!vin) return null;
@@ -504,24 +615,7 @@ export function parseTelemetryMessage(message: TelemetryMessage): ParsedTelemetr
   const tpmsSoftWarnings = readUsableEnumToken(
     getDataField(data, ["TpmsSoftWarnings", "tpms_soft_warning"]),
   );
-  const destinationName = readUsableString(
-    getDataField(data, ["DestinationName", "destination_name"]),
-  );
-  const destLoc = readLocation(
-    getDataField(data, ["DestinationLocation", "destination_location"]),
-  );
-  const minutesToArrival = readNumber(
-    getDataField(data, ["MinutesToArrival", "minutes_to_arrival"]),
-  );
-  const milesToArrival = readNumber(
-    getDataField(data, ["MilesToArrival", "miles_to_arrival"]),
-  );
-  const expectedEnergyPercentAtArrival = readNumber(
-    getDataField(data, [
-      "ExpectedEnergyPercentAtTripArrival",
-      "expected_energy_percent_at_trip_arrival",
-    ]),
-  );
+  const tripNav = resolveTripNavFields(data);
   const preconditioningEnabled = readBoolean(
     getDataField(data, ["PreconditioningEnabled", "preconditioning_enabled"]),
   );
@@ -611,22 +705,7 @@ export function parseTelemetryMessage(message: TelemetryMessage): ParsedTelemetr
     fastChargerPresent: fastChargerPresent ?? null,
     tpmsHardWarnings: tpmsHardWarnings ?? null,
     tpmsSoftWarnings: tpmsSoftWarnings ?? null,
-    destinationName: destinationName ?? null,
-    destinationLatitude: hasUsableCoordinates(
-      destLoc?.latitude ?? null,
-      destLoc?.longitude ?? null,
-    )
-      ? (destLoc?.latitude ?? null)
-      : null,
-    destinationLongitude: hasUsableCoordinates(
-      destLoc?.latitude ?? null,
-      destLoc?.longitude ?? null,
-    )
-      ? (destLoc?.longitude ?? null)
-      : null,
-    minutesToArrival: minutesToArrival ?? null,
-    milesToArrival: milesToArrival ?? null,
-    expectedEnergyPercentAtArrival: expectedEnergyPercentAtArrival ?? null,
+    ...tripNav,
     preconditioningEnabled: preconditioningEnabled ?? null,
     valetModeEnabled: valetModeEnabled ?? null,
     serviceModeEnabled: serviceModeEnabled ?? null,

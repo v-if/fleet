@@ -110,7 +110,8 @@ assert(cleared.destinationName === null, "VD3-DC clear destinationName");
 assert(cleared.destinationLatitude === null, "VD3-DC clear destinationLatitude");
 assert(cleared.minutesToArrival === null, "VD3-DC clear minutesToArrival");
 assert(cleared.expectedEnergyPercentAtArrival === null, "VD3-DC clear expectedEnergy");
-assert(cleared.vehicleSpeedKmh === 30, "VD3-DC keep vehicleSpeedKmh");
+assert(cleared.vehicleSpeedKmh === null, "VD3-DCf clear vehicleSpeedKmh");
+assert(cleared.gpsHeading == null, "VD3-DCf clear gpsHeading");
 
 if (failed) process.exit(1);
 console.log("TRF-B2 / B2e / VD3-DC verify OK");

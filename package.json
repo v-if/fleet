@@ -27,6 +27,7 @@
     "ncs:verify": "node --import tsx scripts/verify-ncs-charging-catalog.mjs",
     "vd3-h:verify": "node --import tsx scripts/verify-vd3-h-activity.mjs",
     "vd3-soh:verify": "node --import tsx scripts/verify-vd3-h-activity.mjs",
+    "vd3-dcn:verify": "node --import tsx scripts/verify-vd3-dcn-nav-cancel.mjs",
     "disconnect:verify": "node --env-file=.env --import tsx scripts/verify-phase45-disconnect.ts",
     "db:reset-data": "node --env-file=.env scripts/reset-fms-data.mjs"
   },

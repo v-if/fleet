@@ -22,6 +22,7 @@
 | **VD3-R** | PC·모바일 툴바 통일 · v2 링크 제거 ([요구](./requirements-vehicle-detail-vd3-responsive-toolbar.md)) | ✅ 코드 · ☐ 검수 · **식별은 VL-P-5로 Hero만** |
 | **VD3-NB** | 인근충전소 목록 있을 때만 ([요구](./requirements-vehicle-detail-vd3-nearby-block.md)) | ✅ |
 | **VD3-DC** | 주행 목적지 주차·절전 클리어 ([요구](./requirements-vehicle-detail-vd3-destination-clear.md)) | ✅ 코드 · ☐ 실차 |
+| **VD3-DCn** | 주행 중 안내 종료 클리어 ([요구](./requirements-vehicle-detail-nav-cancel-clear.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-DCf** | 속도·도착 SoC 클리어 범위 ([요구](./requirements-vehicle-detail-vd3-trip-clear-fields.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-NM** | 인근충전소 지도 마커 ([요구](./requirements-vehicle-detail-vd3-nearby-map.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-NL** | 목록·맵 A–E 기호 ([요구](./requirements-vehicle-detail-vd3-nearby-labels.md)) | ✅ 코드 · ☐ 실차 |
@@ -114,5 +115,7 @@ VIN: `LRWYGCFJ7SC214742`
 | 2026-07-18 | VD3-HS 운행 요약(히스토리·Hero) 요구·코드 ✅ |
 | 2026-07-18 | VD3-SOH 완충(한도) 잔여 km 추이 요구 초안 (조건부 GO) |
 | 2026-07-18 | VD3-SOH-0~4 코드 ✅ — migrate · API · UI · 시드 · verify |
+| 2026-07-18 | VD3-DCn 주행 중 안내 종료 목적지 클리어 요구 초안 (GO) |
+| 2026-07-18 | VD3-DCn 코드 완료 · 실차 ☐ |
 | 2026-07-16 | VD3-N 표시명 연필 편집 요구 링크 |
 |

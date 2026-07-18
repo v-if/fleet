@@ -99,6 +99,8 @@ export type ParsedTelemetryFields = {
   minutesToArrival?: number | null;
   milesToArrival?: number | null;
   expectedEnergyPercentAtArrival?: number | null;
+  /** VD3-DCn: Destination* Invalid 명시 → Nav coalesce 금지 */
+  tripNavCleared?: boolean;
   preconditioningEnabled?: boolean | null;
   valetModeEnabled?: boolean | null;
   serviceModeEnabled?: boolean | null;
