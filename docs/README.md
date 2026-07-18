@@ -34,7 +34,8 @@
 | [requirements-vehicle-detail-vd3-nearby-labels.md](./requirements-vehicle-detail-vd3-nearby-labels.md) | **VD3-NL** — 목록·맵 A–E · SC/DC 뱃지 · 맵 거리(km) · 설명 문구 · 코드 ✅ · 실차 ☐ | V3 nearby UX |
 | [requirements-vehicle-list-vd3-align.md](./requirements-vehicle-list-vd3-align.md) | **VL** — 차량목록 ↔ VD3 언어·표시 통일 · 코드 ✅ · 실차 ☐ | 목록 UX |
 | [requirements-vehicle-list-vd3-align-polish.md](./requirements-vehicle-list-vd3-align-polish.md) | **VL-P** — 목록 폴리시 · 상세 툴바 식별 제거 · 코드 ✅ · 검수 ☐ | 목록·상세 UX |
-| [requirements-vehicle-list-filter-fields.md](./requirements-vehicle-list-filter-fields.md) | **VL-F** — 총 주행거리 · 조건부 충전 · 필터 6종 · 코드 ✅ · 스모크 ☐ | 목록 UX |
+| [requirements-vehicle-list-filter-fields.md](./requirements-vehicle-list-filter-fields.md) | **VL-F** — 총 주행거리 · 필터 6종 · 코드 ✅ · 스모크 ☐ · **충전 열은 VL-A에서 제거** | 목록 UX |
+| [requirements-vehicle-list-align-charge.md](./requirements-vehicle-list-align-charge.md) | **VL-A** — 충전 열 제거 · 컬럼 중앙 정렬 · 코드 ✅ · 스모크 ☐ | 목록 UX |
 | [requirements-vehicle-detail-history.md](./requirements-vehicle-detail-history.md) | **VD3-H** — 상세 주행·충전 히스토리 · 세션화 · 코드 ✅ · 실차 ☐ | V3 이력 |
 | [checklist-vehicle-detail-history.md](./checklist-vehicle-detail-history.md) | Phase VD3-H 체크리스트 · 실차 검수 남음 | VD3-H 검수 |
 | [requirements-vehicle-detail-history-summary.md](./requirements-vehicle-detail-history-summary.md) | **VD3-HS** — 히스토리 한 줄·Hero 오늘/미운행 · 코드 ✅ · 스모크 ☐ | V3 운행 요약 |
@@ -270,6 +271,8 @@
 | 2026-07-18 | VD3-SOH-0~4 코드 ✅ — endRangeKm · soh API · VehicleSohCard · 시드 · verify |
 | 2026-07-18 | VD3-DCn — 주행 중 안내 종료 목적지 클리어 요구 초안 (GO) |
 | 2026-07-18 | VD3-DCn 코드 완료 · 실차 ☐ |
+| 2026-07-18 | VL-A — 목록 충전 열 제거 · 컬럼 중앙 정렬 요구 초안 (GO) |
+| 2026-07-18 | VL-A-0~2 코드 — 충전 열 제거 · 5열 center |
 | 2026-07-17 | CI-C2 — sample3 TPMS 차체·알로이 휠 고도화 |
 | 2026-07-17 | CI-C3 — sample4 Ultimate TPMS · SVG 가이드 |
 | 2026-07-17 | CI-C3b — TPMS 화이트·실버 차체 · 헤더 우측 알림 |

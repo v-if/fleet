@@ -920,6 +920,15 @@
 - [x] **VL-F-3** 필터 6종 · URL 매핑
 - [ ] **VL-F-4** 대시보드 딥링크 스모크
 
+### Phase VL-A 충전 열 제거 · 중앙 정렬 — ✅ 코드 · ☐ 스모크
+
+> [requirements-vehicle-list-align-charge.md](./requirements-vehicle-list-align-charge.md)
+
+- [x] **VL-A-0** 문서 승인 (GO)
+- [x] **VL-A-1** 충전 열 제거
+- [x] **VL-A-2** 5열 center 정렬
+- [ ] **VL-A-3** `/vehicles` 스모크
+
 ### Phase VS Vehicles Settings — ✅ 코드 · ☐ 스모크
 
 > [requirements-vehicles-settings.md](./requirements-vehicles-settings.md)
@@ -1250,6 +1259,8 @@
 | 2026-07-18 | VD3-SOH-0~4 코드 — endRangeKm · soh API · VehicleSohCard · 시드 · verify |
 | 2026-07-18 | VD3-DCn 주행 중 안내 종료 목적지 클리어 요구 초안 (GO) |
 | 2026-07-18 | VD3-DCn 코드 완료 (mapper·CAF·verify) · 실차 DCn-4 남음 |
+| 2026-07-18 | VL-A 목록 충전 열 제거 · 컬럼 중앙 정렬 요구 초안 (GO) |
+| 2026-07-18 | VL-A-0~2 코드 — 충전 열 제거 · 5열 center · 필터 유지 |
 | 2026-07-17 | CI-C2 — sample3 `TpmsDiagram` 차체·알로이 휠·연결선 |
 | 2026-07-17 | CI-C3 — sample4 Ultimate `TpmsDiagram` · SVG 가이드 |
 | 2026-07-17 | CI-C3b — 화이트·실버 차체 · 타이어 카드 우측 상단 알림 |

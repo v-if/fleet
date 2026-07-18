@@ -60,10 +60,10 @@ const filterOptions: { value: Exclude<StatusFilter, "IDLE">; label: string }[] =
   { value: "ISSUE", label: "이상" },
 ];
 
+/** VL-A — 충전 열 제거 · 5열 중앙 정렬 */
 const tableColumns = [
   { label: "차량", className: "w-[180px]" },
   { label: "가동", className: "w-[110px] whitespace-nowrap" },
-  { label: "충전", className: "w-[72px] whitespace-nowrap" },
   { label: "배터리", className: "w-[140px]" },
   { label: "총 주행거리", className: "w-[100px] whitespace-nowrap" },
   { label: "갱신", className: "w-[100px] whitespace-nowrap" },
@@ -198,7 +198,7 @@ export function FleetVehicleTable({
                   <TableCell
                     key={col.label}
                     isHeader
-                    className={`px-4 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400 ${col.className}`}
+                    className={`px-4 py-3 text-center text-theme-xs font-medium text-gray-500 dark:text-gray-400 ${col.className}`}
                   >
                     {col.label}
                   </TableCell>
@@ -213,7 +213,6 @@ export function FleetVehicleTable({
                 const lifecycle = vehicle.syncState?.lifecycle ?? null;
                 const colorLabel = formatColorBadge(vehicle);
                 const freshAt = rowFreshnessAt(vehicle);
-                const isCharging = snapshot?.chargingStatus === "CHARGING";
                 const showHealthBadge =
                   (status === "WARNING" || status === "ALERT") &&
                   mode !== "OFFLINE";
@@ -223,8 +222,10 @@ export function FleetVehicleTable({
 
                 return (
                   <TableRow key={vehicle.id}>
-                    <TableCell className={`px-4 py-4 ${tableColumns[0].className}`}>
-                      <Link href={`/vehicles/${vehicle.id}`} className="block min-w-0">
+                    <TableCell
+                      className={`px-4 py-4 text-center ${tableColumns[0].className}`}
+                    >
+                      <Link href={`/vehicles/${vehicle.id}`} className="mx-auto block min-w-0 max-w-full">
                         <p className="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">
                           {vehicle.plateNumber}
                         </p>
@@ -233,8 +234,10 @@ export function FleetVehicleTable({
                         </span>
                       </Link>
                     </TableCell>
-                    <TableCell className={`px-3 py-4 ${tableColumns[1].className}`}>
-                      <div className="flex flex-col items-start gap-1">
+                    <TableCell
+                      className={`px-3 py-4 text-center ${tableColumns[1].className}`}
+                    >
+                      <div className="flex flex-col items-center gap-1">
                         <Badge size="sm" color={opsModeBadgeColor(mode)}>
                           {OPS_MODE_LABEL[mode]}
                         </Badge>
@@ -250,15 +253,10 @@ export function FleetVehicleTable({
                         ) : null}
                       </div>
                     </TableCell>
-                    <TableCell className={`px-3 py-4 ${tableColumns[2].className}`}>
-                      {isCharging ? (
-                        <Badge size="sm" color="info">
-                          충전 중
-                        </Badge>
-                      ) : null}
-                    </TableCell>
-                    <TableCell className={`px-3 py-4 ${tableColumns[3].className}`}>
-                      <div className="space-y-1">
+                    <TableCell
+                      className={`px-3 py-4 text-center ${tableColumns[2].className}`}
+                    >
+                      <div className="mx-auto space-y-1">
                         <BatteryProgressBar percent={snapshot?.batteryPercent} expanded />
                         {snapshot?.rangeKm != null ? (
                           <p className="text-theme-xs text-gray-500 dark:text-gray-400">
@@ -268,12 +266,12 @@ export function FleetVehicleTable({
                       </div>
                     </TableCell>
                     <TableCell
-                      className={`px-3 py-4 text-theme-sm text-gray-500 dark:text-gray-400 ${tableColumns[4].className}`}
+                      className={`px-3 py-4 text-center text-theme-sm text-gray-500 dark:text-gray-400 ${tableColumns[3].className}`}
                     >
                       {formatOdometer(snapshot?.odometerKm)}
                     </TableCell>
                     <TableCell
-                      className={`px-3 py-4 text-theme-sm text-gray-500 dark:text-gray-400 ${tableColumns[5].className}`}
+                      className={`px-3 py-4 text-center text-theme-sm text-gray-500 dark:text-gray-400 ${tableColumns[4].className}`}
                     >
                       <span title={freshAt ? formatDateTime(freshAt) : undefined}>
                         {formatRelativeTime(freshAt)}

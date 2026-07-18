@@ -235,7 +235,8 @@
 | **VD3-NL** | 목록·맵 A–E 기호 매칭 · SC/DC 뱃지 · 맵 거리(km) · 설명 문구 — [vd3-nearby-labels](./requirements-vehicle-detail-vd3-nearby-labels.md) | ✅ 코드 · ☐ 실차 |
 | **VL** | 차량목록 ↔ VD3 언어·표시 통일 — [vehicle-list-vd3-align](./requirements-vehicle-list-vd3-align.md) | ✅ 코드 · ☐ 실차 |
 | **VL-P** | 목록 폴리시 · 상세 툴바 식별 제거 — [align-polish](./requirements-vehicle-list-vd3-align-polish.md) | ✅ 코드 · ☐ 검수 |
-| **VL-F** | 총 주행거리 · 조건부 충전 · 필터 — [filter-fields](./requirements-vehicle-list-filter-fields.md) | ✅ 코드 · ☐ 스모크 |
+| **VL-F** | 총 주행거리 · 조건부 충전 · 필터 — [filter-fields](./requirements-vehicle-list-filter-fields.md) | ✅ 코드 · ☐ 스모크 · 충전 열→VL-A ✅ |
+| **VL-A** | 충전 열 제거 · 컬럼 중앙 정렬 — [align-charge](./requirements-vehicle-list-align-charge.md) | ✅ 코드 · ☐ 스모크 |
 | **VS** | Vehicles Settings 등록·연동 허브 — [vehicles-settings](./requirements-vehicles-settings.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-H** | 주행·충전 히스토리 — [vehicle-detail-history](./requirements-vehicle-detail-history.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-HS** | 운행 요약(히스토리·Hero) — [history-summary](./requirements-vehicle-detail-history-summary.md) | ✅ 코드 · ☐ 스모크 |
@@ -299,4 +300,6 @@
 | 2026-07-18 | VD3-SOH-0~4 — endRangeKm · API · UI · 시드 |
 | 2026-07-18 | VD3-DCn 링크 — 주행 중 안내 종료 목적지 클리어 (GO) |
 | 2026-07-18 | VD3-DCn 코드 완료 · 실차 ☐ |
+| 2026-07-18 | VL-A 링크 — 충전 열 제거 · 컬럼 중앙 정렬 (GO) |
+| 2026-07-18 | VL-A-0~2 코드 ✅ · 스모크 ☐ |
 |

@@ -28,7 +28,8 @@
 | **VD3-NL** | 목록·맵 A–E 기호 ([요구](./requirements-vehicle-detail-vd3-nearby-labels.md)) | ✅ 코드 · ☐ 실차 |
 | **VL** | 차량목록 ↔ VD3 통일 ([요구](./requirements-vehicle-list-vd3-align.md)) | ✅ 코드 · ☐ 실차 |
 | **VL-P** | 목록 폴리시 ([요구](./requirements-vehicle-list-vd3-align-polish.md)) | ✅ 코드 · ☐ 검수 |
-| **VL-F** | 열·충전·필터 정리 ([요구](./requirements-vehicle-list-filter-fields.md)) | ✅ 코드 · ☐ 딥링크 스모크 |
+| **VL-F** | 열·충전·필터 정리 ([요구](./requirements-vehicle-list-filter-fields.md)) | ✅ 코드 · ☐ 딥링크 스모크 · 충전 열→VL-A ✅ |
+| **VL-A** | 충전 열 제거 · 중앙 정렬 ([요구](./requirements-vehicle-list-align-charge.md)) | ✅ 코드 · ☐ 스모크 |
 | **VS** | Vehicles Settings 등록 허브 ([요구](./requirements-vehicles-settings.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-H** | 주행·충전 히스토리 ([요구](./requirements-vehicle-detail-history.md)) | ✅ 코드 · ☐ 실차 |
 | **VD3-HS** | 운행 요약 히스토리·Hero ([요구](./requirements-vehicle-detail-history-summary.md)) | ✅ 코드 · ☐ 스모크 |
@@ -117,5 +118,7 @@ VIN: `LRWYGCFJ7SC214742`
 | 2026-07-18 | VD3-SOH-0~4 코드 ✅ — migrate · API · UI · 시드 · verify |
 | 2026-07-18 | VD3-DCn 주행 중 안내 종료 목적지 클리어 요구 초안 (GO) |
 | 2026-07-18 | VD3-DCn 코드 완료 · 실차 ☐ |
+| 2026-07-18 | VL-A 충전 열 제거 · 중앙 정렬 요구 초안 (GO) |
+| 2026-07-18 | VL-A-0~2 코드 ✅ · 스모크 ☐ |
 | 2026-07-16 | VD3-N 표시명 연필 편집 요구 링크 |
 |
