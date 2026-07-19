@@ -154,7 +154,54 @@ assert(
       batteryPercent: 80,
     },
   });
-  assert(d.length === 1 && d[0].type === "update_charge", "COMPLETE updates charge");
+  assert(
+    d.length === 1 && d[0].type === "close_charge" && d[0].discardNoise === false,
+    "COMPLETE closes charge (VD3-Hc)",
+  );
+}
+
+{
+  const openCharge = {
+    id: "c1",
+    vehicleId: "v1",
+    kind: "CHARGE",
+    startedAt: t0,
+    endedAt: null,
+    startOdometerKm: null,
+    endOdometerKm: null,
+    distanceKm: null,
+    startBatteryPercent: 40,
+    endBatteryPercent: 50,
+    energyAddedPercent: 10,
+    chargingPowerKind: "AC",
+    peakChargerPowerKw: 7,
+    source: "TELEMETRY",
+    createdAt: t0,
+    updatedAt: t0,
+  };
+  const d = planActivityTransitions({
+    open: { drive: null, charge: openCharge },
+    current: {
+      at: t1,
+      shiftState: "P",
+      chargingStatus: "STOPPED",
+      batteryPercent: 50,
+    },
+  });
+  assert(d.length === 1 && d[0].type === "update_charge", "STOPPED updates charge");
+}
+
+{
+  const d = planActivityTransitions({
+    open: { drive: null, charge: null },
+    current: {
+      at: t1,
+      shiftState: "P",
+      chargingStatus: "COMPLETE",
+      batteryPercent: 80,
+    },
+  });
+  assert(d.length === 0, "COMPLETE without open charge is no-op");
 }
 
 {

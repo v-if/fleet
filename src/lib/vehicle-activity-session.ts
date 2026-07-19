@@ -62,10 +62,18 @@ export function isParkedOrAsleepObservation(obs: ActivityObservation): boolean {
   return normalizeShiftState(obs.shiftState) === "P";
 }
 
+/** 세션을 열어 둔 채 갱신할 상태 (VD3-Hc: COMPLETE는 종료) */
 export function isChargeConnectedStatus(
   status: ChargingStatus | null | undefined,
 ): boolean {
-  return status === "CHARGING" || status === "COMPLETE" || status === "STOPPED";
+  return status === "CHARGING" || status === "STOPPED";
+}
+
+/** CHARGE 세션 종료 — 충전 완료 또는 케이블 해제 */
+export function shouldCloseChargeSession(
+  status: ChargingStatus | null | undefined,
+): boolean {
+  return status === "COMPLETE" || status === "DISCONNECTED";
 }
 
 function round1(n: number): number {
@@ -153,7 +161,7 @@ export function planActivityTransitions(input: {
 
   // —— CHARGE ——
   if (open.charge) {
-    if (chargeStatus === "DISCONNECTED") {
+    if (shouldCloseChargeSession(chargeStatus)) {
       const energyAddedPercent = computeEnergyAdded(
         open.charge.startBatteryPercent,
         current.batteryPercent ?? open.charge.endBatteryPercent,

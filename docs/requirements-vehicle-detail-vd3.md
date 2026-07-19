@@ -239,6 +239,7 @@
 | **VL-A** | 충전 열 제거 · 컬럼 중앙 정렬 — [align-charge](./requirements-vehicle-list-align-charge.md) | ✅ 코드 · ☐ 스모크 |
 | **VS** | Vehicles Settings 등록·연동 허브 — [vehicles-settings](./requirements-vehicles-settings.md) | ✅ 코드 · ☐ 실차 |
 | **VD3-H** | 주행·충전 히스토리 — [vehicle-detail-history](./requirements-vehicle-detail-history.md) | ✅ 코드 · ☐ 실차 |
+| **VD3-Hc** | 충전 COMPLETE → 이력 종료 — [history-charge-complete](./requirements-vehicle-detail-history-charge-complete.md) | ✅ 코드 · ☐ 스모크 |
 | **VD3-HS** | 운행 요약(히스토리·Hero) — [history-summary](./requirements-vehicle-detail-history-summary.md) | ✅ 코드 · ☐ 스모크 |
 | **VD3-SOH** | 완충(한도) 시 잔여 km 추이 — [soh](./requirements-vehicle-detail-soh.md) | ✅ 코드 · ☐ 실차 |
 
@@ -302,4 +303,6 @@
 | 2026-07-18 | VD3-DCn 코드 완료 · 실차 ☐ |
 | 2026-07-18 | VL-A 링크 — 충전 열 제거 · 컬럼 중앙 정렬 (GO) |
 | 2026-07-18 | VL-A-0~2 코드 ✅ · 스모크 ☐ |
+| 2026-07-19 | VD3-Hc 링크 — 충전 COMPLETE → 이력 종료 (GO) |
+| 2026-07-19 | VD3-Hc-0~2 코드 ✅ · 스모크 ☐ |
 |

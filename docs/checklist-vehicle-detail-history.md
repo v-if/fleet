@@ -1,7 +1,7 @@
 # Phase VD3-H — 주행·충전 히스토리 체크리스트
 
-관련: [requirements-vehicle-detail-history.md](./requirements-vehicle-detail-history.md)  
-상태: **코드 ✅ · migrate ✅ · 실차 ☐**
+관련: [requirements-vehicle-detail-history.md](./requirements-vehicle-detail-history.md) · 후속 [VD3-Hc](./requirements-vehicle-detail-history-charge-complete.md)  
+상태: **코드 ✅ · migrate ✅ · 실차 ☐** · **COMPLETE→close VD3-Hc ✅ · Hc-3 스모크 ☐**
 
 ---
 
@@ -15,6 +15,8 @@
 | VD3-H-3 | `GET .../activity` · VD3 1카드+필터 | ✅ |
 | VD3-H-4 | 실차 검수 | ☐ |
 | VD3-H-5 | 가상 시드 · 노이즈 필터 / retention 보류 | ✅ / ☐ |
+
+> **VD3-Hc** (별도): COMPLETE → close — [요구](./requirements-vehicle-detail-history-charge-complete.md) · Hc-0~2 ✅ · Hc-3 ☐
 
 ---
 

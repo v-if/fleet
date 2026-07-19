@@ -37,6 +37,7 @@
 | [requirements-vehicle-list-filter-fields.md](./requirements-vehicle-list-filter-fields.md) | **VL-F** — 총 주행거리 · 필터 6종 · 코드 ✅ · 스모크 ☐ · **충전 열은 VL-A에서 제거** | 목록 UX |
 | [requirements-vehicle-list-align-charge.md](./requirements-vehicle-list-align-charge.md) | **VL-A** — 충전 열 제거 · 컬럼 중앙 정렬 · 코드 ✅ · 스모크 ☐ | 목록 UX |
 | [requirements-vehicle-detail-history.md](./requirements-vehicle-detail-history.md) | **VD3-H** — 상세 주행·충전 히스토리 · 세션화 · 코드 ✅ · 실차 ☐ | V3 이력 |
+| [requirements-vehicle-detail-history-charge-complete.md](./requirements-vehicle-detail-history-charge-complete.md) | **VD3-Hc** — 충전 COMPLETE인데 이력「진행 중」· 코드 ✅ · 스모크 ☐ | V3 이력 |
 | [checklist-vehicle-detail-history.md](./checklist-vehicle-detail-history.md) | Phase VD3-H 체크리스트 · 실차 검수 남음 | VD3-H 검수 |
 | [requirements-vehicle-detail-history-summary.md](./requirements-vehicle-detail-history-summary.md) | **VD3-HS** — 히스토리 한 줄·Hero 오늘/미운행 · 코드 ✅ · 스모크 ☐ | V3 운행 요약 |
 | [checklist-vehicle-detail-history-summary.md](./checklist-vehicle-detail-history-summary.md) | Phase VD3-HS 체크리스트 | VD3-HS 검수 |
@@ -273,6 +274,8 @@
 | 2026-07-18 | VD3-DCn 코드 완료 · 실차 ☐ |
 | 2026-07-18 | VL-A — 목록 충전 열 제거 · 컬럼 중앙 정렬 요구 초안 (GO) |
 | 2026-07-18 | VL-A-0~2 코드 — 충전 열 제거 · 5열 center |
+| 2026-07-19 | VD3-Hc — 충전 COMPLETE vs 이력「진행 중」요구 초안 (GO) |
+| 2026-07-19 | VD3-Hc-0~2 코드 — COMPLETE→close · verify |
 | 2026-07-17 | CI-C2 — sample3 TPMS 차체·알로이 휠 고도화 |
 | 2026-07-17 | CI-C3 — sample4 Ultimate TPMS · SVG 가이드 |
 | 2026-07-17 | CI-C3b — TPMS 화이트·실버 차체 · 헤더 우측 알림 |

@@ -953,6 +953,15 @@
 - [ ] **VD3-H-4** 실차 검수
 - [x] **VD3-H-5** (P1) 가상 시드 · 노이즈 필터 — retention ☐
 
+### Phase VD3-Hc 충전 COMPLETE → 이력 종료 — ✅ 코드 · ☐ 스모크
+
+> [requirements-vehicle-detail-history-charge-complete.md](./requirements-vehicle-detail-history-charge-complete.md)
+
+- [x] **VD3-Hc-0** 문서 승인 · VD3-H §3.2 개정 합의
+- [x] **VD3-Hc-1** FSM COMPLETE → close_charge
+- [x] **VD3-Hc-2** verify assert 갱신 (`npm run vd3-h:verify`)
+- [ ] **VD3-Hc-3** 실차·가상 스모크
+
 ### Phase VD3-HS 운행 요약 (히스토리·Hero) — ✅ 코드 · ☐ 스모크
 
 > [requirements-vehicle-detail-history-summary.md](./requirements-vehicle-detail-history-summary.md) · [checklist-vehicle-detail-history-summary.md](./checklist-vehicle-detail-history-summary.md)
@@ -1261,6 +1270,8 @@
 | 2026-07-18 | VD3-DCn 코드 완료 (mapper·CAF·verify) · 실차 DCn-4 남음 |
 | 2026-07-18 | VL-A 목록 충전 열 제거 · 컬럼 중앙 정렬 요구 초안 (GO) |
 | 2026-07-18 | VL-A-0~2 코드 — 충전 열 제거 · 5열 center · 필터 유지 |
+| 2026-07-19 | VD3-Hc 충전 COMPLETE vs 이력「진행 중」요구 초안 (GO) |
+| 2026-07-19 | VD3-Hc-0~2 코드 — COMPLETE→close · verify · §3.2 개정 |
 | 2026-07-17 | CI-C2 — sample3 `TpmsDiagram` 차체·알로이 휠·연결선 |
 | 2026-07-17 | CI-C3 — sample4 Ultimate `TpmsDiagram` · SVG 가이드 |
 | 2026-07-17 | CI-C3b — 화이트·실버 차체 · 타이어 카드 우측 상단 알림 |
